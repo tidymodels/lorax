@@ -4,15 +4,19 @@ Version: 0.1.0
 Authors@R: c(
     person("Max", "Kuhn", , "max@posit.co", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0003-2402-136X")),
-    person("Posit Software, PBC", role = c("cph", "fnd"))
+    person("Posit Software, PBC", role = c("cph", "fnd"),
+           comment = c(ROR = "03wc8by49"))
   )
-Description: Provides a unified interface for extracting information from
-    tree- and rule-based models. Functions include extracting logical rules
-    that define terminal nodes, identifying predictors that were actually used
-    in splits, retrieving variable importance scores, and converting trees to
-    the 'partykit' format for visualization. Supports models from packages
-    including 'rpart', 'ranger', 'randomForest', 'xgboost', 'lightgbm', 'C50',
-    'Cubist', 'bart', and 'grf'.
+Description: Extracts decision rules from tree- and rule-based models
+    fitted in 'R'. Rules are expressed as logical predicates that identify
+    paths to terminal nodes, making model behavior more transparent and
+    interpretable. Provides conversion methods to 'partykit' party objects
+    for a wide range of model types, including those from 'ranger',
+    'xgboost', 'lightgbm', 'randomForest', 'C50', 'rpart', and 'dbarts'.
+    The 'partykit' infrastructure is described in Hothorn and Zeileis (2015)
+    <https://jmlr.org/papers/v16/hothorn15a.html>.
+URL: https://github.com/topepo/lorax
+BugReports: https://github.com/topepo/lorax/issues
 License: MIT + file LICENSE
 Depends: 
     R (>= 4.1.0)
@@ -45,4 +49,4 @@ Config/testthat/edition: 3
 Encoding: UTF-8
 Language: en-US
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.3
+Config/roxygen2/version: 8.0.0

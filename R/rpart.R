@@ -13,6 +13,24 @@ rpart_extract_node_rule <- function(node_id, max_node_id, x) {
   combine_rule_elements(split_exprs)
 }
 
+
+#' Extract rules from an rpart model
+#'
+#' Extract interpretable decision rules from an \pkg{rpart} decision tree.
+#' Each terminal node becomes one rule representing the path from root to
+#' that leaf.
+#'
+#' @param x An `rpart` object from the \pkg{rpart} package.
+#' @param ... Not currently used.
+#'
+#' @return A tibble with class `c("rule_set_rpart", "rule_set")` and columns:
+#'   * `id`: integer, the terminal node ID.
+#'   * `rules`: list of R expressions, one per terminal node.
+#'
+#' @examplesIf rlang::is_installed("rpart")
+#' fit <- rpart::rpart(Species ~ ., data = iris)
+#' extract_rules(fit)
+#'
 #' @export
 extract_rules.rpart <- function(x, ...) {
   rlang::check_installed("rpart")

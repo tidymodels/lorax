@@ -91,10 +91,15 @@ Note that `as.party.rpart()` is in the partykit package and that cforest is made
 
 ## Installation
 
-You can install the development version of lorax like so:
+You can install the released version of lorax from CRAN:
 
 ``` r
-require(pak)
+install.packages("lorax")
+```
+
+Or install the development version from GitHub:
+
+``` r
 pak::pak("topepo/lorax")
 ```
 
@@ -120,7 +125,7 @@ rngr_fit <- ranger(species ~ ., data = penguins, max.depth = 3, num.trees = 10)
 
 ```{r}
 #| label: ranger-party
-rngr_party <- as.party(rngr_fit, data = penguins, tree = 1)
+rngr_party <- as.party(rngr_fit, tree = 1, data = penguins)
 rngr_party
 
 plot(rngr_party)

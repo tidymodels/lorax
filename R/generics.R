@@ -11,6 +11,10 @@
 #' @return A data frame with column `rules` (an R expression) and `id` (an
 #' identifier).
 #'
+#' @examples
+#' fit <- partykit::ctree(Species ~ ., data = iris)
+#' extract_rules(fit)
+#'
 #' @export
 extract_rules <- function(x, ...) {
   UseMethod("extract_rules")

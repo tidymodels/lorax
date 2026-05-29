@@ -47,5 +47,7 @@ po/*~
 
 # RStudio Connect folder
 rsconnect/
+
+# others
 Rplots.pdf
 train_dir
