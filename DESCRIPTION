@@ -15,8 +15,8 @@ Description: Extracts decision rules from tree- and rule-based models
     described in Hothorn and Zeileis (2015) 
     <https://jmlr.org/papers/v16/hothorn15a.html>.
 License: MIT + file LICENSE
-URL: https://github.com/topepo/lorax
-BugReports: https://github.com/topepo/lorax/issues
+URL: https://github.com/tidymodels/lorax
+BugReports: https://github.com/tidymodels/lorax/issues
 Depends: 
     R (>= 4.1.0)
 Imports: 

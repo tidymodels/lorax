@@ -6,13 +6,13 @@
 \alias{lorax-package}
 \title{lorax: Speak for the Trees}
 \description{
-Extracts decision rules from tree- and rule-based models fitted in 'R'. Rules are expressed as logical predicates that identify paths to terminal nodes, making model behavior more transparent and interpretable. Provides conversion methods to 'partykit' party objects for a wide range of model types, including those from 'ranger', 'xgboost', 'lightgbm', 'randomForest', 'C50', 'rpart', and 'dbarts'. The 'partykit' infrastructure is described in Hothorn and Zeileis (2015) \url{https://jmlr.org/papers/v16/hothorn15a.html}.
+Extracts decision rules from tree- and rule-based models fitted in 'R'. Rules are expressed as logical predicates that identify paths to terminal nodes, making model behavior more transparent and interpretable. Provides conversion methods to 'partykit' party objects for a wide range of model types. The 'partykit' infrastructure is described in Hothorn and Zeileis (2015) \url{https://jmlr.org/papers/v16/hothorn15a.html}.
 }
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://github.com/topepo/lorax}
-  \item Report bugs at \url{https://github.com/topepo/lorax/issues}
+  \item \url{https://github.com/tidymodels/lorax}
+  \item Report bugs at \url{https://github.com/tidymodels/lorax/issues}
 }
 
 }

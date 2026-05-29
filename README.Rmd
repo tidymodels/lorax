@@ -16,8 +16,8 @@ knitr::opts_chunk$set(
 # lorax
 
 <!-- badges: start -->
-[![R-CMD-check](https://github.com/topepo/lorax/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/topepo/lorax/actions/workflows/R-CMD-check.yaml)
-[![Codecov test coverage](https://codecov.io/gh/topepo/lorax/graph/badge.svg)](https://app.codecov.io/gh/topepo/lorax)
+[![R-CMD-check](https://github.com/tidymodels/lorax/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/tidymodels/lorax/actions/workflows/R-CMD-check.yaml)
+[![Codecov test coverage](https://codecov.io/gh/tidymodels/lorax/graph/badge.svg)](https://app.codecov.io/gh/tidymodels/lorax)
 <!-- badges: end -->
 
 The goal of lorax is to help look at different aspects of tree- and rule-based models. 
@@ -100,7 +100,7 @@ install.packages("lorax")
 Or install the development version from GitHub:
 
 ``` r
-pak::pak("topepo/lorax")
+pak::pak("tidymodels/lorax")
 ```
 
 ## Example
