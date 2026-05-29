@@ -2,6 +2,7 @@ CMD
 Codecov
 GRF
 Gini
+Hothorn
 IncMSE
 IncNodePurity
 LightGBM
@@ -11,16 +12,20 @@ Multiway
 ORCID
 ObliqueForest
 PBC
+ROR
 XGBoost
+Zeileis
 aorsf
 bart
 categoricals
 cforest
+dbarts
 funder
 grf
 importances
 leftDaughter
 lgb
+lightgbm
 multiclass
 multiway
 partykit
@@ -30,3 +35,4 @@ rightDaughter
 rpart
 tibble
 xgb
+xgboost
