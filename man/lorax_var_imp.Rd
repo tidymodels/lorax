@@ -79,3 +79,8 @@ non-zero importances for predictors that were not used in any actual split
 in the tree. To make the splits and importances align, use the options
 \code{maxcompete = 0} and \code{maxsurrogate = 0}.
 }
+\examples{
+fit <- partykit::ctree(Species ~ ., data = iris)
+var_imp(fit)
+
+}

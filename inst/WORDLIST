@@ -19,13 +19,11 @@ aorsf
 bart
 categoricals
 cforest
-dbarts
 funder
 grf
 importances
 leftDaughter
 lgb
-lightgbm
 multiclass
 multiway
 partykit
@@ -35,4 +33,3 @@ rightDaughter
 rpart
 tibble
 xgb
-xgboost

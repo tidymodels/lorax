@@ -373,6 +373,10 @@ extract_rules.grf <- function(x, tree = 1L, ...) {
 #' @return A tibble with columns `term` and `estimate`.
 #' @name lorax_var_imp
 #'
+#' @examples
+#' fit <- partykit::ctree(Species ~ ., data = iris)
+#' var_imp(fit)
+#'
 #' @export
 var_imp.grf <- function(object, complete = TRUE, ...) {
   rlang::check_installed("grf")
