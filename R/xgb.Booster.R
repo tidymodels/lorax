@@ -36,8 +36,8 @@
 #'   set.seed(2847)
 #'   bst <- xgboost::xgb.train(
 #'     data = xgboost::xgb.DMatrix(agaricus.train$data, label = agaricus.train$label),
+#'     nrounds = 3,
 #'     params = xgboost::xgb.params(
-#'       nrounds = 3,
 #'       max_depth = 3,
 #'       objective = "binary:logistic",
 #'       nthread = 2
@@ -55,8 +55,8 @@
 #'   set.seed(8472)
 #'   bst_reg <- xgboost::xgb.train(
 #'     data = xgboost::xgb.DMatrix(as.matrix(mtcars[, -1]), label = mtcars$mpg),
+#'     nrounds = 3,
 #'     params = xgboost::xgb.params(
-#'       nrounds = 3,
 #'       max_depth = 3,
 #'       objective = "reg:squarederror",
 #'       nthread = 2
@@ -284,11 +284,11 @@ xgb_get_split_info <- function(parent_id, child_id, tree_dt) {
 #'   set.seed(3691)
 #'   bst <- xgboost::xgb.train(
 #'     data = dtrain,
+#'     nrounds = 3,
+#'     verbose = 0,
 #'     params = xgboost::xgb.params(
-#'       nrounds = 3,
 #'       max_depth = 3,
 #'       objective = "binary:logistic",
-#'       verbose = 0,
 #'       nthread = 2
 #'     )
 #'   )
@@ -306,11 +306,11 @@ xgb_get_split_info <- function(parent_id, child_id, tree_dt) {
 #'   set.seed(9158)
 #'   bst_reg <- xgboost::xgb.train(
 #'     data = dtrain_reg,
+#'     nrounds = 3,
+#'     verbose = 0,
 #'     params = xgboost::xgb.params(
-#'       nrounds = 3,
 #'       max_depth = 3,
 #'       objective = "reg:squarederror",
-#'       verbose = 0,
 #'       nthread = 2
 #'     )
 #'   )

@@ -100,11 +100,11 @@ if (rlang::is_installed("xgboost")) {
   set.seed(3691)
   bst <- xgboost::xgb.train(
     data = dtrain,
+    nrounds = 3,
+    verbose = 0,
     params = xgboost::xgb.params(
-      nrounds = 3,
       max_depth = 3,
       objective = "binary:logistic",
-      verbose = 0,
       nthread = 2
     )
   )
@@ -122,11 +122,11 @@ if (rlang::is_installed("xgboost")) {
   set.seed(9158)
   bst_reg <- xgboost::xgb.train(
     data = dtrain_reg,
+    nrounds = 3,
+    verbose = 0,
     params = xgboost::xgb.params(
-      nrounds = 3,
       max_depth = 3,
       objective = "reg:squarederror",
-      verbose = 0,
       nthread = 2
     )
   )

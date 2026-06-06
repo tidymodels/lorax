@@ -49,8 +49,8 @@ if (rlang::is_installed("xgboost")) {
   set.seed(2847)
   bst <- xgboost::xgb.train(
     data = xgboost::xgb.DMatrix(agaricus.train$data, label = agaricus.train$label),
+    nrounds = 3,
     params = xgboost::xgb.params(
-      nrounds = 3,
       max_depth = 3,
       objective = "binary:logistic",
       nthread = 2
@@ -68,8 +68,8 @@ rule_text(rules$rules[[1]])
   set.seed(8472)
   bst_reg <- xgboost::xgb.train(
     data = xgboost::xgb.DMatrix(as.matrix(mtcars[, -1]), label = mtcars$mpg),
+    nrounds = 3,
     params = xgboost::xgb.params(
-      nrounds = 3,
       max_depth = 3,
       objective = "reg:squarederror",
       nthread = 2
