@@ -72,7 +72,9 @@ if (rlang::is_installed(c("ranger", "palmerpenguins"))) {
   penguins <- na.omit(penguins)
 
   set.seed(2847)
-  rf <- ranger::ranger(species ~ ., data = penguins, num.trees = 3)
+  rf <- ranger::ranger(
+    species ~ ., data = penguins, num.trees = 3, num.threads = 2
+  )
 
   # Convert first tree
   party_tree <- as.party(rf, tree = 1L, data = penguins)
@@ -85,7 +87,9 @@ if (rlang::is_installed(c("ranger", "palmerpenguins"))) {
   # Regression example
   data(mtcars)
   set.seed(5193)
-  rf_reg <- ranger::ranger(mpg ~ ., data = mtcars, num.trees = 3)
+  rf_reg <- ranger::ranger(
+    mpg ~ ., data = mtcars, num.trees = 3, num.threads = 2
+  )
   party_tree_reg <- as.party(rf_reg, tree = 1L, data = mtcars)
   print(party_tree_reg)
 }

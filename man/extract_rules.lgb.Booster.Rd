@@ -51,7 +51,7 @@ if (rlang::is_installed("lightgbm")) {
   )
   set.seed(2847)
   bst <- lightgbm::lgb.train(
-    params = list(objective = "binary", max_depth = 3),
+    params = list(objective = "binary", max_depth = 3, num_threads = 2L),
     data = dtrain,
     nrounds = 3,
     verbose = -1
@@ -68,7 +68,10 @@ if (rlang::is_installed("lightgbm")) {
   dtrain_reg <- lightgbm::lgb.Dataset(as.matrix(mtcars[, -1]), label = mtcars$mpg)
   set.seed(5193)
   bst_reg <- lightgbm::lgb.train(
-    params = list(objective = "regression", max_depth = 3, min_data_in_leaf = 1),
+    params = list(
+      objective = "regression", max_depth = 3, min_data_in_leaf = 1,
+      num_threads = 2L
+    ),
     data = dtrain_reg,
     nrounds = 3,
     verbose = -1

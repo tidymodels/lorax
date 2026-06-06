@@ -17,7 +17,8 @@ test_that("as.party.xgb.Booster returns valid party object", {
     params = list(
       max_depth = 3,
       objective = "multi:softmax",
-      num_class = 3
+      num_class = 3,
+      nthread = 2
     ),
     data = dtrain,
     nrounds = 5,
@@ -42,7 +43,8 @@ test_that("as.party.xgb.Booster works with binary classification", {
   bst <- xgboost::xgb.train(
     params = list(
       max_depth = 2,
-      objective = "binary:logistic"
+      objective = "binary:logistic",
+      nthread = 2
     ),
     data = dtrain,
     nrounds = 3,
@@ -66,7 +68,8 @@ test_that("as.party.xgb.Booster works with regression", {
   bst <- xgboost::xgb.train(
     params = list(
       max_depth = 3,
-      objective = "reg:squarederror"
+      objective = "reg:squarederror",
+      nthread = 2
     ),
     data = dtrain,
     nrounds = 3,
@@ -97,7 +100,8 @@ test_that("as.party.xgb.Booster validates tree parameter", {
     params = list(
       max_depth = 3,
       objective = "multi:softmax",
-      num_class = 3
+      num_class = 3,
+      nthread = 2
     ),
     data = dtrain,
     nrounds = 5,
@@ -129,7 +133,8 @@ test_that("as.party.xgb.Booster works with data parameter", {
     params = list(
       max_depth = 3,
       objective = "multi:softmax",
-      num_class = 3
+      num_class = 3,
+      nthread = 2
     ),
     data = dtrain,
     nrounds = 2,
@@ -156,7 +161,8 @@ test_that("as.party.xgb.Booster handles single-node trees", {
   bst <- xgboost::xgb.train(
     params = list(
       max_depth = 0,
-      objective = "reg:squarederror"
+      objective = "reg:squarederror",
+      nthread = 2
     ),
     data = dtrain,
     nrounds = 1,
@@ -186,7 +192,8 @@ test_that("as.party.xgb.Booster extracts different trees in multiclass", {
     params = list(
       max_depth = 3,
       objective = "multi:softmax",
-      num_class = 3
+      num_class = 3,
+      nthread = 2
     ),
     data = dtrain,
     nrounds = 3,
@@ -224,7 +231,8 @@ test_that("as.party.xgb.Booster requires response in data", {
     params = list(
       max_depth = 3,
       objective = "multi:softmax",
-      num_class = 3
+      num_class = 3,
+      nthread = 2
     ),
     data = dtrain,
     nrounds = 2,
@@ -259,7 +267,8 @@ test_that("as.party.xgb.Booster handles trees with many nodes", {
   bst <- xgboost::xgb.train(
     params = list(
       max_depth = 5,
-      objective = "reg:squarederror"
+      objective = "reg:squarederror",
+      nthread = 2
     ),
     data = dtrain,
     nrounds = 3,
@@ -285,7 +294,8 @@ test_that("as.party.xgb.Booster handles different boosting rounds", {
   bst <- xgboost::xgb.train(
     params = list(
       max_depth = 3,
-      objective = "binary:logistic"
+      objective = "binary:logistic",
+      nthread = 2
     ),
     data = dtrain,
     nrounds = 10,
@@ -319,7 +329,8 @@ test_that("as.party.xgb.Booster handles narrow trees", {
   bst <- xgboost::xgb.train(
     params = list(
       max_depth = 1,
-      objective = "binary:logistic"
+      objective = "binary:logistic",
+      nthread = 2
     ),
     data = dtrain,
     nrounds = 3,
@@ -351,7 +362,8 @@ test_that("as.party.xgb.Booster preserves column order", {
   bst <- xgboost::xgb.train(
     params = list(
       max_depth = 2,
-      objective = "reg:squarederror"
+      objective = "reg:squarederror",
+      nthread = 2
     ),
     data = dtrain,
     nrounds = 2,
@@ -385,7 +397,8 @@ test_that("as.party.xgb.Booster with large multiclass", {
     params = list(
       max_depth = 3,
       objective = "multi:softmax",
-      num_class = 5
+      num_class = 5,
+      nthread = 2
     ),
     data = dtrain,
     nrounds = 3,
@@ -416,7 +429,7 @@ test_that("as.party.xgb.Booster does not show asterisks in node summaries", {
     label = agaricus.train$label
   )
   bst <- xgboost::xgb.train(
-    params = list(max_depth = 3, objective = "binary:logistic"),
+    params = list(max_depth = 3, objective = "binary:logistic", nthread = 2),
     data = dtrain,
     nrounds = 3,
     verbose = 0
@@ -449,7 +462,8 @@ test_that("active_predictors.xgb.Booster() returns correct structure", {
   bst <- xgboost::xgb.train(
     params = list(
       max_depth = 3,
-      objective = "reg:squarederror"
+      objective = "reg:squarederror",
+      nthread = 2
     ),
     data = dtrain,
     nrounds = 3,
@@ -477,7 +491,8 @@ test_that("active_predictors.xgb.Booster() extracts from single tree", {
   bst <- xgboost::xgb.train(
     params = list(
       max_depth = 3,
-      objective = "reg:squarederror"
+      objective = "reg:squarederror",
+      nthread = 2
     ),
     data = dtrain,
     nrounds = 5,
@@ -503,7 +518,8 @@ test_that("active_predictors.xgb.Booster() extracts from multiple trees", {
   bst <- xgboost::xgb.train(
     params = list(
       max_depth = 3,
-      objective = "reg:squarederror"
+      objective = "reg:squarederror",
+      nthread = 2
     ),
     data = dtrain,
     nrounds = 5,
@@ -529,7 +545,8 @@ test_that("active_predictors.xgb.Booster() works with all trees", {
   bst <- xgboost::xgb.train(
     params = list(
       max_depth = 3,
-      objective = "reg:squarederror"
+      objective = "reg:squarederror",
+      nthread = 2
     ),
     data = dtrain,
     nrounds = 3,
@@ -555,7 +572,8 @@ test_that("active_predictors.xgb.Booster() validates tree argument", {
   bst <- xgboost::xgb.train(
     params = list(
       max_depth = 3,
-      objective = "reg:squarederror"
+      objective = "reg:squarederror",
+      nthread = 2
     ),
     data = dtrain,
     nrounds = 5,
@@ -598,7 +616,8 @@ test_that("active_predictors.xgb.Booster() handles tree with no splits", {
   bst <- xgboost::xgb.train(
     params = list(
       max_depth = 0,
-      objective = "reg:squarederror"
+      objective = "reg:squarederror",
+      nthread = 2
     ),
     data = dtrain,
     nrounds = 1,
@@ -625,7 +644,8 @@ test_that("active_predictors.xgb.Booster() returns sorted unique variables", {
   bst <- xgboost::xgb.train(
     params = list(
       max_depth = 3,
-      objective = "reg:squarederror"
+      objective = "reg:squarederror",
+      nthread = 2
     ),
     data = dtrain,
     nrounds = 3,
@@ -653,7 +673,8 @@ test_that("active_predictors.xgb.Booster() works with numeric predictors", {
   bst <- xgboost::xgb.train(
     params = list(
       max_depth = 3,
-      objective = "reg:squarederror"
+      objective = "reg:squarederror",
+      nthread = 2
     ),
     data = dtrain,
     nrounds = 3,
@@ -677,7 +698,7 @@ test_that("active_predictors.xgb.Booster() works with feature names", {
     label = agaricus.train$label
   )
   bst <- xgboost::xgb.train(
-    params = list(max_depth = 3, objective = "binary:logistic"),
+    params = list(max_depth = 3, objective = "binary:logistic", nthread = 2),
     data = dtrain,
     nrounds = 3,
     verbose = 0
@@ -705,7 +726,8 @@ test_that("var_imp.xgb.Booster() returns correct structure", {
   bst <- xgboost::xgb.train(
     params = list(
       max_depth = 3,
-      objective = "reg:squarederror"
+      objective = "reg:squarederror",
+      nthread = 2
     ),
     data = dtrain,
     nrounds = 5,
@@ -733,7 +755,8 @@ test_that("var_imp.xgb.Booster() extracts variable importance scores", {
   bst <- xgboost::xgb.train(
     params = list(
       max_depth = 3,
-      objective = "reg:squarederror"
+      objective = "reg:squarederror",
+      nthread = 2
     ),
     data = dtrain,
     nrounds = 5,
@@ -766,7 +789,8 @@ test_that("var_imp.xgb.Booster() with complete=TRUE fills missing predictors", {
   bst <- xgboost::xgb.train(
     params = list(
       max_depth = 3,
-      objective = "reg:squarederror"
+      objective = "reg:squarederror",
+      nthread = 2
     ),
     data = dtrain,
     nrounds = 5,
@@ -798,7 +822,8 @@ test_that("var_imp.xgb.Booster() with complete=FALSE returns only used predictor
   bst <- xgboost::xgb.train(
     params = list(
       max_depth = 3,
-      objective = "reg:squarederror"
+      objective = "reg:squarederror",
+      nthread = 2
     ),
     data = dtrain,
     nrounds = 5,
@@ -825,7 +850,8 @@ test_that("var_imp.xgb.Booster() works with numeric predictors only", {
   bst <- xgboost::xgb.train(
     params = list(
       max_depth = 3,
-      objective = "reg:squarederror"
+      objective = "reg:squarederror",
+      nthread = 2
     ),
     data = dtrain,
     nrounds = 5,
@@ -852,7 +878,8 @@ test_that("var_imp.xgb.Booster() importance scores match underlying object", {
   bst <- xgboost::xgb.train(
     params = list(
       max_depth = 3,
-      objective = "reg:squarederror"
+      objective = "reg:squarederror",
+      nthread = 2
     ),
     data = dtrain,
     nrounds = 5,
@@ -886,7 +913,8 @@ test_that("var_imp.xgb.Booster() works with binary classification", {
   bst <- xgboost::xgb.train(
     params = list(
       max_depth = 3,
-      objective = "binary:logistic"
+      objective = "binary:logistic",
+      nthread = 2
     ),
     data = dtrain,
     nrounds = 5,
@@ -920,7 +948,8 @@ test_that("var_imp.xgb.Booster() works with multiclass classification", {
     params = list(
       max_depth = 3,
       objective = "multi:softmax",
-      num_class = 3
+      num_class = 3,
+      nthread = 2
     ),
     data = dtrain,
     nrounds = 5,
@@ -951,7 +980,8 @@ test_that("var_imp.xgb.Booster() handles model with no valid splits", {
   bst <- xgboost::xgb.train(
     params = list(
       max_depth = 0,
-      objective = "reg:squarederror"
+      objective = "reg:squarederror",
+      nthread = 2
     ),
     data = dtrain,
     nrounds = 1,
@@ -990,7 +1020,8 @@ test_that("var_imp.xgb.Booster() handles many predictors", {
   bst <- xgboost::xgb.train(
     params = list(
       max_depth = 3,
-      objective = "reg:squarederror"
+      objective = "reg:squarederror",
+      nthread = 2
     ),
     data = dtrain,
     nrounds = 5,
@@ -1033,7 +1064,8 @@ test_that("var_imp.xgb.Booster() works with constrained trees", {
   bst <- xgboost::xgb.train(
     params = list(
       max_depth = 1,
-      objective = "reg:squarederror"
+      objective = "reg:squarederror",
+      nthread = 2
     ),
     data = dtrain,
     nrounds = 3,
@@ -1061,7 +1093,8 @@ test_that("var_imp.xgb.Booster() works with deep trees", {
   bst <- xgboost::xgb.train(
     params = list(
       max_depth = 10,
-      objective = "reg:squarederror"
+      objective = "reg:squarederror",
+      nthread = 2
     ),
     data = dtrain,
     nrounds = 5,
@@ -1086,7 +1119,7 @@ test_that("var_imp.xgb.Booster() handles agaricus data", {
   )
   set.seed(539)
   bst <- xgboost::xgb.train(
-    params = list(max_depth = 3, objective = "binary:logistic"),
+    params = list(max_depth = 3, objective = "binary:logistic", nthread = 2),
     data = dtrain,
     nrounds = 5,
     verbose = 0
@@ -1112,7 +1145,8 @@ test_that("var_imp.xgb.Booster() handles very shallow trees", {
   bst <- xgboost::xgb.train(
     params = list(
       max_depth = 1,
-      objective = "binary:logistic"
+      objective = "binary:logistic",
+      nthread = 2
     ),
     data = dtrain,
     nrounds = 5,
@@ -1138,7 +1172,8 @@ test_that("as.party.xgb.Booster works with single numeric predictor", {
   bst <- xgboost::xgb.train(
     params = list(
       max_depth = 3,
-      objective = "reg:squarederror"
+      objective = "reg:squarederror",
+      nthread = 2
     ),
     data = dtrain,
     nrounds = 3,
@@ -1163,7 +1198,8 @@ test_that("active_predictors.xgb.Booster() works with single numeric predictor",
   bst <- xgboost::xgb.train(
     params = list(
       max_depth = 3,
-      objective = "reg:squarederror"
+      objective = "reg:squarederror",
+      nthread = 2
     ),
     data = dtrain,
     nrounds = 3,
@@ -1191,7 +1227,8 @@ test_that("var_imp.xgb.Booster() works with single numeric predictor", {
   bst <- xgboost::xgb.train(
     params = list(
       max_depth = 3,
-      objective = "reg:squarederror"
+      objective = "reg:squarederror",
+      nthread = 2
     ),
     data = dtrain,
     nrounds = 3,

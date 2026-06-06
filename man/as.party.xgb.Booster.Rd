@@ -100,10 +100,13 @@ if (rlang::is_installed("xgboost")) {
   set.seed(3691)
   bst <- xgboost::xgb.train(
     data = dtrain,
-    max_depth = 3,
-    nrounds = 3,
-    objective = "binary:logistic",
-    verbose = 0
+    params = xgboost::xgb.params(
+      nrounds = 3,
+      max_depth = 3,
+      objective = "binary:logistic",
+      verbose = 0,
+      nthread = 2
+    )
   )
 
   # Convert first tree - data parameter is required
@@ -119,10 +122,13 @@ if (rlang::is_installed("xgboost")) {
   set.seed(9158)
   bst_reg <- xgboost::xgb.train(
     data = dtrain_reg,
-    max_depth = 3,
-    nrounds = 3,
-    objective = "reg:squarederror",
-    verbose = 0
+    params = xgboost::xgb.params(
+      nrounds = 3,
+      max_depth = 3,
+      objective = "reg:squarederror",
+      verbose = 0,
+      nthread = 2
+    )
   )
 
   party_tree_reg <- as.party(bst_reg, tree = 1L, data = reg_data)

@@ -7,7 +7,7 @@ test_that("extract_rules.xgb.Booster returns valid rule set", {
     label = as.numeric(data$y) - 1
   )
   bst <- xgboost::xgb.train(
-    params = list(max_depth = 3, objective = "binary:logistic"),
+    params = list(max_depth = 3, objective = "binary:logistic", nthread = 2),
     data = dtrain,
     nrounds = 3,
     verbose = 0
@@ -34,7 +34,7 @@ test_that("extract_rules.xgb.Booster validates tree parameter", {
     label = as.numeric(data$y) - 1
   )
   bst <- xgboost::xgb.train(
-    params = list(max_depth = 2, objective = "binary:logistic"),
+    params = list(max_depth = 2, objective = "binary:logistic", nthread = 2),
     data = dtrain,
     nrounds = 2,
     verbose = 0
@@ -56,7 +56,7 @@ test_that("extract_rules.xgb.Booster handles single-node trees", {
     label = data$y
   )
   bst <- xgboost::xgb.train(
-    params = list(max_depth = 0, objective = "reg:squarederror"),
+    params = list(max_depth = 0, objective = "reg:squarederror", nthread = 2),
     data = dtrain,
     nrounds = 1,
     verbose = 0
@@ -79,7 +79,7 @@ test_that("extract_rules.xgb.Booster extracts different trees", {
     label = as.numeric(data$y) - 1
   )
   bst <- xgboost::xgb.train(
-    params = list(max_depth = 3, objective = "binary:logistic"),
+    params = list(max_depth = 3, objective = "binary:logistic", nthread = 2),
     data = dtrain,
     nrounds = 5,
     verbose = 0
@@ -103,7 +103,7 @@ test_that("extract_rules.lgb.Booster returns valid rule set", {
     label = as.numeric(data$y) - 1
   )
   bst <- lightgbm::lgb.train(
-    params = list(objective = "binary", max_depth = 3),
+    params = list(objective = "binary", max_depth = 3, num_threads = 2L),
     data = dtrain,
     nrounds = 3,
     verbose = -1
@@ -130,7 +130,7 @@ test_that("extract_rules.lgb.Booster validates tree parameter", {
     label = as.numeric(data$y) - 1
   )
   bst <- lightgbm::lgb.train(
-    params = list(objective = "binary", max_depth = 2),
+    params = list(objective = "binary", max_depth = 2, num_threads = 2L),
     data = dtrain,
     nrounds = 2,
     verbose = -1
@@ -160,7 +160,8 @@ test_that("extract_rules.lgb.Booster handles shallow trees", {
     params = list(
       objective = "regression",
       max_depth = 1,
-      num_leaves = 2
+      num_leaves = 2,
+      num_threads = 2L
     ),
     data = dtrain,
     nrounds = 1,
@@ -183,7 +184,7 @@ test_that("extract_rules.lgb.Booster extracts different trees", {
     label = as.numeric(data$y) - 1
   )
   bst <- lightgbm::lgb.train(
-    params = list(objective = "binary", max_depth = 3),
+    params = list(objective = "binary", max_depth = 3, num_threads = 2L),
     data = dtrain,
     nrounds = 5,
     verbose = -1
@@ -216,7 +217,8 @@ test_that("extract_rules works with multiclass models", {
     params = list(
       max_depth = 2,
       objective = "multi:softmax",
-      num_class = 3
+      num_class = 3,
+      nthread = 2
     ),
     data = dtrain,
     nrounds = 2,
@@ -246,7 +248,7 @@ test_that("rule_text formats rules as text", {
     label = as.numeric(data$y) - 1
   )
   bst <- xgboost::xgb.train(
-    params = list(max_depth = 2, objective = "binary:logistic"),
+    params = list(max_depth = 2, objective = "binary:logistic", nthread = 2),
     data = dtrain,
     nrounds = 1,
     verbose = 0
@@ -271,7 +273,7 @@ test_that("extract_rules handles regression trees", {
     label = data$y
   )
   bst <- xgboost::xgb.train(
-    params = list(max_depth = 3, objective = "reg:squarederror"),
+    params = list(max_depth = 3, objective = "reg:squarederror", nthread = 2),
     data = dtrain,
     nrounds = 3,
     verbose = 0
@@ -293,7 +295,7 @@ test_that("extract_rules IDs are 1-based", {
     label = as.numeric(data$y) - 1
   )
   bst <- xgboost::xgb.train(
-    params = list(max_depth = 3, objective = "binary:logistic"),
+    params = list(max_depth = 3, objective = "binary:logistic", nthread = 2),
     data = dtrain,
     nrounds = 1,
     verbose = 0
@@ -316,7 +318,7 @@ test_that("extract_rules returns sorted by ID", {
     label = as.numeric(data$y) - 1
   )
   bst <- lightgbm::lgb.train(
-    params = list(objective = "binary", max_depth = 3),
+    params = list(objective = "binary", max_depth = 3, num_threads = 2L),
     data = dtrain,
     nrounds = 1,
     verbose = -1

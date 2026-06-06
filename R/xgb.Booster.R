@@ -36,9 +36,12 @@
 #'   set.seed(2847)
 #'   bst <- xgboost::xgb.train(
 #'     data = xgboost::xgb.DMatrix(agaricus.train$data, label = agaricus.train$label),
-#'     nrounds = 3,
-#'     max_depth = 3,
-#'     objective = "binary:logistic"
+#'     params = xgboost::xgb.params(
+#'       nrounds = 3,
+#'       max_depth = 3,
+#'       objective = "binary:logistic",
+#'       nthread = 2
+#'     )
 #'   )
 #'
 #' # Extract rules from first tree
@@ -52,9 +55,12 @@
 #'   set.seed(8472)
 #'   bst_reg <- xgboost::xgb.train(
 #'     data = xgboost::xgb.DMatrix(as.matrix(mtcars[, -1]), label = mtcars$mpg),
-#'     nrounds = 3,
-#'     max_depth = 3,
-#'     objective = "reg:squarederror"
+#'     params = xgboost::xgb.params(
+#'       nrounds = 3,
+#'       max_depth = 3,
+#'       objective = "reg:squarederror",
+#'       nthread = 2
+#'     )
 #'   )
 #'   rules_reg <- extract_rules(bst_reg, tree = 1L)
 #' }
@@ -278,10 +284,13 @@ xgb_get_split_info <- function(parent_id, child_id, tree_dt) {
 #'   set.seed(3691)
 #'   bst <- xgboost::xgb.train(
 #'     data = dtrain,
-#'     max_depth = 3,
-#'     nrounds = 3,
-#'     objective = "binary:logistic",
-#'     verbose = 0
+#'     params = xgboost::xgb.params(
+#'       nrounds = 3,
+#'       max_depth = 3,
+#'       objective = "binary:logistic",
+#'       verbose = 0,
+#'       nthread = 2
+#'     )
 #'   )
 #'
 #'   # Convert first tree - data parameter is required
@@ -297,10 +306,13 @@ xgb_get_split_info <- function(parent_id, child_id, tree_dt) {
 #'   set.seed(9158)
 #'   bst_reg <- xgboost::xgb.train(
 #'     data = dtrain_reg,
-#'     max_depth = 3,
-#'     nrounds = 3,
-#'     objective = "reg:squarederror",
-#'     verbose = 0
+#'     params = xgboost::xgb.params(
+#'       nrounds = 3,
+#'       max_depth = 3,
+#'       objective = "reg:squarederror",
+#'       verbose = 0,
+#'       nthread = 2
+#'     )
 #'   )
 #'
 #'   party_tree_reg <- as.party(bst_reg, tree = 1L, data = reg_data)

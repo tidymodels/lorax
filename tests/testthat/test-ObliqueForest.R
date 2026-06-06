@@ -70,7 +70,8 @@ test_that("extract_rules.ObliqueForest() rules evaluate correctly with numeric d
   reg_forest <- aorsf::orsf(
     body_mass_g ~ .,
     data = penguins_numeric,
-    n_tree = 5
+    n_tree = 5,
+    n_thread = 2
   )
   rules <- extract_rules(reg_forest, tree = 1)
 
@@ -165,7 +166,8 @@ test_that("extract_rules.ObliqueForest() works with regression forest", {
   reg_forest <- aorsf::orsf(
     body_mass_g ~ .,
     data = penguins_numeric,
-    n_tree = 5
+    n_tree = 5,
+    n_thread = 2
   )
   rules <- extract_rules(reg_forest, tree = 1)
 
@@ -207,7 +209,8 @@ test_that("extract_rules.ObliqueForest() rules match aorsf node assignments", {
     body_mass_g ~ .,
     data = penguins_numeric,
     n_tree = 1,
-    control = aorsf::orsf_control_regression(scale_x = FALSE)
+    control = aorsf::orsf_control_regression(scale_x = FALSE),
+    n_thread = 2
   )
 
   # Get leaf assignments from aorsf (0-indexed)
@@ -282,7 +285,8 @@ test_that("extract_rules.ObliqueForest() node assignments are consistent", {
     body_mass_g ~ .,
     data = penguins_numeric,
     n_tree = 1,
-    control = aorsf::orsf_control_regression(scale_x = FALSE)
+    control = aorsf::orsf_control_regression(scale_x = FALSE),
+    n_thread = 2
   )
 
   # Get leaf assignments (0-indexed)
@@ -329,7 +333,8 @@ test_that("extract_rules.ObliqueForest() handles single-node tree", {
     data = small_data,
     n_tree = 1,
     oobag_pred_type = "none",
-    split_min_stat = 100
+    split_min_stat = 100,
+    n_thread = 2
   )
 
   # Verify it's actually a single-node tree
@@ -419,7 +424,8 @@ test_that("active_predictors.ObliqueForest() collapses factor indicators", {
   wa_forest <- aorsf::orsf(
     class ~ county + elevation + roughness,
     data = wa_trees,
-    n_tree = 3
+    n_tree = 3,
+    n_thread = 2
   )
 
   result <- active_predictors(wa_forest, tree = 1L)
@@ -472,7 +478,8 @@ test_that("active_predictors.ObliqueForest() handles tree with no splits", {
     data = small_data,
     n_tree = 1,
     split_min_stat = 0.99, # Very high threshold (close to max of 1)
-    oobag_pred_type = "none"
+    oobag_pred_type = "none",
+    n_thread = 2
   )
 
   # Check if tree has no splits (root is terminal)
@@ -516,7 +523,8 @@ test_that("active_predictors.ObliqueForest() handles numeric-only predictors", {
   forest_numeric <- aorsf::orsf(
     mpg ~ cyl + disp + hp + wt,
     data = mtcars,
-    n_tree = 3
+    n_tree = 3,
+    n_thread = 2
   )
 
   result <- active_predictors(forest_numeric, tree = 1L)
@@ -596,7 +604,8 @@ test_that("var_imp.ObliqueForest() with complete=TRUE fills missing predictors",
     y ~ predictor_01 + predictor_02 + predictor_03 + x4,
     data = data,
     n_tree = 10,
-    oobag_pred_type = "none"
+    oobag_pred_type = "none",
+    n_thread = 2
   )
 
   result <- var_imp(forest, complete = TRUE)
@@ -622,7 +631,8 @@ test_that("var_imp.ObliqueForest() with complete=FALSE returns only used predict
     y ~ predictor_01 + predictor_02 + predictor_03,
     data = data,
     n_tree = 10,
-    oobag_pred_type = "none"
+    oobag_pred_type = "none",
+    n_thread = 2
   )
 
   result <- var_imp(forest, complete = FALSE)
@@ -642,7 +652,8 @@ test_that("var_imp.ObliqueForest() works with numeric predictors only", {
     mpg ~ cyl + disp + hp + wt,
     data = mtcars,
     n_tree = 10,
-    oobag_pred_type = "none"
+    oobag_pred_type = "none",
+    n_thread = 2
   )
   result <- var_imp(forest, complete = TRUE)
 
@@ -661,7 +672,8 @@ test_that("var_imp.ObliqueForest() works with factor predictors", {
     county ~ class + elevation + roughness,
     data = wa_trees,
     n_tree = 10,
-    oobag_pred_type = "none"
+    oobag_pred_type = "none",
+    n_thread = 2
   )
   result <- var_imp(forest, complete = TRUE)
 
@@ -680,7 +692,8 @@ test_that("var_imp.ObliqueForest() works with mixed numeric and factor predictor
     elevation ~ class + county + roughness + dew_temp,
     data = wa_trees,
     n_tree = 10,
-    oobag_pred_type = "none"
+    oobag_pred_type = "none",
+    n_thread = 2
   )
   result <- var_imp(forest, complete = TRUE)
 
@@ -706,7 +719,8 @@ test_that("var_imp.ObliqueForest() handles forest with constrained splits", {
     data = small_data,
     n_tree = 5,
     oobag_pred_type = "none",
-    leaf_min_obs = 30
+    leaf_min_obs = 30,
+    n_thread = 2
   )
 
   result <- var_imp(forest, complete = TRUE)
@@ -756,7 +770,8 @@ test_that("var_imp.ObliqueForest() works with regression forest", {
     mpg ~ cyl + disp + hp,
     data = mtcars,
     n_tree = 10,
-    oobag_pred_type = "none"
+    oobag_pred_type = "none",
+    n_thread = 2
   )
   result <- var_imp(forest)
 
@@ -779,7 +794,8 @@ test_that("var_imp.ObliqueForest() handles many predictors", {
     y ~ .,
     data = X,
     n_tree = 10,
-    oobag_pred_type = "none"
+    oobag_pred_type = "none",
+    n_thread = 2
   )
   result <- var_imp(forest)
 
@@ -797,7 +813,8 @@ test_that("var_imp.ObliqueForest() works with single tree forest", {
     y ~ predictor_01 + predictor_02 + predictor_03,
     data = data,
     n_tree = 1,
-    oobag_pred_type = "none"
+    oobag_pred_type = "none",
+    n_thread = 2
   )
   result <- var_imp(forest)
 
@@ -822,7 +839,8 @@ test_that("var_imp.ObliqueForest() handles forest with no valid splits gracefull
     data = difficult_data,
     n_tree = 1,
     oobag_pred_type = "none",
-    split_min_stat = 100 # Very high threshold makes splits unlikely
+    split_min_stat = 100, # Very high threshold makes splits unlikely
+    n_thread = 2
   )
 
   result <- var_imp(forest, complete = TRUE)
@@ -845,7 +863,8 @@ test_that("var_imp.ObliqueForest() with scaled predictors", {
     data = data,
     n_tree = 10,
     oobag_pred_type = "none",
-    control = aorsf::orsf_control_regression(scale_x = TRUE)
+    control = aorsf::orsf_control_regression(scale_x = TRUE),
+    n_thread = 2
   )
   result_scaled <- var_imp(forest_scaled)
 
@@ -865,7 +884,8 @@ test_that("var_imp.ObliqueForest() with unscaled predictors", {
     data = data,
     n_tree = 10,
     oobag_pred_type = "none",
-    control = aorsf::orsf_control_regression(scale_x = FALSE)
+    control = aorsf::orsf_control_regression(scale_x = FALSE),
+    n_thread = 2
   )
   result_unscaled <- var_imp(forest_unscaled)
 
@@ -879,7 +899,7 @@ test_that("extract_rules.ObliqueForest() works with single numeric predictor", {
 
   data <- get_single_numeric_data()
   set.seed(487)
-  model <- aorsf::orsf(y ~ x, data = data, n_tree = 5)
+  model <- aorsf::orsf(y ~ x, data = data, n_tree = 5, n_thread = 2)
   rules <- extract_rules(model, tree = 1)
 
   expect_s3_class(rules, "rule_set")
@@ -896,7 +916,7 @@ test_that("extract_rules.ObliqueForest() works with single factor predictor", {
 
   data <- get_single_factor_data()
   set.seed(127)
-  model <- aorsf::orsf(y ~ x, data = data, n_tree = 5)
+  model <- aorsf::orsf(y ~ x, data = data, n_tree = 5, n_thread = 2)
   rules <- extract_rules(model, tree = 1)
 
   expect_s3_class(rules, "rule_set")
@@ -913,7 +933,7 @@ test_that("active_predictors.ObliqueForest() works with single numeric predictor
 
   data <- get_single_numeric_data()
   set.seed(298)
-  model <- aorsf::orsf(y ~ x, data = data, n_tree = 5)
+  model <- aorsf::orsf(y ~ x, data = data, n_tree = 5, n_thread = 2)
   active <- active_predictors(model)
 
   expect_s3_class(active, "tbl_df")
@@ -928,7 +948,7 @@ test_that("active_predictors.ObliqueForest() works with single factor predictor"
 
   data <- get_single_factor_data()
   set.seed(413)
-  model <- aorsf::orsf(y ~ x, data = data, n_tree = 5)
+  model <- aorsf::orsf(y ~ x, data = data, n_tree = 5, n_thread = 2)
   active <- active_predictors(model)
 
   expect_s3_class(active, "tbl_df")
@@ -943,7 +963,7 @@ test_that("var_imp.ObliqueForest() works with single numeric predictor", {
 
   data <- get_single_numeric_data()
   set.seed(564)
-  model <- aorsf::orsf(y ~ x, data = data, n_tree = 5)
+  model <- aorsf::orsf(y ~ x, data = data, n_tree = 5, n_thread = 2)
   importance <- var_imp(model)
 
   expect_s3_class(importance, "tbl_df")
@@ -956,7 +976,7 @@ test_that("var_imp.ObliqueForest() works with single factor predictor", {
 
   data <- get_single_factor_data()
   set.seed(685)
-  model <- aorsf::orsf(y ~ x, data = data, n_tree = 5)
+  model <- aorsf::orsf(y ~ x, data = data, n_tree = 5, n_thread = 2)
   importance <- var_imp(model)
 
   expect_s3_class(importance, "tbl_df")

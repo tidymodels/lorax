@@ -12,7 +12,8 @@ test_that("as.party.regression_forest returns valid party object", {
       "body_mass_g"
     )]),
     Y = penguins$bill_length_mm,
-    num.trees = 5
+    num.trees = 5,
+    num.threads = 2
   )
   p <- as.party(rf, tree = 1)
 
@@ -29,7 +30,8 @@ test_that("as.party.regression_forest works with simple data", {
   rf <- grf::regression_forest(
     X = as.matrix(data[, c("predictor_01", "predictor_02", "predictor_03")]),
     Y = data$y,
-    num.trees = 5
+    num.trees = 5,
+    num.threads = 2
   )
   p <- as.party(rf, tree = 1)
 
@@ -51,7 +53,8 @@ test_that("as.party.grf validates tree parameter", {
       "body_mass_g"
     )]),
     Y = penguins$bill_length_mm,
-    num.trees = 5
+    num.trees = 5,
+    num.threads = 2
   )
 
   expect_snapshot(as.party(rf, tree = 0), error = TRUE)
@@ -74,7 +77,8 @@ test_that("as.party.grf works with data parameter", {
       "body_mass_g"
     )]),
     Y = penguins$bill_length_mm,
-    num.trees = 5
+    num.trees = 5,
+    num.threads = 2
   )
   p <- as.party(
     rf,
@@ -105,7 +109,8 @@ test_that("as.party.grf method works", {
       "body_mass_g"
     )]),
     Y = penguins$bill_length_mm,
-    num.trees = 5
+    num.trees = 5,
+    num.threads = 2
   )
   class(rf) <- c("grf", class(rf))
   p <- as.party(rf, tree = 1)
@@ -127,7 +132,8 @@ test_that("as.party.regression_forest extracts different trees", {
       "body_mass_g"
     )]),
     Y = penguins$bill_length_mm,
-    num.trees = 10
+    num.trees = 10,
+    num.threads = 2
   )
 
   p1 <- as.party(rf, tree = 1)
@@ -158,7 +164,8 @@ test_that("as.party.grf does not show asterisks in node summaries", {
       "body_mass_g"
     )]),
     Y = penguins$bill_length_mm,
-    num.trees = 5
+    num.trees = 5,
+    num.threads = 2
   )
 
   p <- as.party(rf, tree = 1)
@@ -181,7 +188,8 @@ test_that("var_imp.grf() returns correct structure", {
   forest <- grf::regression_forest(
     X = as.matrix(data[, c("predictor_01", "predictor_02", "predictor_03")]),
     Y = data$y,
-    num.trees = 50
+    num.trees = 50,
+    num.threads = 2
   )
   result <- var_imp(forest)
 
@@ -198,7 +206,8 @@ test_that("var_imp.grf() extracts variable importance scores", {
   forest <- grf::regression_forest(
     X = as.matrix(data[, c("predictor_01", "predictor_02", "predictor_03")]),
     Y = data$y,
-    num.trees = 50
+    num.trees = 50,
+    num.threads = 2
   )
   result <- var_imp(forest)
 
@@ -224,7 +233,8 @@ test_that("var_imp.grf() with complete=TRUE includes all predictors", {
   forest <- grf::regression_forest(
     X = as.matrix(data[, c("predictor_01", "predictor_02", "predictor_03")]),
     Y = data$y,
-    num.trees = 50
+    num.trees = 50,
+    num.threads = 2
   )
   result <- var_imp(forest, complete = TRUE)
 
@@ -244,7 +254,8 @@ test_that("var_imp.grf() with complete=FALSE matches complete=TRUE for grf", {
   forest <- grf::regression_forest(
     X = as.matrix(data[, c("predictor_01", "predictor_02", "predictor_03")]),
     Y = data$y,
-    num.trees = 50
+    num.trees = 50,
+    num.threads = 2
   )
 
   result_complete <- var_imp(forest, complete = TRUE)
@@ -262,7 +273,8 @@ test_that("var_imp.grf() works with numeric predictors", {
   forest <- grf::regression_forest(
     X = as.matrix(mtcars[, c("cyl", "disp", "hp", "wt")]),
     Y = mtcars$mpg,
-    num.trees = 50
+    num.trees = 50,
+    num.threads = 2
   )
   result <- var_imp(forest)
 
@@ -281,7 +293,8 @@ test_that("var_imp.grf() passes additional arguments to variable_importance", {
   forest <- grf::regression_forest(
     X = as.matrix(data[, c("predictor_01", "predictor_02", "predictor_03")]),
     Y = data$y,
-    num.trees = 50
+    num.trees = 50,
+    num.threads = 2
   )
 
   # Test that we can pass decay.exponent argument
@@ -299,7 +312,8 @@ test_that("var_imp.grf() importance scores match grf::variable_importance", {
   forest <- grf::regression_forest(
     X = as.matrix(data[, c("predictor_01", "predictor_02", "predictor_03")]),
     Y = data$y,
-    num.trees = 50
+    num.trees = 50,
+    num.threads = 2
   )
   result <- var_imp(forest, complete = FALSE)
 
@@ -321,7 +335,8 @@ test_that("var_imp.grf() works with regression_forest", {
   forest <- grf::regression_forest(
     X = as.matrix(data[, c("predictor_01", "predictor_02", "predictor_03")]),
     Y = data$y,
-    num.trees = 50
+    num.trees = 50,
+    num.threads = 2
   )
   result <- var_imp(forest)
 
@@ -339,7 +354,8 @@ test_that("var_imp.grf() works with causal_forest", {
     X = as.matrix(data[, c("predictor_01", "predictor_02", "predictor_03")]),
     Y = data$y,
     W = data$w,
-    num.trees = 50
+    num.trees = 50,
+    num.threads = 2
   )
   result <- var_imp(forest)
 
@@ -361,7 +377,8 @@ test_that("var_imp.grf() handles forest with named predictors", {
   forest <- grf::regression_forest(
     X = X,
     Y = data$y,
-    num.trees = 50
+    num.trees = 50,
+    num.threads = 2
   )
   result <- var_imp(forest)
 
@@ -382,7 +399,8 @@ test_that("var_imp.grf() handles forest with many predictors", {
   forest <- grf::regression_forest(
     X = X,
     Y = y,
-    num.trees = 50
+    num.trees = 50,
+    num.threads = 2
   )
   result <- var_imp(forest)
 
@@ -399,7 +417,8 @@ test_that("var_imp.grf() with max.depth argument", {
   forest <- grf::regression_forest(
     X = as.matrix(data[, c("predictor_01", "predictor_02", "predictor_03")]),
     Y = data$y,
-    num.trees = 50
+    num.trees = 50,
+    num.threads = 2
   )
 
   # Test with max.depth parameter for variable_importance
@@ -418,7 +437,8 @@ test_that("var_imp.grf() works with single numeric predictor", {
   model <- grf::regression_forest(
     X = as.matrix(data[, "x", drop = FALSE]),
     Y = as.numeric(data$y),
-    num.trees = 5
+    num.trees = 5,
+    num.threads = 2
   )
 
   importance <- var_imp(model)
@@ -440,7 +460,8 @@ test_that("extract_rules.grf() returns correct structure", {
   rf <- grf::regression_forest(
     X = as.matrix(data[, c("predictor_01", "predictor_02", "predictor_03")]),
     Y = data$y,
-    num.trees = 3
+    num.trees = 3,
+    num.threads = 2
   )
   rules <- extract_rules(rf, tree = 1L)
 
@@ -461,7 +482,8 @@ test_that("extract_rules.grf() extracts from single tree", {
   rf <- grf::regression_forest(
     X = as.matrix(data[, c("predictor_01", "predictor_02", "predictor_03")]),
     Y = data$y,
-    num.trees = 3
+    num.trees = 3,
+    num.threads = 2
   )
   rules <- extract_rules(rf, tree = 1L)
 
@@ -482,7 +504,8 @@ test_that("extract_rules.grf() extracts from multiple trees", {
   rf <- grf::regression_forest(
     X = as.matrix(data[, c("predictor_01", "predictor_02", "predictor_03")]),
     Y = data$y,
-    num.trees = 3
+    num.trees = 3,
+    num.threads = 2
   )
   rules <- extract_rules(rf, tree = c(1L, 2L, 3L))
 
@@ -504,7 +527,8 @@ test_that("extract_rules.grf() validates tree argument", {
   rf <- grf::regression_forest(
     X = as.matrix(data[, c("predictor_01", "predictor_02", "predictor_03")]),
     Y = data$y,
-    num.trees = 3
+    num.trees = 3,
+    num.threads = 2
   )
 
   expect_snapshot(extract_rules(rf, tree = "1"), error = TRUE)
@@ -521,7 +545,8 @@ test_that("extract_rules.grf() works with numeric predictors", {
   rf <- grf::regression_forest(
     X = as.matrix(data[, c("predictor_01", "predictor_02")]),
     Y = data$y,
-    num.trees = 3
+    num.trees = 3,
+    num.threads = 2
   )
   rules <- extract_rules(rf, tree = 1L)
 
@@ -537,7 +562,8 @@ test_that("extract_rules.grf() rules are sorted by tree then id", {
   rf <- grf::regression_forest(
     X = as.matrix(data[, c("predictor_01", "predictor_02", "predictor_03")]),
     Y = data$y,
-    num.trees = 3
+    num.trees = 3,
+    num.threads = 2
   )
   rules <- extract_rules(rf, tree = c(2L, 1L, 3L))
 
@@ -559,7 +585,8 @@ test_that("extract_rules.grf() handles duplicate tree numbers", {
   rf <- grf::regression_forest(
     X = as.matrix(data[, c("predictor_01", "predictor_02", "predictor_03")]),
     Y = data$y,
-    num.trees = 3
+    num.trees = 3,
+    num.threads = 2
   )
   rules <- extract_rules(rf, tree = c(1L, 1L, 2L))
 
@@ -576,7 +603,8 @@ test_that("extract_rules.grf() works with all trees", {
   rf <- grf::regression_forest(
     X = as.matrix(data[, c("predictor_01", "predictor_02", "predictor_03")]),
     Y = data$y,
-    num.trees = 3
+    num.trees = 3,
+    num.threads = 2
   )
   n_trees <- 3
   rules <- extract_rules(rf, tree = 1:n_trees)
@@ -599,7 +627,8 @@ test_that("extract_rules.grf() handles tree with no valid splits", {
     X = as.matrix(null_data[, c("x1", "x2")]),
     Y = null_data$y,
     num.trees = 2,
-    min.node.size = 5
+    min.node.size = 5,
+    num.threads = 2
   )
   rules <- extract_rules(rf, tree = 1L)
 
@@ -617,7 +646,8 @@ test_that("extract_rules.grf() works with causal_forest", {
     X = as.matrix(data[, c("predictor_01", "predictor_02", "predictor_03")]),
     Y = data$y,
     W = rbinom(100, 1, 0.5),
-    num.trees = 3
+    num.trees = 3,
+    num.threads = 2
   )
   rules <- extract_rules(cf, tree = 1L)
 
@@ -633,7 +663,8 @@ test_that("extract_rules.grf() works with single numeric predictor", {
   model <- grf::regression_forest(
     X = as.matrix(data[, "x", drop = FALSE]),
     Y = as.numeric(data$y),
-    num.trees = 5
+    num.trees = 5,
+    num.threads = 2
   )
 
   rules <- extract_rules(model, tree = 1L)
@@ -665,7 +696,8 @@ test_that("active_predictors.regression_forest() returns correct structure", {
       "body_mass_g"
     )]),
     Y = penguins$bill_length_mm,
-    num.trees = 5
+    num.trees = 5,
+    num.threads = 2
   )
 
   result <- active_predictors(rf)
@@ -691,7 +723,8 @@ test_that("active_predictors.regression_forest() extracts from single tree", {
       "body_mass_g"
     )]),
     Y = penguins$bill_length_mm,
-    num.trees = 5
+    num.trees = 5,
+    num.threads = 2
   )
 
   result <- active_predictors(rf, tree = 1L)
@@ -715,7 +748,8 @@ test_that("active_predictors.regression_forest() extracts from multiple trees", 
       "body_mass_g"
     )]),
     Y = penguins$bill_length_mm,
-    num.trees = 5
+    num.trees = 5,
+    num.threads = 2
   )
 
   result <- active_predictors(rf, tree = c(1L, 2L, 3L))
@@ -739,7 +773,8 @@ test_that("active_predictors.regression_forest() works with all trees", {
       "body_mass_g"
     )]),
     Y = penguins$bill_length_mm,
-    num.trees = 3
+    num.trees = 3,
+    num.threads = 2
   )
 
   result <- active_predictors(rf, tree = 1:3)
@@ -763,7 +798,8 @@ test_that("active_predictors.regression_forest() validates tree argument", {
       "body_mass_g"
     )]),
     Y = penguins$bill_length_mm,
-    num.trees = 5
+    num.trees = 5,
+    num.threads = 2
   )
 
   expect_snapshot(
@@ -797,7 +833,8 @@ test_that("active_predictors.regression_forest() handles tree with no splits", {
     X = as.matrix(small_data[, "x", drop = FALSE]),
     Y = small_data$y,
     num.trees = 1,
-    min.node.size = 100
+    min.node.size = 100,
+    num.threads = 2
   )
 
   result <- active_predictors(no_split_forest, tree = 1L)
@@ -823,7 +860,8 @@ test_that("active_predictors.regression_forest() returns sorted unique variables
       "body_mass_g"
     )]),
     Y = penguins$bill_length_mm,
-    num.trees = 5
+    num.trees = 5,
+    num.threads = 2
   )
 
   result <- active_predictors(rf, tree = 1L)
@@ -843,7 +881,8 @@ test_that("active_predictors.regression_forest() works with numeric predictors",
   rf <- grf::regression_forest(
     X = as.matrix(mtcars[, c("cyl", "disp", "hp", "wt")]),
     Y = mtcars$mpg,
-    num.trees = 3
+    num.trees = 3,
+    num.threads = 2
   )
 
   result <- active_predictors(rf, tree = 1L)
@@ -867,7 +906,8 @@ test_that("active_predictors.grf() method works", {
       "body_mass_g"
     )]),
     Y = penguins$bill_length_mm,
-    num.trees = 5
+    num.trees = 5,
+    num.threads = 2
   )
 
   # Add grf class
@@ -888,7 +928,8 @@ test_that("active_predictors.grf() works with single numeric predictor", {
   model <- grf::regression_forest(
     X = as.matrix(data[, "x", drop = FALSE]),
     Y = as.numeric(data$y),
-    num.trees = 5
+    num.trees = 5,
+    num.threads = 2
   )
 
   active <- active_predictors(model)
