@@ -31,7 +31,7 @@
 
 \method{var_imp}{rpart}(object, complete = TRUE, ...)
 
-\method{var_imp}{xgb.Booster}(object, complete = TRUE, feature_names = NULL, ...)
+\method{var_imp}{xgb.Booster}(object, complete = TRUE, feature_names = NULL, nthread = NULL, ...)
 }
 \arguments{
 \item{object}{A model object.}
@@ -52,6 +52,10 @@ MeanDecreaseGini), \code{"accuracy"} (uses MeanDecreaseAccuracy), or a class
 name. For regression forests, options are \code{"mse"} (default, uses
 IncNodePurity) or \code{"permutation"} (uses \%IncMSE). If \code{NULL}, uses the
 default for the forest type.}
+
+\item{nthread}{Integer number of threads to use when reading the tree
+structure out of the model. The default (\code{NULL}) inherits the \code{nthread}
+the booster was trained with.}
 }
 \value{
 A tibble with columns \code{term} and \code{estimate}.

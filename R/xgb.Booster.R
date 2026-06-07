@@ -9,6 +9,9 @@
 #'   1-based indexing (default is `1L`). For multiclass models with `num_class`
 #'   classes and `nrounds` boosting rounds, there are `num_class * nrounds`
 #'   total trees.
+#' @param nthread Integer number of threads to use when reading the tree
+#'   structure out of the model. The default (`NULL`) inherits the `nthread`
+#'   the booster was trained with.
 #' @param ... Not currently used.
 #'
 #' @return A tibble with class `c("rule_set_xgb.Booster", "rule_set")` and
@@ -32,41 +35,50 @@
 #' if (rlang::is_installed("xgboost")) {
 #'   data(agaricus.train, package = "xgboost")
 #'
-#'   # Binary classification
+#'   # Binary classification on a small subset for a fast example.
+#'   rows <- seq_len(200)
 #'   set.seed(2847)
 #'   bst <- xgboost::xgb.train(
-#'     data = xgboost::xgb.DMatrix(agaricus.train$data, label = agaricus.train$label),
+#'     data = xgboost::xgb.DMatrix(
+#'       agaricus.train$data[rows, ],
+#'       label = agaricus.train$label[rows],
+#'       nthread = 1
+#'     ),
 #'     nrounds = 3,
 #'     params = xgboost::xgb.params(
 #'       max_depth = 3,
 #'       objective = "binary:logistic",
-#'       nthread = 2
+#'       nthread = 1
 #'     )
 #'   )
 #'
-#' # Extract rules from first tree
-#' rules <- extract_rules(bst, tree = 1L)
+#'   # Extract rules from first tree
+#'   rules <- extract_rules(bst, tree = 1L)
 #'
-#' # View as text
-#' rule_text(rules$rules[[1]])
+#'   # View as text
+#'   rule_text(rules$rules[[1]])
 #'
 #'   # Regression example
 #'   data(mtcars)
 #'   set.seed(8472)
 #'   bst_reg <- xgboost::xgb.train(
-#'     data = xgboost::xgb.DMatrix(as.matrix(mtcars[, -1]), label = mtcars$mpg),
+#'     data = xgboost::xgb.DMatrix(
+#'       as.matrix(mtcars[, -1]),
+#'       label = mtcars$mpg,
+#'       nthread = 1
+#'     ),
 #'     nrounds = 3,
 #'     params = xgboost::xgb.params(
 #'       max_depth = 3,
 #'       objective = "reg:squarederror",
-#'       nthread = 2
+#'       nthread = 1
 #'     )
 #'   )
 #'   rules_reg <- extract_rules(bst_reg, tree = 1L)
 #' }
 #'
 #' @export
-extract_rules.xgb.Booster <- function(x, tree = 1L, ...) {
+extract_rules.xgb.Booster <- function(x, tree = 1L, nthread = NULL, ...) {
   rlang::check_installed("xgboost")
   # Validate tree parameter
   if (!is.numeric(tree) || length(tree) != 1 || tree != as.integer(tree)) {
@@ -81,6 +93,8 @@ extract_rules.xgb.Booster <- function(x, tree = 1L, ...) {
       "{.arg tree} must be >= 1, not {tree}."
     )
   }
+
+  x <- xgb_apply_nthread(x, nthread)
 
   # Get tree structure
   # Note: trees parameter uses 1-based indexing (R convention)
@@ -130,6 +144,16 @@ extract_rules.xgb.Booster <- function(x, tree = 1L, ...) {
   ) |>
     dplyr::arrange(id) |>
     tibble::new_tibble(class = c("rule_set_xgb.Booster", "rule_set"))
+}
+
+# Internal helper: override the booster's nthread setting in place. A `NULL`
+# value leaves the model alone, so downstream xgboost calls reuse whatever the
+# booster was trained with.
+xgb_apply_nthread <- function(model, nthread) {
+  if (!is.null(nthread)) {
+    xgboost::xgb.model.parameters(model) <- list(nthread = nthread)
+  }
+  model
 }
 
 # Internal helper: extract rule for a single terminal node
@@ -219,6 +243,9 @@ xgb_get_split_info <- function(parent_id, child_id, tree_dt) {
 #'   variable included** (required). XGBoost models do not store the original
 #'   training data or response values. You must provide the original data frame
 #'   that includes both the predictor variables and the response variable.
+#' @param nthread Integer number of threads to use when reading the tree
+#'   structure out of the model. The default (`NULL`) inherits the `nthread`
+#'   the booster was trained with.
 #' @param ... Not currently used.
 #'
 #' @return A `constparty` object from the \pkg{partykit} package.
@@ -275,11 +302,16 @@ xgb_get_split_info <- function(parent_id, child_id, tree_dt) {
 #' if (rlang::is_installed("xgboost")) {
 #'   data(agaricus.train, package = "xgboost")
 #'
-#'   # Binary classification example
-#'   train_data <- as.data.frame(as.matrix(agaricus.train$data))
-#'   train_data$label <- agaricus.train$label
+#'   # Binary classification example, on a small subset for a fast example.
+#'   rows <- seq_len(200)
+#'   train_data <- as.data.frame(as.matrix(agaricus.train$data[rows, ]))
+#'   train_data$label <- agaricus.train$label[rows]
 #'
-#'   dtrain <- xgboost::xgb.DMatrix(agaricus.train$data, label = agaricus.train$label)
+#'   dtrain <- xgboost::xgb.DMatrix(
+#'     agaricus.train$data[rows, ],
+#'     label = agaricus.train$label[rows],
+#'     nthread = 1
+#'   )
 #'
 #'   set.seed(3691)
 #'   bst <- xgboost::xgb.train(
@@ -289,7 +321,7 @@ xgb_get_split_info <- function(parent_id, child_id, tree_dt) {
 #'     params = xgboost::xgb.params(
 #'       max_depth = 3,
 #'       objective = "binary:logistic",
-#'       nthread = 2
+#'       nthread = 1
 #'     )
 #'   )
 #'
@@ -301,7 +333,11 @@ xgb_get_split_info <- function(parent_id, child_id, tree_dt) {
 #'   # Regression example
 #'   data(mtcars)
 #'   reg_data <- mtcars
-#'   dtrain_reg <- xgboost::xgb.DMatrix(as.matrix(mtcars[, -1]), label = mtcars$mpg)
+#'   dtrain_reg <- xgboost::xgb.DMatrix(
+#'     as.matrix(mtcars[, -1]),
+#'     label = mtcars$mpg,
+#'     nthread = 1
+#'   )
 #'
 #'   set.seed(9158)
 #'   bst_reg <- xgboost::xgb.train(
@@ -311,7 +347,7 @@ xgb_get_split_info <- function(parent_id, child_id, tree_dt) {
 #'     params = xgboost::xgb.params(
 #'       max_depth = 3,
 #'       objective = "reg:squarederror",
-#'       nthread = 2
+#'       nthread = 1
 #'     )
 #'   )
 #'
@@ -320,7 +356,7 @@ xgb_get_split_info <- function(parent_id, child_id, tree_dt) {
 #' }
 #'
 #' @export
-as.party.xgb.Booster <- function(obj, tree = 1L, data, ...) {
+as.party.xgb.Booster <- function(obj, tree = 1L, data, nthread = NULL, ...) {
   rlang::check_installed("xgboost")
   # Validate tree parameter
   if (!is.numeric(tree) || length(tree) != 1 || tree != as.integer(tree)) {
@@ -335,6 +371,8 @@ as.party.xgb.Booster <- function(obj, tree = 1L, data, ...) {
       "{.arg tree} must be >= 1, not {tree}."
     )
   }
+
+  obj <- xgb_apply_nthread(obj, nthread)
 
   # Extract all trees using xgboost API
   # This returns a data.table/data.frame with all trees
@@ -564,13 +602,18 @@ xgb_build_partynode <- function(node_id, tree_df, var_names) {
 #'   store unused feature names, so this parameter allows you to specify the
 #'   complete feature set. If `NULL` (default), only features that appear in
 #'   at least one tree will be included.
+#' @param nthread Integer number of threads to use when reading the tree
+#'   structure out of the model. The default (`NULL`) inherits the `nthread`
+#'   the booster was trained with.
 var_imp.xgb.Booster <- function(
   object,
   complete = TRUE,
   feature_names = NULL,
+  nthread = NULL,
   ...
 ) {
   rlang::check_installed("xgboost")
+  object <- xgb_apply_nthread(object, nthread)
 
   # Try to get variable importance using xgboost's function
   # This returns a data.table with Feature, Gain, Cover, Frequency columns
@@ -624,8 +667,11 @@ var_imp.xgb.Booster <- function(
 }
 
 #' @rdname active_predictors
+#' @param nthread Integer number of threads to use when reading the tree
+#'   structure out of an \pkg{xgboost} model. The default (`NULL`) inherits
+#'   the `nthread` the booster was trained with.
 #' @export
-active_predictors.xgb.Booster <- function(x, tree = 1L, ...) {
+active_predictors.xgb.Booster <- function(x, tree = 1L, nthread = NULL, ...) {
   rlang::check_installed("xgboost")
 
   # Validate tree argument
@@ -637,6 +683,8 @@ active_predictors.xgb.Booster <- function(x, tree = 1L, ...) {
   }
 
   tree <- as.integer(tree)
+
+  x <- xgb_apply_nthread(x, nthread)
 
   # Get all trees to determine number
   tree_dt <- xgboost::xgb.model.dt.tree(x, use_int_id = TRUE)

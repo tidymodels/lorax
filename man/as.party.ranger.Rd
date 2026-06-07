@@ -73,7 +73,7 @@ if (rlang::is_installed(c("ranger", "palmerpenguins"))) {
 
   set.seed(2847)
   rf <- ranger::ranger(
-    species ~ ., data = penguins, num.trees = 3, num.threads = 2
+    species ~ ., data = penguins, num.trees = 3, num.threads = 1
   )
 
   # Convert first tree
@@ -88,7 +88,7 @@ if (rlang::is_installed(c("ranger", "palmerpenguins"))) {
   data(mtcars)
   set.seed(5193)
   rf_reg <- ranger::ranger(
-    mpg ~ ., data = mtcars, num.trees = 3, num.threads = 2
+    mpg ~ ., data = mtcars, num.trees = 3, num.threads = 1
   )
   party_tree_reg <- as.party(rf_reg, tree = 1L, data = mtcars)
   print(party_tree_reg)
