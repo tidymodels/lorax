@@ -1,3 +1,5 @@
+skip_on_cran()
+
 test_that("as.party.ranger returns valid party object", {
   skip_if_not_installed("ranger")
   skip_if_not_installed("palmerpenguins")

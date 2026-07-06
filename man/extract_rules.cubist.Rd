@@ -47,7 +47,8 @@ The expressions use standard R operators:
 }
 }
 \examples{
-\dontrun{
+\donttest{
+if (rlang::is_installed("Cubist")) {
 library(Cubist)
 library(lorax)
 
@@ -71,6 +72,7 @@ rules_all <- extract_rules(mod, committee = 1:3)
 
 # Convert to readable text
 rule_text(rules$rules[[1]])
+}
 }
 
 }

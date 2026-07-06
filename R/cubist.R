@@ -31,7 +31,8 @@
 #' - Missing values: `is.na()`
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
+#' if (rlang::is_installed("Cubist")) {
 #' library(Cubist)
 #' library(lorax)
 #'
@@ -55,6 +56,7 @@
 #'
 #' # Convert to readable text
 #' rule_text(rules$rules[[1]])
+#' }
 #' }
 #'
 #' @seealso [rules::tidy.cubist()] for extracting rules as text strings
