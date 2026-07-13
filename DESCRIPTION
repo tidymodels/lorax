@@ -14,6 +14,8 @@ Description: Provides a unified interface for extracting information from
     including 'rpart', 'ranger', 'randomForest', 'xgboost', 'lightgbm', 'C50',
     'Cubist', 'bart', and 'grf'.
 License: MIT + file LICENSE
+URL: https://github.com/tidymodels/lorax, https://lorax.tidymodels.org/
+BugReports: https://github.com/tidymodels/lorax/issues
 Depends: 
     R (>= 4.1.0)
 Imports: 
@@ -41,6 +43,7 @@ Suggests:
     testthat (>= 3.0.0),
     tidyr,
     xgboost
+Config/Needs/website: tidyverse/tidytemplate, ranger, palmerpenguins, tidyr
 Config/testthat/edition: 3
 Encoding: UTF-8
 Language: en-US
