@@ -2,6 +2,7 @@ CMD
 Codecov
 GRF
 Gini
+Hothorn
 IncMSE
 IncNodePurity
 LightGBM
@@ -11,7 +12,9 @@ Multiway
 ORCID
 ObliqueForest
 PBC
+ROR
 XGBoost
+Zeileis
 aorsf
 bart
 categoricals

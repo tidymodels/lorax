@@ -1,13 +1,13 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# lorax
+# lorax <a href="https://lorax.tidymodels.org/"><img src="man/figures/logo.png" align="right" height="138" alt="lorax website" /></a>
 
 <!-- badges: start -->
 
-[![R-CMD-check](https://github.com/topepo/lorax/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/topepo/lorax/actions/workflows/R-CMD-check.yaml)
+[![R-CMD-check](https://github.com/tidymodels/lorax/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/tidymodels/lorax/actions/workflows/R-CMD-check.yaml)
 [![Codecov test
-coverage](https://codecov.io/gh/topepo/lorax/graph/badge.svg)](https://app.codecov.io/gh/topepo/lorax)
+coverage](https://codecov.io/gh/tidymodels/lorax/graph/badge.svg)](https://app.codecov.io/gh/tidymodels/lorax)
 <!-- badges: end -->
 
 The goal of lorax is to help look at different aspects of tree- and
@@ -32,6 +32,7 @@ Here is a list of which classes have which methods:
 | bart          | n/a     | ✔                 | ✔        | ✔             |
 | C5.0          | n/a     | ✔                 | ✔        | ✔             |
 | cforest       | ✔       | ✔                 | n/a      | ✔             |
+| cubist        | ✖       | ✔                 | ✖        | ✔             |
 | grf           | ✔       | ✔                 | ✔        | ✔             |
 | lgb.Booster   | ✔       | ✔                 | ✔        | ✔             |
 | ObliqueForest | ✔       | ✔                 | ✖        | ✔             |
@@ -46,11 +47,16 @@ is made out of party objects.
 
 ## Installation
 
-You can install the development version of lorax like so:
+You can install the released version of lorax from CRAN:
 
 ``` r
-require(pak)
-pak::pak("topepo/lorax)
+install.packages("lorax")
+```
+
+Or install the development version from GitHub:
+
+``` r
+pak::pak("tidymodels/lorax")
 ```
 
 ## Example
@@ -61,7 +67,7 @@ rngr_fit <- ranger(species ~ ., data = penguins, max.depth = 3, num.trees = 10)
 ```
 
 ``` r
-rngr_party <- as.party(rngr_fit, data = penguins, tree = 1)
+rngr_party <- as.party(rngr_fit, tree = 1, data = penguins)
 rngr_party
 #> 
 #> Model formula:

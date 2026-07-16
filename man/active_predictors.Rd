@@ -42,7 +42,7 @@ active_predictors(x, ...)
 
 \method{active_predictors}{rpart}(x, ...)
 
-\method{active_predictors}{xgb.Booster}(x, tree = 1L, ...)
+\method{active_predictors}{xgb.Booster}(x, tree = 1L, nthread = NULL, ...)
 }
 \arguments{
 \item{x}{A object}
@@ -52,6 +52,10 @@ predictors from. Default is \code{1L} for the first tree. Values must be
 between 1 and the number of trees in the forest.}
 
 \item{...}{Other arguments passed to methods}
+
+\item{nthread}{Integer number of threads to use when reading the tree
+structure out of an \pkg{xgboost} model. The default (\code{NULL}) inherits
+the \code{nthread} the booster was trained with.}
 }
 \value{
 A tibble with list column \code{active_predictors} containing a character

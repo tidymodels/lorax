@@ -13,6 +13,23 @@ party_extract_node_rule <- function(node_id, x) {
   combine_rule_elements(split_exprs)
 }
 
+#' Extract rules from a party object
+#'
+#' Extract interpretable decision rules from a \pkg{partykit} `party` or
+#' `constparty` object. Each terminal node becomes one rule representing the
+#' path from root to that leaf.
+#'
+#' @param x A `party` or `constparty` object from the \pkg{partykit} package.
+#' @param ... Not currently used.
+#'
+#' @return A tibble with class `c("rule_set_party", "rule_set")` and columns:
+#'   * `id`: integer, the terminal node ID.
+#'   * `rules`: list of R expressions, one per terminal node.
+#'
+#' @examples
+#' fit <- partykit::ctree(Species ~ ., data = iris)
+#' extract_rules(fit)
+#'
 #' @export
 extract_rules.party <- function(x, ...) {
   terminal_ids <- partykit::nodeids(x, terminal = TRUE)

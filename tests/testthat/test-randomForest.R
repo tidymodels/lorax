@@ -1,3 +1,5 @@
+skip_on_cran()
+
 test_that("as.party.randomForest returns valid party object", {
   skip_if_not_installed("randomForest")
   skip_if_not_installed("palmerpenguins")

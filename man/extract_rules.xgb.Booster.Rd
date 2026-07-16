@@ -4,7 +4,7 @@
 \alias{extract_rules.xgb.Booster}
 \title{Extract rules from an xgb.Booster model}
 \usage{
-\method{extract_rules}{xgb.Booster}(x, tree = 1L, ...)
+\method{extract_rules}{xgb.Booster}(x, tree = 1L, nthread = NULL, ...)
 }
 \arguments{
 \item{x}{An \code{xgb.Booster} object from the \pkg{xgboost} package.}
@@ -13,6 +13,10 @@
 1-based indexing (default is \code{1L}). For multiclass models with \code{num_class}
 classes and \code{nrounds} boosting rounds, there are \code{num_class * nrounds}
 total trees.}
+
+\item{nthread}{Integer number of threads to use when reading the tree
+structure out of the model. The default (\code{NULL}) inherits the \code{nthread}
+the booster was trained with.}
 
 \item{...}{Not currently used.}
 }
@@ -45,29 +49,44 @@ features or non-tree boosters (\code{gblinear}).
 if (rlang::is_installed("xgboost")) {
   data(agaricus.train, package = "xgboost")
 
-  # Binary classification
+  # Binary classification on a small subset for a fast example.
+  rows <- seq_len(200)
   set.seed(2847)
   bst <- xgboost::xgb.train(
-    data = xgboost::xgb.DMatrix(agaricus.train$data, label = agaricus.train$label),
+    data = xgboost::xgb.DMatrix(
+      agaricus.train$data[rows, ],
+      label = agaricus.train$label[rows],
+      nthread = 1
+    ),
     nrounds = 3,
-    max_depth = 3,
-    objective = "binary:logistic"
+    params = xgboost::xgb.params(
+      max_depth = 3,
+      objective = "binary:logistic",
+      nthread = 1
+    )
   )
 
-# Extract rules from first tree
-rules <- extract_rules(bst, tree = 1L)
+  # Extract rules from first tree
+  rules <- extract_rules(bst, tree = 1L)
 
-# View as text
-rule_text(rules$rules[[1]])
+  # View as text
+  rule_text(rules$rules[[1]])
 
   # Regression example
   data(mtcars)
   set.seed(8472)
   bst_reg <- xgboost::xgb.train(
-    data = xgboost::xgb.DMatrix(as.matrix(mtcars[, -1]), label = mtcars$mpg),
+    data = xgboost::xgb.DMatrix(
+      as.matrix(mtcars[, -1]),
+      label = mtcars$mpg,
+      nthread = 1
+    ),
     nrounds = 3,
-    max_depth = 3,
-    objective = "reg:squarederror"
+    params = xgboost::xgb.params(
+      max_depth = 3,
+      objective = "reg:squarederror",
+      nthread = 1
+    )
   )
   rules_reg <- extract_rules(bst_reg, tree = 1L)
 }

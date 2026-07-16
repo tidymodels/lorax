@@ -4,7 +4,7 @@
 \alias{as.party.xgb.Booster}
 \title{Convert xgb.Booster model to party object}
 \usage{
-\method{as.party}{xgb.Booster}(obj, tree = 1L, data, ...)
+\method{as.party}{xgb.Booster}(obj, tree = 1L, data, nthread = NULL, ...)
 }
 \arguments{
 \item{obj}{An \code{xgb.Booster} object from the \pkg{xgboost} package.}
@@ -17,6 +17,10 @@ default is 1). For multiclass models with \code{num_class} classes and
 variable included} (required). XGBoost models do not store the original
 training data or response values. You must provide the original data frame
 that includes both the predictor variables and the response variable.}
+
+\item{nthread}{Integer number of threads to use when reading the tree
+structure out of the model. The default (\code{NULL}) inherits the \code{nthread}
+the booster was trained with.}
 
 \item{...}{Not currently used.}
 }
@@ -91,19 +95,27 @@ by \pkg{partykit}.
 if (rlang::is_installed("xgboost")) {
   data(agaricus.train, package = "xgboost")
 
-  # Binary classification example
-  train_data <- as.data.frame(as.matrix(agaricus.train$data))
-  train_data$label <- agaricus.train$label
+  # Binary classification example, on a small subset for a fast example.
+  rows <- seq_len(200)
+  train_data <- as.data.frame(as.matrix(agaricus.train$data[rows, ]))
+  train_data$label <- agaricus.train$label[rows]
 
-  dtrain <- xgboost::xgb.DMatrix(agaricus.train$data, label = agaricus.train$label)
+  dtrain <- xgboost::xgb.DMatrix(
+    agaricus.train$data[rows, ],
+    label = agaricus.train$label[rows],
+    nthread = 1
+  )
 
   set.seed(3691)
   bst <- xgboost::xgb.train(
     data = dtrain,
-    max_depth = 3,
     nrounds = 3,
-    objective = "binary:logistic",
-    verbose = 0
+    verbose = 0,
+    params = xgboost::xgb.params(
+      max_depth = 3,
+      objective = "binary:logistic",
+      nthread = 1
+    )
   )
 
   # Convert first tree - data parameter is required
@@ -114,15 +126,22 @@ if (rlang::is_installed("xgboost")) {
   # Regression example
   data(mtcars)
   reg_data <- mtcars
-  dtrain_reg <- xgboost::xgb.DMatrix(as.matrix(mtcars[, -1]), label = mtcars$mpg)
+  dtrain_reg <- xgboost::xgb.DMatrix(
+    as.matrix(mtcars[, -1]),
+    label = mtcars$mpg,
+    nthread = 1
+  )
 
   set.seed(9158)
   bst_reg <- xgboost::xgb.train(
     data = dtrain_reg,
-    max_depth = 3,
     nrounds = 3,
-    objective = "reg:squarederror",
-    verbose = 0
+    verbose = 0,
+    params = xgboost::xgb.params(
+      max_depth = 3,
+      objective = "reg:squarederror",
+      nthread = 1
+    )
   )
 
   party_tree_reg <- as.party(bst_reg, tree = 1L, data = reg_data)

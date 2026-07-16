@@ -73,7 +73,9 @@
 #'   # Classification example
 #'   penguins <- palmerpenguins::penguins[complete.cases(palmerpenguins::penguins), ]
 #'   set.seed(2847)
-#'   forest <- aorsf::orsf(species ~ ., data = penguins, n_tree = 3)
+#'   forest <- aorsf::orsf(
+#'     species ~ ., data = penguins, n_tree = 3, n_thread = 1
+#'   )
 #'
 #'   # Extract rules from first tree (default)
 #'   rules <- extract_rules(forest)
@@ -87,7 +89,9 @@
 #'   # Regression example
 #'   data(mtcars)
 #'   set.seed(5193)
-#'   forest_reg <- aorsf::orsf(mpg ~ ., data = mtcars, n_tree = 3)
+#'   forest_reg <- aorsf::orsf(
+#'     mpg ~ ., data = mtcars, n_tree = 3, n_thread = 1
+#'   )
 #'   rules_reg <- extract_rules(forest_reg, tree = 1L)
 #' }
 #'

@@ -6,14 +6,27 @@
 \alias{lorax-package}
 \title{lorax: Speak for the Trees}
 \description{
-Provides a unified interface for extracting information from tree- and rule-based models. Functions include extracting logical rules that define terminal nodes, identifying predictors that were actually used in splits, retrieving variable importance scores, and converting trees to the 'partykit' format for visualization. Supports models from packages including 'rpart', 'ranger', 'randomForest', 'xgboost', 'lightgbm', 'C50', 'Cubist', 'bart', and 'grf'.
+Extracts decision rules from tree- and rule-based models fitted in 'R'. Rules are expressed as logical predicates that identify paths to terminal nodes, making model behavior more transparent and interpretable. Provides conversion methods to 'partykit' party objects for a wide range of model types. The 'partykit' infrastructure is described in Hothorn and Zeileis (2015) \url{https://jmlr.org/papers/v16/hothorn15a.html}.
+}
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/tidymodels/lorax}
+  \item Report bugs at \url{https://github.com/tidymodels/lorax/issues}
+}
+
 }
 \author{
 \strong{Maintainer}: Max Kuhn \email{max@posit.co} (\href{https://orcid.org/0000-0003-2402-136X}{ORCID})
 
+Authors:
+\itemize{
+  \item Max Kuhn \email{max@posit.co} (\href{https://orcid.org/0000-0003-2402-136X}{ORCID})
+}
+
 Other contributors:
 \itemize{
-  \item Posit Software, PBC [copyright holder, funder]
+  \item Posit Software, PBC (\href{https://ror.org/03wc8by49}{ROR}) [copyright holder, funder]
 }
 
 }

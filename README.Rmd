@@ -13,11 +13,11 @@ knitr::opts_chunk$set(
 )
 ```
 
-# lorax
+# lorax <a href="https://lorax.tidymodels.org/"><img src="man/figures/logo.png" align="right" height="138" alt="lorax website" /></a>
 
 <!-- badges: start -->
-[![R-CMD-check](https://github.com/topepo/lorax/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/topepo/lorax/actions/workflows/R-CMD-check.yaml)
-[![Codecov test coverage](https://codecov.io/gh/topepo/lorax/graph/badge.svg)](https://app.codecov.io/gh/topepo/lorax)
+[![R-CMD-check](https://github.com/tidymodels/lorax/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/tidymodels/lorax/actions/workflows/R-CMD-check.yaml)
+[![Codecov test coverage](https://codecov.io/gh/tidymodels/lorax/graph/badge.svg)](https://app.codecov.io/gh/tidymodels/lorax)
 <!-- badges: end -->
 
 The goal of lorax is to help look at different aspects of tree- and rule-based models. 
@@ -91,15 +91,19 @@ Note that `as.party.rpart()` is in the partykit package and that cforest is made
 
 ## Installation
 
-You can install the development version of lorax like so:
+You can install the released version of lorax from CRAN:
 
 ``` r
-require(pak)
-pak::pak("topepo/lorax")
+install.packages("lorax")
+```
+
+Or install the development version from GitHub:
+
+``` r
+pak::pak("tidymodels/lorax")
 ```
 
 ## Example
-
 
 ```{r}
 #| label: startup
@@ -120,7 +124,7 @@ rngr_fit <- ranger(species ~ ., data = penguins, max.depth = 3, num.trees = 10)
 
 ```{r}
 #| label: ranger-party
-rngr_party <- as.party(rngr_fit, data = penguins, tree = 1)
+rngr_party <- as.party(rngr_fit, tree = 1, data = penguins)
 rngr_party
 
 plot(rngr_party)

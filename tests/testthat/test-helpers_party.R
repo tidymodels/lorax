@@ -183,7 +183,7 @@ test_that("traverse_to_terminal handles right interval closed splits", {
     label = data$y
   )
   bst <- xgboost::xgb.train(
-    params = list(max_depth = 2, objective = "reg:squarederror"),
+    params = list(max_depth = 2, objective = "reg:squarederror", nthread = 1),
     data = dtrain,
     nrounds = 1,
     verbose = 0
@@ -215,7 +215,8 @@ test_that("traverse_to_terminal handles left interval closed splits", {
     params = list(
       objective = "regression",
       max_depth = 2,
-      min_data_in_leaf = 5
+      min_data_in_leaf = 5,
+      num_threads = 1L
     ),
     data = dtrain,
     nrounds = 1,

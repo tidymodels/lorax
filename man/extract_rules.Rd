@@ -44,3 +44,8 @@ data are contained in or sent to a terminal node in a tree-based model. Rules
 can take any form but, for most trees, they are simple statements such as
 \code{x < 1.2}, \code{y == "red"}, or \code{z \%in\% c("blue", "green")}.
 }
+\examples{
+fit <- partykit::ctree(Species ~ ., data = iris)
+extract_rules(fit)
+
+}

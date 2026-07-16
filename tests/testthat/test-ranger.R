@@ -1,10 +1,17 @@
+skip_on_cran()
+
 test_that("as.party.ranger returns valid party object", {
   skip_if_not_installed("ranger")
   skip_if_not_installed("palmerpenguins")
 
   penguins <- get_penguins_data()
 
-  rf <- ranger::ranger(species ~ ., data = penguins, num.trees = 5)
+  rf <- ranger::ranger(
+    species ~ .,
+    data = penguins,
+    num.trees = 5,
+    num.threads = 1
+  )
   p <- as.party(rf, tree = 1, data = penguins)
 
   expect_s3_class(p, "party")
@@ -18,7 +25,7 @@ test_that("as.party.ranger works with binary classification", {
 
   data <- get_binary_data()
 
-  rf <- ranger::ranger(y ~ ., data = data, num.trees = 5)
+  rf <- ranger::ranger(y ~ ., data = data, num.trees = 5, num.threads = 1)
   p <- as.party(rf, tree = 1, data = data)
 
   expect_s3_class(p, "party")
@@ -30,7 +37,7 @@ test_that("as.party.ranger works with regression", {
 
   data <- get_regression_data()
 
-  rf <- ranger::ranger(y ~ ., data = data, num.trees = 5)
+  rf <- ranger::ranger(y ~ ., data = data, num.trees = 5, num.threads = 1)
   p <- as.party(rf, tree = 1, data = data)
 
   expect_s3_class(p, "party")
@@ -42,7 +49,7 @@ test_that("as.party.ranger works with factor predictors", {
 
   data <- get_factor_data()
 
-  rf <- ranger::ranger(y ~ ., data = data, num.trees = 5)
+  rf <- ranger::ranger(y ~ ., data = data, num.trees = 5, num.threads = 1)
   p <- as.party(rf, tree = 1, data = data)
 
   expect_s3_class(p, "party")
@@ -54,7 +61,13 @@ test_that("as.party.ranger works with wa_trees data (mixed types)", {
 
   wa_trees <- get_wa_trees_data()
 
-  rf <- ranger::ranger(class ~ ., data = wa_trees, num.trees = 5, max.depth = 5)
+  rf <- ranger::ranger(
+    class ~ .,
+    data = wa_trees,
+    num.trees = 5,
+    max.depth = 5,
+    num.threads = 1
+  )
   p <- as.party(rf, tree = 1, data = wa_trees)
 
   expect_s3_class(p, "party")
@@ -67,7 +80,12 @@ test_that("as.party.ranger validates tree parameter", {
 
   penguins <- get_penguins_data()
 
-  rf <- ranger::ranger(species ~ ., data = penguins, num.trees = 5)
+  rf <- ranger::ranger(
+    species ~ .,
+    data = penguins,
+    num.trees = 5,
+    num.threads = 1
+  )
 
   expect_snapshot(as.party(rf, tree = 0, data = penguins), error = TRUE)
   expect_snapshot(as.party(rf, tree = 10, data = penguins), error = TRUE)
@@ -83,7 +101,12 @@ test_that("as.party.ranger requires data parameter", {
   penguins <- get("penguins", envir = environment())
   penguins <- na.omit(penguins)
 
-  rf <- ranger::ranger(species ~ ., data = penguins, num.trees = 5)
+  rf <- ranger::ranger(
+    species ~ .,
+    data = penguins,
+    num.trees = 5,
+    num.threads = 1
+  )
 
   expect_snapshot(as.party(rf, tree = 1), error = TRUE)
 })
@@ -98,7 +121,8 @@ test_that("as.party.ranger requires write.forest = TRUE", {
     species ~ .,
     data = penguins,
     num.trees = 5,
-    write.forest = FALSE
+    write.forest = FALSE,
+    num.threads = 1
   )
 
   expect_snapshot(as.party(rf, tree = 1, data = penguins), error = TRUE)
@@ -110,7 +134,12 @@ test_that("as.party.ranger extracts different trees", {
 
   penguins <- get_penguins_data()
 
-  rf <- ranger::ranger(species ~ ., data = penguins, num.trees = 10)
+  rf <- ranger::ranger(
+    species ~ .,
+    data = penguins,
+    num.trees = 10,
+    num.threads = 1
+  )
 
   p1 <- as.party(rf, tree = 1, data = penguins)
   p2 <- as.party(rf, tree = 5, data = penguins)
@@ -132,7 +161,12 @@ test_that("as.party.ranger does not show asterisks in node summaries", {
 
   penguins <- get_penguins_data()
 
-  rf <- ranger::ranger(species ~ ., data = penguins, num.trees = 5)
+  rf <- ranger::ranger(
+    species ~ .,
+    data = penguins,
+    num.trees = 5,
+    num.threads = 1
+  )
   p <- as.party(rf, tree = 1, data = penguins)
 
   output <- capture.output(print(p))
@@ -154,7 +188,8 @@ test_that("extract_rules.ranger() returns correct structure", {
   rf <- ranger::ranger(
     y ~ predictor_01 + predictor_02 + predictor_03,
     data = data,
-    num.trees = 3
+    num.trees = 3,
+    num.threads = 1
   )
   rules <- extract_rules(rf, tree = 1L, data = data)
 
@@ -175,7 +210,8 @@ test_that("extract_rules.ranger() extracts from single tree", {
   rf <- ranger::ranger(
     y ~ predictor_01 + predictor_02 + predictor_03,
     data = data,
-    num.trees = 3
+    num.trees = 3,
+    num.threads = 1
   )
   rules <- extract_rules(rf, tree = 1L, data = data)
 
@@ -196,7 +232,8 @@ test_that("extract_rules.ranger() extracts from multiple trees", {
   rf <- ranger::ranger(
     y ~ predictor_01 + predictor_02 + predictor_03,
     data = data,
-    num.trees = 3
+    num.trees = 3,
+    num.threads = 1
   )
   rules <- extract_rules(rf, tree = c(1L, 2L, 3L), data = data)
 
@@ -218,7 +255,8 @@ test_that("extract_rules.ranger() validates tree argument", {
   rf <- ranger::ranger(
     y ~ predictor_01 + predictor_02 + predictor_03,
     data = data,
-    num.trees = 3
+    num.trees = 3,
+    num.threads = 1
   )
 
   expect_snapshot(extract_rules(rf, tree = "1", data = data), error = TRUE)
@@ -235,7 +273,8 @@ test_that("extract_rules.ranger() requires data parameter", {
   rf <- ranger::ranger(
     y ~ predictor_01 + predictor_02 + predictor_03,
     data = data,
-    num.trees = 3
+    num.trees = 3,
+    num.threads = 1
   )
 
   expect_snapshot(extract_rules(rf, tree = 1L), error = TRUE)
@@ -251,7 +290,8 @@ test_that("extract_rules.ranger() requires write.forest = TRUE", {
     y ~ predictor_01 + predictor_02 + predictor_03,
     data = data,
     num.trees = 3,
-    write.forest = FALSE
+    write.forest = FALSE,
+    num.threads = 1
   )
 
   expect_snapshot(extract_rules(rf, tree = 1L, data = data), error = TRUE)
@@ -265,7 +305,8 @@ test_that("extract_rules.ranger() works with numeric predictors", {
   rf <- ranger::ranger(
     y ~ predictor_01 + predictor_02,
     data = data,
-    num.trees = 3
+    num.trees = 3,
+    num.threads = 1
   )
   rules <- extract_rules(rf, tree = 1L, data = data)
 
@@ -278,7 +319,12 @@ test_that("extract_rules.ranger() works with factor predictors", {
 
   data <- get_factor_data()
   set.seed(395)
-  rf <- ranger::ranger(y ~ island + sex, data = data, num.trees = 3)
+  rf <- ranger::ranger(
+    y ~ island + sex,
+    data = data,
+    num.trees = 3,
+    num.threads = 1
+  )
   rules <- extract_rules(rf, tree = 1L, data = data)
 
   expect_s3_class(rules, "rule_set_party")
@@ -293,7 +339,8 @@ test_that("extract_rules.ranger() works with mixed predictors", {
   rf <- ranger::ranger(
     class ~ elevation + county,
     data = wa_trees,
-    num.trees = 3
+    num.trees = 3,
+    num.threads = 1
   )
   rules <- extract_rules(rf, tree = 1L, data = wa_trees)
 
@@ -306,7 +353,7 @@ test_that("extract_rules.ranger() works with single numeric predictor", {
 
   data <- get_single_numeric_data()
   set.seed(527)
-  model <- ranger::ranger(y ~ x, data = data, num.trees = 5)
+  model <- ranger::ranger(y ~ x, data = data, num.trees = 5, num.threads = 1)
   rules <- extract_rules(model, tree = 1L, data = data)
 
   expect_s3_class(rules, "rule_set")
@@ -323,7 +370,7 @@ test_that("extract_rules.ranger() works with single factor predictor", {
 
   data <- get_single_factor_data()
   set.seed(638)
-  model <- ranger::ranger(y ~ x, data = data, num.trees = 5)
+  model <- ranger::ranger(y ~ x, data = data, num.trees = 5, num.threads = 1)
   rules <- extract_rules(model, tree = 1L, data = data)
 
   expect_s3_class(rules, "rule_set")
@@ -343,7 +390,8 @@ test_that("extract_rules.ranger() rules are sorted by tree then id", {
   rf <- ranger::ranger(
     y ~ predictor_01 + predictor_02 + predictor_03,
     data = data,
-    num.trees = 3
+    num.trees = 3,
+    num.threads = 1
   )
   rules <- extract_rules(rf, tree = c(2L, 1L, 3L), data = data)
 
@@ -365,7 +413,8 @@ test_that("extract_rules.ranger() handles duplicate tree numbers", {
   rf <- ranger::ranger(
     y ~ predictor_01 + predictor_02 + predictor_03,
     data = data,
-    num.trees = 3
+    num.trees = 3,
+    num.threads = 1
   )
   rules <- extract_rules(rf, tree = c(1L, 1L, 2L), data = data)
 
@@ -382,7 +431,8 @@ test_that("extract_rules.ranger() works with all trees", {
   rf <- ranger::ranger(
     y ~ predictor_01 + predictor_02 + predictor_03,
     data = data,
-    num.trees = 3
+    num.trees = 3,
+    num.threads = 1
   )
   n_trees <- 3
   rules <- extract_rules(rf, tree = 1:n_trees, data = data)
@@ -405,7 +455,8 @@ test_that("extract_rules.ranger() handles tree with no valid splits", {
     y ~ .,
     data = null_data,
     num.trees = 2,
-    min.node.size = 5
+    min.node.size = 5,
+    num.threads = 1
   )
   rules <- extract_rules(rf, tree = 1L, data = null_data)
 
@@ -421,7 +472,12 @@ test_that("active_predictors.ranger() returns correct structure", {
   skip_if_not_installed("palmerpenguins")
 
   penguins <- get_penguins_data()
-  rf <- ranger::ranger(species ~ ., data = penguins, num.trees = 5)
+  rf <- ranger::ranger(
+    species ~ .,
+    data = penguins,
+    num.trees = 5,
+    num.threads = 1
+  )
 
   result <- active_predictors(rf)
 
@@ -437,7 +493,12 @@ test_that("active_predictors.ranger() extracts from single tree", {
   skip_if_not_installed("palmerpenguins")
 
   penguins <- get_penguins_data()
-  rf <- ranger::ranger(species ~ ., data = penguins, num.trees = 5)
+  rf <- ranger::ranger(
+    species ~ .,
+    data = penguins,
+    num.trees = 5,
+    num.threads = 1
+  )
 
   result <- active_predictors(rf, tree = 1L)
 
@@ -451,7 +512,12 @@ test_that("active_predictors.ranger() extracts from multiple trees", {
   skip_if_not_installed("palmerpenguins")
 
   penguins <- get_penguins_data()
-  rf <- ranger::ranger(species ~ ., data = penguins, num.trees = 5)
+  rf <- ranger::ranger(
+    species ~ .,
+    data = penguins,
+    num.trees = 5,
+    num.threads = 1
+  )
 
   result <- active_predictors(rf, tree = c(1L, 2L, 3L))
 
@@ -465,7 +531,12 @@ test_that("active_predictors.ranger() validates tree argument", {
   skip_if_not_installed("palmerpenguins")
 
   penguins <- get_penguins_data()
-  rf <- ranger::ranger(species ~ ., data = penguins, num.trees = 5)
+  rf <- ranger::ranger(
+    species ~ .,
+    data = penguins,
+    num.trees = 5,
+    num.threads = 1
+  )
 
   expect_snapshot(
     active_predictors(rf, tree = "1"),
@@ -498,7 +569,8 @@ test_that("active_predictors.ranger() requires write.forest = TRUE", {
     species ~ .,
     data = penguins,
     num.trees = 5,
-    write.forest = FALSE
+    write.forest = FALSE,
+    num.threads = 1
   )
 
   expect_snapshot(
@@ -512,7 +584,12 @@ test_that("active_predictors.ranger() handles mixed numeric and factor predictor
   skip_if_not_installed("palmerpenguins")
 
   penguins <- get_penguins_data()
-  rf <- ranger::ranger(species ~ ., data = penguins, num.trees = 5)
+  rf <- ranger::ranger(
+    species ~ .,
+    data = penguins,
+    num.trees = 5,
+    num.threads = 1
+  )
 
   result <- active_predictors(rf, tree = 1L)
   active_vars <- result$active_predictors[[1]]
@@ -528,7 +605,12 @@ test_that("active_predictors.ranger() returns sorted unique variables", {
   skip_if_not_installed("palmerpenguins")
 
   penguins <- get_penguins_data()
-  rf <- ranger::ranger(species ~ ., data = penguins, num.trees = 5)
+  rf <- ranger::ranger(
+    species ~ .,
+    data = penguins,
+    num.trees = 5,
+    num.threads = 1
+  )
 
   result <- active_predictors(rf, tree = 1L)
   active_vars <- result$active_predictors[[1]]
@@ -541,7 +623,7 @@ test_that("active_predictors.ranger() handles numeric-only predictors", {
   skip_if_not_installed("ranger")
 
   data <- get_regression_data()
-  rf <- ranger::ranger(y ~ ., data = data, num.trees = 5)
+  rf <- ranger::ranger(y ~ ., data = data, num.trees = 5, num.threads = 1)
 
   result <- active_predictors(rf, tree = 1L)
   active_vars <- result$active_predictors[[1]]
@@ -555,7 +637,12 @@ test_that("active_predictors.ranger() works with all trees", {
   skip_if_not_installed("palmerpenguins")
 
   penguins <- get_penguins_data()
-  rf <- ranger::ranger(species ~ ., data = penguins, num.trees = 5)
+  rf <- ranger::ranger(
+    species ~ .,
+    data = penguins,
+    num.trees = 5,
+    num.threads = 1
+  )
 
   result <- active_predictors(rf, tree = 1:rf$num.trees)
 
@@ -569,7 +656,12 @@ test_that("active_predictors.ranger() handles duplicate tree numbers", {
   skip_if_not_installed("palmerpenguins")
 
   penguins <- get_penguins_data()
-  rf <- ranger::ranger(species ~ ., data = penguins, num.trees = 5)
+  rf <- ranger::ranger(
+    species ~ .,
+    data = penguins,
+    num.trees = 5,
+    num.threads = 1
+  )
 
   result <- active_predictors(rf, tree = c(1L, 1L, 2L))
 
@@ -582,7 +674,7 @@ test_that("active_predictors.ranger() works with single numeric predictor", {
 
   data <- get_single_numeric_data()
   set.seed(749)
-  model <- ranger::ranger(y ~ x, data = data, num.trees = 5)
+  model <- ranger::ranger(y ~ x, data = data, num.trees = 5, num.threads = 1)
   active <- active_predictors(model)
 
   expect_s3_class(active, "tbl_df")
@@ -594,7 +686,7 @@ test_that("active_predictors.ranger() works with single factor predictor", {
 
   data <- get_single_factor_data()
   set.seed(851)
-  model <- ranger::ranger(y ~ x, data = data, num.trees = 5)
+  model <- ranger::ranger(y ~ x, data = data, num.trees = 5, num.threads = 1)
   active <- active_predictors(model)
 
   expect_s3_class(active, "tbl_df")
@@ -613,7 +705,8 @@ test_that("var_imp.ranger() returns correct structure", {
     species ~ .,
     data = penguins,
     importance = "impurity",
-    num.trees = 10
+    num.trees = 10,
+    num.threads = 1
   )
   result <- var_imp(rf)
 
@@ -633,7 +726,8 @@ test_that("var_imp.ranger() extracts variable importance scores", {
     species ~ .,
     data = penguins,
     importance = "impurity",
-    num.trees = 10
+    num.trees = 10,
+    num.threads = 1
   )
   result <- var_imp(rf)
 
@@ -660,7 +754,8 @@ test_that("var_imp.ranger() with complete=TRUE fills missing predictors", {
     y ~ predictor_01 + predictor_02 + predictor_03 + predictor_04,
     data = data,
     importance = "impurity",
-    num.trees = 10
+    num.trees = 10,
+    num.threads = 1
   )
 
   result <- var_imp(rf, complete = TRUE)
@@ -686,7 +781,8 @@ test_that("var_imp.ranger() with complete=FALSE returns only used predictors", {
     y ~ predictor_01 + predictor_02 + predictor_03,
     data = data,
     importance = "impurity",
-    num.trees = 10
+    num.trees = 10,
+    num.threads = 1
   )
 
   result <- var_imp(rf, complete = FALSE)
@@ -706,7 +802,8 @@ test_that("var_imp.ranger() works with numeric predictors only", {
     mpg ~ cyl + disp + hp + wt,
     data = mtcars,
     importance = "impurity",
-    num.trees = 10
+    num.trees = 10,
+    num.threads = 1
   )
   result <- var_imp(rf, complete = TRUE)
 
@@ -725,7 +822,8 @@ test_that("var_imp.ranger() works with factor predictors", {
     county ~ class + elevation + roughness,
     data = wa_trees,
     importance = "impurity",
-    num.trees = 10
+    num.trees = 10,
+    num.threads = 1
   )
   result <- var_imp(rf, complete = TRUE)
 
@@ -744,7 +842,8 @@ test_that("var_imp.ranger() works with mixed numeric and factor predictors", {
     elevation ~ class + county + roughness + dew_temp,
     data = wa_trees,
     importance = "impurity",
-    num.trees = 10
+    num.trees = 10,
+    num.threads = 1
   )
   result <- var_imp(rf, complete = TRUE)
 
@@ -764,7 +863,8 @@ test_that("var_imp.ranger() importance scores match underlying object", {
     species ~ .,
     data = penguins,
     importance = "impurity",
-    num.trees = 10
+    num.trees = 10,
+    num.threads = 1
   )
   result <- var_imp(rf, complete = FALSE)
 
@@ -787,7 +887,8 @@ test_that("var_imp.ranger() works with impurity importance", {
     mpg ~ cyl + disp + hp,
     data = mtcars,
     importance = "impurity",
-    num.trees = 10
+    num.trees = 10,
+    num.threads = 1
   )
   result <- var_imp(rf)
 
@@ -805,7 +906,8 @@ test_that("var_imp.ranger() works with permutation importance", {
     mpg ~ cyl + disp + hp,
     data = mtcars,
     importance = "permutation",
-    num.trees = 10
+    num.trees = 10,
+    num.threads = 1
   )
   result <- var_imp(rf)
 
@@ -822,7 +924,8 @@ test_that("var_imp.ranger() errors when importance not calculated", {
   rf <- ranger::ranger(
     mpg ~ cyl + disp + hp,
     data = mtcars,
-    num.trees = 10
+    num.trees = 10,
+    num.threads = 1
   )
 
   expect_snapshot(var_imp(rf), error = TRUE)
@@ -842,7 +945,8 @@ test_that("var_imp.ranger() handles many predictors", {
     y ~ .,
     data = X,
     importance = "impurity",
-    num.trees = 10
+    num.trees = 10,
+    num.threads = 1
   )
   result <- var_imp(rf)
 
@@ -861,7 +965,8 @@ test_that("var_imp.ranger() works with classification forest", {
     species ~ .,
     data = penguins,
     importance = "impurity",
-    num.trees = 10
+    num.trees = 10,
+    num.threads = 1
   )
   result <- var_imp(rf)
 
@@ -879,7 +984,8 @@ test_that("var_imp.ranger() works with regression forest", {
     mpg ~ cyl + disp + hp,
     data = mtcars,
     importance = "impurity",
-    num.trees = 10
+    num.trees = 10,
+    num.threads = 1
   )
   result <- var_imp(rf)
 
@@ -904,7 +1010,8 @@ test_that("var_imp.ranger() handles forest with constrained splits", {
     data = small_data,
     importance = "impurity",
     num.trees = 5,
-    min.node.size = 30
+    min.node.size = 30,
+    num.threads = 1
   )
 
   result <- var_imp(rf, complete = TRUE)
@@ -927,7 +1034,8 @@ test_that("var_imp.ranger() handles forest with very deep trees", {
     data = data,
     importance = "impurity",
     num.trees = 10,
-    max.depth = 20
+    max.depth = 20,
+    num.threads = 1
   )
   result <- var_imp(rf)
 
@@ -945,7 +1053,8 @@ test_that("var_imp.ranger() works with single numeric predictor", {
     y ~ x,
     data = data,
     num.trees = 5,
-    importance = "impurity"
+    importance = "impurity",
+    num.threads = 1
   )
   importance <- var_imp(model)
 
@@ -963,7 +1072,8 @@ test_that("var_imp.ranger() works with single factor predictor", {
     y ~ x,
     data = data,
     num.trees = 5,
-    importance = "impurity"
+    importance = "impurity",
+    num.threads = 1
   )
   importance <- var_imp(model)
 

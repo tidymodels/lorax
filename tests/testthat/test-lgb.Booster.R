@@ -14,7 +14,12 @@ test_that("as.party.lgb.Booster returns valid party object", {
     label = as.numeric(penguins$species) - 1
   )
   bst <- lightgbm::lgb.train(
-    params = list(objective = "multiclass", num_class = 3, max_depth = 3),
+    params = list(
+      objective = "multiclass",
+      num_class = 3,
+      max_depth = 3,
+      num_threads = 1L
+    ),
     data = dtrain,
     nrounds = 5,
     verbose = -1
@@ -36,7 +41,7 @@ test_that("as.party.lgb.Booster works with binary classification", {
     label = as.numeric(data$y) - 1
   )
   bst <- lightgbm::lgb.train(
-    params = list(objective = "binary", max_depth = 2),
+    params = list(objective = "binary", max_depth = 2, num_threads = 1L),
     data = dtrain,
     nrounds = 3,
     verbose = -1
@@ -57,7 +62,7 @@ test_that("as.party.lgb.Booster works with regression", {
     label = data$y
   )
   bst <- lightgbm::lgb.train(
-    params = list(objective = "regression", max_depth = 3),
+    params = list(objective = "regression", max_depth = 3, num_threads = 1L),
     data = dtrain,
     nrounds = 3,
     verbose = -1
@@ -84,7 +89,12 @@ test_that("as.party.lgb.Booster validates tree parameter", {
     label = as.numeric(penguins$species) - 1
   )
   bst <- lightgbm::lgb.train(
-    params = list(objective = "multiclass", num_class = 3, max_depth = 3),
+    params = list(
+      objective = "multiclass",
+      num_class = 3,
+      max_depth = 3,
+      num_threads = 1L
+    ),
     data = dtrain,
     nrounds = 5,
     verbose = -1
@@ -112,7 +122,12 @@ test_that("as.party.lgb.Booster works with data parameter", {
     label = as.numeric(penguins$species) - 1
   )
   bst <- lightgbm::lgb.train(
-    params = list(objective = "multiclass", num_class = 3, max_depth = 3),
+    params = list(
+      objective = "multiclass",
+      num_class = 3,
+      max_depth = 3,
+      num_threads = 1L
+    ),
     data = dtrain,
     nrounds = 2,
     verbose = -1
@@ -141,7 +156,8 @@ test_that("as.party.lgb.Booster handles simple trees", {
     params = list(
       objective = "regression",
       max_depth = 2,
-      min_data_in_leaf = 1
+      min_data_in_leaf = 1,
+      num_threads = 1L
     ),
     data = dtrain,
     nrounds = 2,
@@ -168,7 +184,12 @@ test_that("as.party.lgb.Booster extracts different trees in multiclass", {
     label = as.numeric(penguins$species) - 1
   )
   bst <- lightgbm::lgb.train(
-    params = list(objective = "multiclass", num_class = 3, max_depth = 3),
+    params = list(
+      objective = "multiclass",
+      num_class = 3,
+      max_depth = 3,
+      num_threads = 1L
+    ),
     data = dtrain,
     nrounds = 3,
     verbose = -1
@@ -202,7 +223,12 @@ test_that("as.party.lgb.Booster requires response in data", {
     label = as.numeric(penguins$species) - 1
   )
   bst <- lightgbm::lgb.train(
-    params = list(objective = "multiclass", num_class = 3, max_depth = 3),
+    params = list(
+      objective = "multiclass",
+      num_class = 3,
+      max_depth = 3,
+      num_threads = 1L
+    ),
     data = dtrain,
     nrounds = 2,
     verbose = -1
@@ -236,7 +262,8 @@ test_that("as.party.lgb.Booster handles trees with many nodes", {
   bst <- lightgbm::lgb.train(
     params = list(
       objective = "regression",
-      max_depth = 5
+      max_depth = 5,
+      num_threads = 1L
     ),
     data = dtrain,
     nrounds = 3,
@@ -262,7 +289,8 @@ test_that("as.party.lgb.Booster handles different boosting rounds", {
   bst <- lightgbm::lgb.train(
     params = list(
       objective = "binary",
-      max_depth = 3
+      max_depth = 3,
+      num_threads = 1L
     ),
     data = dtrain,
     nrounds = 10,
@@ -296,7 +324,8 @@ test_that("as.party.lgb.Booster handles narrow trees", {
   bst <- lightgbm::lgb.train(
     params = list(
       objective = "binary",
-      max_depth = 1
+      max_depth = 1,
+      num_threads = 1L
     ),
     data = dtrain,
     nrounds = 3,
@@ -328,7 +357,8 @@ test_that("as.party.lgb.Booster preserves column order", {
   bst <- lightgbm::lgb.train(
     params = list(
       objective = "regression",
-      max_depth = 2
+      max_depth = 2,
+      num_threads = 1L
     ),
     data = dtrain,
     nrounds = 2,
@@ -362,7 +392,8 @@ test_that("as.party.lgb.Booster with large multiclass", {
     params = list(
       objective = "multiclass",
       num_class = 5,
-      max_depth = 3
+      max_depth = 3,
+      num_threads = 1L
     ),
     data = dtrain,
     nrounds = 3,
@@ -398,7 +429,8 @@ test_that("as.party.lgb.Booster handles varied data patterns", {
   bst <- lightgbm::lgb.train(
     params = list(
       objective = "regression",
-      max_depth = 3
+      max_depth = 3,
+      num_threads = 1L
     ),
     data = dtrain,
     nrounds = 2,
@@ -423,7 +455,7 @@ test_that("as.party.lgb.Booster extracts different trees", {
     label = agaricus.train$label
   )
   bst <- lightgbm::lgb.train(
-    params = list(objective = "binary", max_depth = 3),
+    params = list(objective = "binary", max_depth = 3, num_threads = 1L),
     data = dtrain,
     nrounds = 5,
     verbose = -1
@@ -452,7 +484,8 @@ test_that("as.party.lgb.Booster works with single numeric predictor", {
   bst <- lightgbm::lgb.train(
     params = list(
       max_depth = 3,
-      objective = "regression"
+      objective = "regression",
+      num_threads = 1L
     ),
     data = dtrain,
     nrounds = 3,
@@ -476,7 +509,7 @@ test_that("as.party.lgb.Booster does not show asterisks in node summaries", {
     label = agaricus.train$label
   )
   bst <- lightgbm::lgb.train(
-    params = list(objective = "binary", max_depth = 3),
+    params = list(objective = "binary", max_depth = 3, num_threads = 1L),
     data = dtrain,
     nrounds = 3,
     verbose = -1
@@ -507,7 +540,7 @@ test_that("active_predictors.lgb.Booster() returns correct structure", {
     label = data$y
   )
   bst <- lightgbm::lgb.train(
-    params = list(objective = "regression", max_depth = 3),
+    params = list(objective = "regression", max_depth = 3, num_threads = 1L),
     data = dtrain,
     nrounds = 3,
     verbose = -1
@@ -532,7 +565,7 @@ test_that("active_predictors.lgb.Booster() extracts from single tree", {
     label = data$y
   )
   bst <- lightgbm::lgb.train(
-    params = list(objective = "regression", max_depth = 3),
+    params = list(objective = "regression", max_depth = 3, num_threads = 1L),
     data = dtrain,
     nrounds = 5,
     verbose = -1
@@ -555,7 +588,7 @@ test_that("active_predictors.lgb.Booster() extracts from multiple trees", {
     label = data$y
   )
   bst <- lightgbm::lgb.train(
-    params = list(objective = "regression", max_depth = 3),
+    params = list(objective = "regression", max_depth = 3, num_threads = 1L),
     data = dtrain,
     nrounds = 5,
     verbose = -1
@@ -578,7 +611,7 @@ test_that("active_predictors.lgb.Booster() works with all trees", {
     label = data$y
   )
   bst <- lightgbm::lgb.train(
-    params = list(objective = "regression", max_depth = 3),
+    params = list(objective = "regression", max_depth = 3, num_threads = 1L),
     data = dtrain,
     nrounds = 3,
     verbose = -1
@@ -601,7 +634,7 @@ test_that("active_predictors.lgb.Booster() validates tree argument", {
     label = data$y
   )
   bst <- lightgbm::lgb.train(
-    params = list(objective = "regression", max_depth = 3),
+    params = list(objective = "regression", max_depth = 3, num_threads = 1L),
     data = dtrain,
     nrounds = 5,
     verbose = -1
@@ -644,7 +677,8 @@ test_that("active_predictors.lgb.Booster() handles tree with no splits", {
     params = list(
       objective = "regression",
       max_depth = 1,
-      min_data_in_leaf = 50
+      min_data_in_leaf = 50,
+      num_threads = 1L
     ),
     data = dtrain,
     nrounds = 1,
@@ -670,7 +704,7 @@ test_that("active_predictors.lgb.Booster() returns sorted unique variables", {
     label = data$y
   )
   bst <- lightgbm::lgb.train(
-    params = list(objective = "regression", max_depth = 3),
+    params = list(objective = "regression", max_depth = 3, num_threads = 1L),
     data = dtrain,
     nrounds = 3,
     verbose = -1
@@ -695,7 +729,7 @@ test_that("active_predictors.lgb.Booster() works with numeric predictors", {
     label = mtcars$mpg
   )
   bst <- lightgbm::lgb.train(
-    params = list(objective = "regression", max_depth = 3),
+    params = list(objective = "regression", max_depth = 3, num_threads = 1L),
     data = dtrain,
     nrounds = 3,
     verbose = -1
@@ -718,7 +752,7 @@ test_that("active_predictors.lgb.Booster() works with feature names", {
     label = agaricus.train$label
   )
   bst <- lightgbm::lgb.train(
-    params = list(objective = "binary", max_depth = 3),
+    params = list(objective = "binary", max_depth = 3, num_threads = 1L),
     data = dtrain,
     nrounds = 3,
     verbose = -1
@@ -746,7 +780,8 @@ test_that("active_predictors.lgb.Booster() works with single numeric predictor",
   bst <- lightgbm::lgb.train(
     params = list(
       max_depth = 3,
-      objective = "regression"
+      objective = "regression",
+      num_threads = 1L
     ),
     data = dtrain,
     nrounds = 3,
@@ -774,7 +809,8 @@ test_that("var_imp.lgb.Booster() returns correct structure", {
   bst <- lightgbm::lgb.train(
     params = list(
       max_depth = 3,
-      objective = "regression"
+      objective = "regression",
+      num_threads = 1L
     ),
     data = dtrain,
     nrounds = 5,
@@ -802,7 +838,8 @@ test_that("var_imp.lgb.Booster() extracts variable importance scores", {
   bst <- lightgbm::lgb.train(
     params = list(
       max_depth = 3,
-      objective = "regression"
+      objective = "regression",
+      num_threads = 1L
     ),
     data = dtrain,
     nrounds = 5,
@@ -835,7 +872,8 @@ test_that("var_imp.lgb.Booster() with complete=TRUE fills missing predictors", {
   bst <- lightgbm::lgb.train(
     params = list(
       max_depth = 3,
-      objective = "regression"
+      objective = "regression",
+      num_threads = 1L
     ),
     data = dtrain,
     nrounds = 5,
@@ -864,7 +902,8 @@ test_that("var_imp.lgb.Booster() with complete=FALSE returns only used predictor
   bst <- lightgbm::lgb.train(
     params = list(
       max_depth = 3,
-      objective = "regression"
+      objective = "regression",
+      num_threads = 1L
     ),
     data = dtrain,
     nrounds = 5,
@@ -892,7 +931,8 @@ test_that("var_imp.lgb.Booster() works with numeric predictors only", {
   bst <- lightgbm::lgb.train(
     params = list(
       max_depth = 3,
-      objective = "regression"
+      objective = "regression",
+      num_threads = 1L
     ),
     data = dtrain,
     nrounds = 5,
@@ -920,7 +960,8 @@ test_that("var_imp.lgb.Booster() importance scores match underlying object", {
   bst <- lightgbm::lgb.train(
     params = list(
       max_depth = 3,
-      objective = "regression"
+      objective = "regression",
+      num_threads = 1L
     ),
     data = dtrain,
     nrounds = 5,
@@ -954,7 +995,8 @@ test_that("var_imp.lgb.Booster() works with binary classification", {
   bst <- lightgbm::lgb.train(
     params = list(
       max_depth = 3,
-      objective = "binary"
+      objective = "binary",
+      num_threads = 1L
     ),
     data = dtrain,
     nrounds = 5,
@@ -988,7 +1030,8 @@ test_that("var_imp.lgb.Booster() works with multiclass classification", {
     params = list(
       max_depth = 3,
       objective = "multiclass",
-      num_class = 3
+      num_class = 3,
+      num_threads = 1L
     ),
     data = dtrain,
     nrounds = 5,
@@ -1019,7 +1062,8 @@ test_that("var_imp.lgb.Booster() handles model with no valid splits", {
   bst <- lightgbm::lgb.train(
     params = list(
       max_depth = 0,
-      objective = "regression"
+      objective = "regression",
+      num_threads = 1L
     ),
     data = dtrain,
     nrounds = 1,
@@ -1058,7 +1102,8 @@ test_that("var_imp.lgb.Booster() handles many predictors", {
   bst <- lightgbm::lgb.train(
     params = list(
       max_depth = 3,
-      objective = "regression"
+      objective = "regression",
+      num_threads = 1L
     ),
     data = dtrain,
     nrounds = 5,
@@ -1101,7 +1146,8 @@ test_that("var_imp.lgb.Booster() works with constrained trees", {
   bst <- lightgbm::lgb.train(
     params = list(
       max_depth = 1,
-      objective = "regression"
+      objective = "regression",
+      num_threads = 1L
     ),
     data = dtrain,
     nrounds = 3,
@@ -1129,7 +1175,8 @@ test_that("var_imp.lgb.Booster() works with deep trees", {
   bst <- lightgbm::lgb.train(
     params = list(
       max_depth = 10,
-      objective = "regression"
+      objective = "regression",
+      num_threads = 1L
     ),
     data = dtrain,
     nrounds = 5,
@@ -1154,7 +1201,7 @@ test_that("var_imp.lgb.Booster() handles agaricus data", {
   )
   set.seed(159)
   bst <- lightgbm::lgb.train(
-    params = list(max_depth = 3, objective = "binary"),
+    params = list(max_depth = 3, objective = "binary", num_threads = 1L),
     data = dtrain,
     nrounds = 5,
     verbose = -1
@@ -1180,7 +1227,8 @@ test_that("var_imp.lgb.Booster() handles very shallow trees", {
   bst <- lightgbm::lgb.train(
     params = list(
       max_depth = 1,
-      objective = "binary"
+      objective = "binary",
+      num_threads = 1L
     ),
     data = dtrain,
     nrounds = 5,
@@ -1206,7 +1254,8 @@ test_that("var_imp.lgb.Booster() works with many boosting rounds", {
   bst <- lightgbm::lgb.train(
     params = list(
       max_depth = 3,
-      objective = "regression"
+      objective = "regression",
+      num_threads = 1L
     ),
     data = dtrain,
     nrounds = 20,
@@ -1233,7 +1282,8 @@ test_that("var_imp.lgb.Booster() works with single numeric predictor", {
   bst <- lightgbm::lgb.train(
     params = list(
       max_depth = 3,
-      objective = "regression"
+      objective = "regression",
+      num_threads = 1L
     ),
     data = dtrain,
     nrounds = 3,

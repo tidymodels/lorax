@@ -71,7 +71,7 @@ get_penguins_forest <- function() {
     complete.cases(palmerpenguins::penguins),
   ]
   set.seed(487) # Ensure reproducible forest structure
-  aorsf::orsf(species ~ ., data = penguins, n_tree = 10)
+  aorsf::orsf(species ~ ., data = penguins, n_tree = 10, n_thread = 1)
 }
 
 # Get penguins tree for party tests

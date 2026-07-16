@@ -12,8 +12,8 @@ These objects are imported from other packages. Follow the links
 below to see their documentation.
 
 \describe{
-  \item{generics}{\code{\link[generics]{var_imp}}}
+  \item{generics}{\code{\link[generics:var_imp]{var_imp()}}}
 
-  \item{partykit}{\code{\link[partykit:party-coercion]{as.party}}}
+  \item{partykit}{\code{\link[partykit:as.party]{as.party()}}}
 }}
 
