@@ -105,7 +105,6 @@ pak::pak("tidymodels/lorax")
 
 ## Example
 
-
 ```{r}
 #| label: startup
 #| include: false
