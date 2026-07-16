@@ -7,7 +7,7 @@ object for use with partykit visualization and analysis tools.
 
 ``` r
 # S3 method for class 'xgb.Booster'
-as.party(obj, tree = 1L, data, ...)
+as.party(obj, tree = 1L, data, nthread = NULL, ...)
 ```
 
 ## Arguments
@@ -29,6 +29,12 @@ as.party(obj, tree = 1L, data, ...)
   training data or response values. You must provide the original data
   frame that includes both the predictor variables and the response
   variable.
+
+- nthread:
+
+  Integer number of threads to use when reading the tree structure out
+  of the model. The default (`NULL`) inherits the `nthread` the booster
+  was trained with.
 
 - ...:
 
@@ -110,19 +116,27 @@ required by partykit.
 if (rlang::is_installed("xgboost")) {
   data(agaricus.train, package = "xgboost")
 
-  # Binary classification example
-  train_data <- as.data.frame(as.matrix(agaricus.train$data))
-  train_data$label <- agaricus.train$label
+  # Binary classification example, on a small subset for a fast example.
+  rows <- seq_len(200)
+  train_data <- as.data.frame(as.matrix(agaricus.train$data[rows, ]))
+  train_data$label <- agaricus.train$label[rows]
 
-  dtrain <- xgboost::xgb.DMatrix(agaricus.train$data, label = agaricus.train$label)
+  dtrain <- xgboost::xgb.DMatrix(
+    agaricus.train$data[rows, ],
+    label = agaricus.train$label[rows],
+    nthread = 1
+  )
 
   set.seed(3691)
   bst <- xgboost::xgb.train(
     data = dtrain,
-    max_depth = 3,
     nrounds = 3,
-    objective = "binary:logistic",
-    verbose = 0
+    verbose = 0,
+    params = xgboost::xgb.params(
+      max_depth = 3,
+      objective = "binary:logistic",
+      nthread = 1
+    )
   )
 
   # Convert first tree - data parameter is required
@@ -133,48 +147,39 @@ if (rlang::is_installed("xgboost")) {
   # Regression example
   data(mtcars)
   reg_data <- mtcars
-  dtrain_reg <- xgboost::xgb.DMatrix(as.matrix(mtcars[, -1]), label = mtcars$mpg)
+  dtrain_reg <- xgboost::xgb.DMatrix(
+    as.matrix(mtcars[, -1]),
+    label = mtcars$mpg,
+    nthread = 1
+  )
 
   set.seed(9158)
   bst_reg <- xgboost::xgb.train(
     data = dtrain_reg,
-    max_depth = 3,
     nrounds = 3,
-    objective = "reg:squarederror",
-    verbose = 0
+    verbose = 0,
+    params = xgboost::xgb.params(
+      max_depth = 3,
+      objective = "reg:squarederror",
+      nthread = 1
+    )
   )
 
   party_tree_reg <- as.party(bst_reg, tree = 1L, data = reg_data)
   print(party_tree_reg)
 }
-#> Warning: Passed invalid function arguments: max_depth. These should be passed as a list to argument 'params'. Conversion from argument to 'params' entry will be done automatically, but this behavior will become an error in a future version.
-#> Warning: Argument 'objective' is only for custom objectives. For built-in objectives, pass the objective under 'params'. This warning will become an error in a future version.
 #> 
 #> Model formula:
-#> ~`odor=none` + `spore-print-color=green` + `stalk-root=club` + 
-#>     `stalk-surface-below-ring=scaly` + `bruises?=bruises` + `stalk-root=rooted` + 
-#>     `odor=foul`
+#> ~`odor=pungent`
 #> 
 #> Fitted party:
 #> [1] root
-#> |   [2] odor=none <= 2.00001
-#> |   |   [3] spore-print-color=green <= 2.00001: 0.057 (n = 6513, err = 348.1)
-#> |   |   [4] spore-print-color=green > 2.00001
-#> |   |   |   [5] stalk-surface-below-ring=scaly <= 2.00001: NA (n = 0, err = NA)
-#> |   |   |   [6] stalk-surface-below-ring=scaly > 2.00001: NA (n = 0, err = NA)
-#> |   [7] odor=none > 2.00001
-#> |   |   [8] stalk-root=club <= 2.00001
-#> |   |   |   [9] bruises?=bruises <= 2.00001: NA (n = 0, err = NA)
-#> |   |   |   [10] bruises?=bruises > 2.00001: NA (n = 0, err = NA)
-#> |   |   [11] stalk-root=club > 2.00001
-#> |   |   |   [12] stalk-root=rooted <= 2.00001: NA (n = 0, err = NA)
-#> |   |   |   [13] stalk-root=rooted > 2.00001: NA (n = 0, err = NA)
+#> |   [2] odor=pungent <= 2.00001: 0.250 (n = 200, err = 37.5)
+#> |   [3] odor=pungent > 2.00001: NA (n = 0, err = NA)
 #> 
-#> Number of inner nodes:    6
-#> Number of terminal nodes: 7
+#> Number of inner nodes:    1
+#> Number of terminal nodes: 2
 
-#> Warning: Passed invalid function arguments: max_depth. These should be passed as a list to argument 'params'. Conversion from argument to 'params' entry will be done automatically, but this behavior will become an error in a future version.
-#> Warning: Argument 'objective' is only for custom objectives. For built-in objectives, pass the objective under 'params'. This warning will become an error in a future version.
 #> 
 #> Model formula:
 #> ~cyl + wt + hp + disp

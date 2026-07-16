@@ -44,7 +44,7 @@ active_predictors(x, tree = 1L, ...)
 active_predictors(x, ...)
 
 # S3 method for class 'xgb.Booster'
-active_predictors(x, tree = 1L, ...)
+active_predictors(x, tree = 1L, nthread = NULL, ...)
 ```
 
 ## Arguments
@@ -62,6 +62,12 @@ active_predictors(x, tree = 1L, ...)
 - ...:
 
   Other arguments passed to methods
+
+- nthread:
+
+  Integer number of threads to use when reading the tree structure out
+  of an xgboost model. The default (`NULL`) inherits the `nthread` the
+  booster was trained with.
 
 ## Value
 

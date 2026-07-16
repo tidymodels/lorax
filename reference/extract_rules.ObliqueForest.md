@@ -107,7 +107,9 @@ if (rlang::is_installed(c("aorsf", "palmerpenguins"))) {
   # Classification example
   penguins <- palmerpenguins::penguins[complete.cases(palmerpenguins::penguins), ]
   set.seed(2847)
-  forest <- aorsf::orsf(species ~ ., data = penguins, n_tree = 3)
+  forest <- aorsf::orsf(
+    species ~ ., data = penguins, n_tree = 3, n_thread = 1
+  )
 
   # Extract rules from first tree (default)
   rules <- extract_rules(forest)
@@ -121,7 +123,9 @@ if (rlang::is_installed(c("aorsf", "palmerpenguins"))) {
   # Regression example
   data(mtcars)
   set.seed(5193)
-  forest_reg <- aorsf::orsf(mpg ~ ., data = mtcars, n_tree = 3)
+  forest_reg <- aorsf::orsf(
+    mpg ~ ., data = mtcars, n_tree = 3, n_thread = 1
+  )
   rules_reg <- extract_rules(forest_reg, tree = 1L)
 }
 #> * 1.276 * (sex == "male") + 0.00232 * ((year - 2008)/0.8129) - 1.884 * ((bill_length_mm - 43.99)/5.469) > 0.9291 

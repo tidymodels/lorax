@@ -68,7 +68,8 @@ The expressions use standard R operators:
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
+# \donttest{
+if (rlang::is_installed("Cubist")) {
 library(Cubist)
 library(lorax)
 
@@ -92,5 +93,8 @@ rules_all <- extract_rules(mod, committee = 1:3)
 
 # Convert to readable text
 rule_text(rules$rules[[1]])
-} # }
+}
+#> Loading required package: lattice
+#> [1] "x2 <= -0.1796"
+# }
 ```

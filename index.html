@@ -13,8 +13,9 @@
 <link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Speak for the Trees">
-<meta name="description" content="Provides a unified interface for extracting information from tree- and rule-based models. Functions include extracting logical rules that define terminal nodes, identifying predictors that were actually used in splits, retrieving variable importance scores, and converting trees to the partykit format for visualization. Supports models from packages including rpart, ranger, randomForest, xgboost, lightgbm, C50, Cubist, bart, and grf.">
-<meta property="og:description" content="Provides a unified interface for extracting information from tree- and rule-based models. Functions include extracting logical rules that define terminal nodes, identifying predictors that were actually used in splits, retrieving variable importance scores, and converting trees to the partykit format for visualization. Supports models from packages including rpart, ranger, randomForest, xgboost, lightgbm, C50, Cubist, bart, and grf.">
+<meta name="description" content="Extracts decision rules from tree- and rule-based models fitted in R. Rules are expressed as logical predicates that identify paths to terminal nodes, making model behavior more transparent and interpretable. Provides conversion methods to partykit party objects for a wide range of model types. The partykit infrastructure is described in Hothorn and Zeileis (2015) &lt;https://jmlr.org/papers/v16/hothorn15a.html&gt;.">
+<meta property="og:description" content="Extracts decision rules from tree- and rule-based models fitted in R. Rules are expressed as logical predicates that identify paths to terminal nodes, making model behavior more transparent and interpretable. Provides conversion methods to partykit party objects for a wide range of model types. The partykit infrastructure is described in Hothorn and Zeileis (2015) &lt;https://jmlr.org/papers/v16/hothorn15a.html&gt;.">
+<meta property="og:image" content="https://lorax.tidymodels.org/logo.png">
 <script src="https://cdn.jsdelivr.net/gh/posit-dev/supported-by-posit/js/badge.min.js" data-max-height="43" data-light-bg="#666f76" data-light-fg="#f9f9f9"></script><script defer data-domain="lorax.tidymodels.org,all.tidymodels.org" src="https://plausible.io/js/plausible.js"></script>
 </head>
 <body>
@@ -50,8 +51,11 @@
 </nav><div class="container template-home" id="container">
 <div class="row">
   <main id="main" class="col-md-9"><div class="section level1">
-<div class="page-header"><h1 id="lorax">lorax<a class="anchor" aria-label="anchor" href="#lorax"></a>
-</h1></div>
+<div class="page-header">
+<img src="logo.png" class="logo" alt=""><h1 id="lorax-">lorax 
+<a class="anchor" aria-label="anchor" href="#lorax-"></a>
+</h1>
+</div>
 <!-- badges: start -->
 
 <p>The goal of lorax is to help look at different aspects of tree- and rule-based models.</p>
@@ -102,6 +106,13 @@
 <td align="left">✔</td>
 <td align="left">✔</td>
 <td align="left">n/a</td>
+<td align="left">✔</td>
+</tr>
+<tr>
+<td align="left">cubist</td>
+<td align="left">✖</td>
+<td align="left">✔</td>
+<td align="left">✖</td>
 <td align="left">✔</td>
 </tr>
 <tr>
@@ -166,18 +177,21 @@
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
-<p>You can install the development version of lorax like so:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">require</span>(pak)</span>
-<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a>pak<span class="sc">::</span><span class="fu">pak</span>(<span class="st">"topepo/lorax)</span></span></code></pre></div>
+<p>You can install the released version of lorax from CRAN:</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"lorax"</span><span class="op">)</span></span></code></pre></div>
+<p>Or install the development version from GitHub:</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html" class="external-link">pak</a></span><span class="op">(</span><span class="st">"tidymodels/lorax"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="example">Example<a class="anchor" aria-label="anchor" href="#example"></a>
 </h2>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">822</span><span class="op">)</span></span>
 <span><span class="va">rngr_fit</span> <span class="op">&lt;-</span> <span class="fu">ranger</span><span class="op">(</span><span class="va">species</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">penguins</span>, max.depth <span class="op">=</span> <span class="fl">3</span>, num.trees <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">rngr_party</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/partykit/man/party-coercion.html" class="external-link">as.party</a></span><span class="op">(</span><span class="va">rngr_fit</span>, data <span class="op">=</span> <span class="va">penguins</span>, tree <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">rngr_party</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/partykit/man/party-coercion.html" class="external-link">as.party</a></span><span class="op">(</span><span class="va">rngr_fit</span>, tree <span class="op">=</span> <span class="fl">1</span>, data <span class="op">=</span> <span class="va">penguins</span><span class="op">)</span></span>
 <span><span class="va">rngr_party</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Model formula:</span></span>
@@ -200,7 +214,7 @@
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">rngr_party</span><span class="op">)</span></span></code></pre></div>
 <p><img src="reference/figures/README-ranger-party-1.png" alt="" width="100%"></p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">all_rules</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/extract_rules.html">extract_rules</a></span><span class="op">(</span><span class="va">rngr_party</span>, trees <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># An expression</span></span>
@@ -238,6 +252,7 @@
   </main><aside class="col-md-3"><div class="links">
 <h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
+<li><a href="https://cloud.r-project.org/package=lorax" class="external-link">View on CRAN</a></li>
 <li><a href="https://github.com/tidymodels/lorax/" class="external-link">Browse source code</a></li>
 <li><a href="https://github.com/tidymodels/lorax/issues" class="external-link">Report a bug</a></li>
 </ul>
@@ -271,7 +286,7 @@
 <li>
 <a href="https://github.com/topepo" class="external-link">Max Kuhn</a> <br><small class="roles"> Author, maintainer </small> <a href="https://orcid.org/0000-0003-2402-136X" target="orcid.widget" aria-label="ORCID" class="external-link"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a>  </li>
 <li>
-<a href="https://www.posit.co" class="external-link"><img src="https://www.tidyverse.org/posit-logo.svg" alt="Posit" height="16" width="62" style="margin-bottom: 3px;"></a> <br><small class="roles"> Copyright holder, funder </small>   </li>
+<a href="https://www.posit.co" class="external-link"><img src="https://www.tidyverse.org/posit-logo.svg" alt="Posit" height="16" width="62" style="margin-bottom: 3px;"></a> <br><small class="roles"> Copyright holder, funder </small>  <a href="https://ror.org/03wc8by49" class="external-link"><img src="https://raw.githubusercontent.com/ror-community/ror-logos/main/ror-icon-rgb.svg" class="ror" alt="ROR"></a> </li>
 </ul>
 </div>
 

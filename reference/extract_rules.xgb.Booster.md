@@ -8,7 +8,7 @@ representing the path from root to that leaf.
 
 ``` r
 # S3 method for class 'xgb.Booster'
-extract_rules(x, tree = 1L, ...)
+extract_rules(x, tree = 1L, nthread = NULL, ...)
 ```
 
 ## Arguments
@@ -23,6 +23,12 @@ extract_rules(x, tree = 1L, ...)
   indexing (default is `1L`). For multiclass models with `num_class`
   classes and `nrounds` boosting rounds, there are `num_class * nrounds`
   total trees.
+
+- nthread:
+
+  Integer number of threads to use when reading the tree structure out
+  of the model. The default (`NULL`) inherits the `nthread` the booster
+  was trained with.
 
 - ...:
 
@@ -56,34 +62,45 @@ categorical features or non-tree boosters (`gblinear`).
 if (rlang::is_installed("xgboost")) {
   data(agaricus.train, package = "xgboost")
 
-  # Binary classification
+  # Binary classification on a small subset for a fast example.
+  rows <- seq_len(200)
   set.seed(2847)
   bst <- xgboost::xgb.train(
-    data = xgboost::xgb.DMatrix(agaricus.train$data, label = agaricus.train$label),
+    data = xgboost::xgb.DMatrix(
+      agaricus.train$data[rows, ],
+      label = agaricus.train$label[rows],
+      nthread = 1
+    ),
     nrounds = 3,
-    max_depth = 3,
-    objective = "binary:logistic"
+    params = xgboost::xgb.params(
+      max_depth = 3,
+      objective = "binary:logistic",
+      nthread = 1
+    )
   )
 
-# Extract rules from first tree
-rules <- extract_rules(bst, tree = 1L)
+  # Extract rules from first tree
+  rules <- extract_rules(bst, tree = 1L)
 
-# View as text
-rule_text(rules$rules[[1]])
+  # View as text
+  rule_text(rules$rules[[1]])
 
   # Regression example
   data(mtcars)
   set.seed(8472)
   bst_reg <- xgboost::xgb.train(
-    data = xgboost::xgb.DMatrix(as.matrix(mtcars[, -1]), label = mtcars$mpg),
+    data = xgboost::xgb.DMatrix(
+      as.matrix(mtcars[, -1]),
+      label = mtcars$mpg,
+      nthread = 1
+    ),
     nrounds = 3,
-    max_depth = 3,
-    objective = "reg:squarederror"
+    params = xgboost::xgb.params(
+      max_depth = 3,
+      objective = "reg:squarederror",
+      nthread = 1
+    )
   )
   rules_reg <- extract_rules(bst_reg, tree = 1L)
 }
-#> Warning: Passed invalid function arguments: max_depth. These should be passed as a list to argument 'params'. Conversion from argument to 'params' entry will be done automatically, but this behavior will become an error in a future version.
-#> Warning: Argument 'objective' is only for custom objectives. For built-in objectives, pass the objective under 'params'. This warning will become an error in a future version.
-#> Warning: Passed invalid function arguments: max_depth. These should be passed as a list to argument 'params'. Conversion from argument to 'params' entry will be done automatically, but this behavior will become an error in a future version.
-#> Warning: Argument 'objective' is only for custom objectives. For built-in objectives, pass the objective under 'params'. This warning will become an error in a future version.
 ```

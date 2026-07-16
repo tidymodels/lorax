@@ -5,8 +5,8 @@ to see their documentation.
 
 - generics:
 
-  [`var_imp`](https://generics.r-lib.org/reference/var_imp.html)
+  [`var_imp()`](https://generics.r-lib.org/reference/var_imp.html)
 
 - partykit:
 
-  [`as.party`](https://rdrr.io/pkg/partykit/man/party-coercion.html)
+  [`as.party()`](https://rdrr.io/pkg/partykit/man/party-coercion.html)

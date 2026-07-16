@@ -25,6 +25,7 @@ Here is a list of which classes have which methods:
 | bart          | n/a     | ✔                 | ✔        | ✔             |
 | C5.0          | n/a     | ✔                 | ✔        | ✔             |
 | cforest       | ✔       | ✔                 | n/a      | ✔             |
+| cubist        | ✖       | ✔                 | ✖        | ✔             |
 | grf           | ✔       | ✔                 | ✔        | ✔             |
 | lgb.Booster   | ✔       | ✔                 | ✔        | ✔             |
 | ObliqueForest | ✔       | ✔                 | ✖        | ✔             |
@@ -39,11 +40,18 @@ is made out of party objects.
 
 ## Installation
 
-You can install the development version of lorax like so:
+You can install the released version of lorax from CRAN:
 
 ``` r
-require(pak)
-pak::pak("topepo/lorax)
+
+install.packages("lorax")
+```
+
+Or install the development version from GitHub:
+
+``` r
+
+pak::pak("tidymodels/lorax")
 ```
 
 ## Example
@@ -56,7 +64,7 @@ rngr_fit <- ranger(species ~ ., data = penguins, max.depth = 3, num.trees = 10)
 
 ``` r
 
-rngr_party <- as.party(rngr_fit, data = penguins, tree = 1)
+rngr_party <- as.party(rngr_fit, tree = 1, data = penguins)
 rngr_party
 #> 
 #> Model formula:

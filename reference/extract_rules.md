@@ -52,3 +52,17 @@ extract_rules(x, tree = 1L, data = NULL, ...)
 
 A data frame with column `rules` (an R expression) and `id` (an
 identifier).
+
+## Examples
+
+``` r
+fit <- partykit::ctree(Species ~ ., data = iris)
+extract_rules(fit)
+#> # A tibble: 4 × 2
+#>      id rules     
+#>   <int> <list>    
+#> 1     2 <language>
+#> 2     5 <language>
+#> 3     6 <language>
+#> 4     7 <language>
+```

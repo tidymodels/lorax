@@ -20,6 +20,8 @@
 <url><loc>https://lorax.tidymodels.org/reference/extract_rules.cubist.html</loc></url>
 <url><loc>https://lorax.tidymodels.org/reference/extract_rules.html</loc></url>
 <url><loc>https://lorax.tidymodels.org/reference/extract_rules.lgb.Booster.html</loc></url>
+<url><loc>https://lorax.tidymodels.org/reference/extract_rules.party.html</loc></url>
+<url><loc>https://lorax.tidymodels.org/reference/extract_rules.rpart.html</loc></url>
 <url><loc>https://lorax.tidymodels.org/reference/extract_rules.xgb.Booster.html</loc></url>
 <url><loc>https://lorax.tidymodels.org/reference/index.html</loc></url>
 <url><loc>https://lorax.tidymodels.org/reference/lorax-package.html</loc></url>

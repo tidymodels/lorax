@@ -31,7 +31,7 @@ var_imp(object, complete = TRUE, ...)
 var_imp(object, complete = TRUE, ...)
 
 # S3 method for class 'xgb.Booster'
-var_imp(object, complete = TRUE, feature_names = NULL, ...)
+var_imp(object, complete = TRUE, feature_names = NULL, nthread = NULL, ...)
 ```
 
 ## Arguments
@@ -65,6 +65,12 @@ var_imp(object, complete = TRUE, feature_names = NULL, ...)
   IncNodePurity) or `"permutation"` (uses %IncMSE). If `NULL`, uses the
   default for the forest type.
 
+- nthread:
+
+  Integer number of threads to use when reading the tree structure out
+  of the model. The default (`NULL`) inherits the `nthread` the booster
+  was trained with.
+
 ## Value
 
 A tibble with columns `term` and `estimate`.
@@ -97,3 +103,17 @@ Consequently, there might be non-zero importances for predictors that
 were not used in any actual split in the tree. To make the splits and
 importances align, use the options `maxcompete = 0` and
 `maxsurrogate = 0`.
+
+## Examples
+
+``` r
+fit <- partykit::ctree(Species ~ ., data = iris)
+var_imp(fit)
+#> # A tibble: 4 × 2
+#>   term         estimate
+#>   <chr>           <dbl>
+#> 1 Petal.Length    7.22 
+#> 2 Petal.Width     0.639
+#> 3 Sepal.Length    0    
+#> 4 Sepal.Width     0    
+```

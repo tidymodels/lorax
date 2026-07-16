@@ -30,6 +30,10 @@
   : Extract rules from a Cubist model
 - [`extract_rules(`*`<lgb.Booster>`*`)`](https://lorax.tidymodels.org/reference/extract_rules.lgb.Booster.md)
   : Extract rules from an lgb.Booster model
+- [`extract_rules(`*`<party>`*`)`](https://lorax.tidymodels.org/reference/extract_rules.party.md)
+  : Extract rules from a party object
+- [`extract_rules(`*`<rpart>`*`)`](https://lorax.tidymodels.org/reference/extract_rules.rpart.md)
+  : Extract rules from an rpart model
 - [`extract_rules(`*`<xgb.Booster>`*`)`](https://lorax.tidymodels.org/reference/extract_rules.xgb.Booster.md)
   : Extract rules from an xgb.Booster model
 - [`var_imp(`*`<ObliqueForest>`*`)`](https://lorax.tidymodels.org/reference/lorax_var_imp.md)
