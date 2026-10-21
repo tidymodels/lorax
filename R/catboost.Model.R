@@ -4,6 +4,7 @@
 #' boosted tree model. Each reachable terminal node (leaf) becomes one rule
 #' representing the path from root to that leaf.
 #'
+#' @inheritParams extract_rules
 #' @param x A `catboost.Model` object from the \pkg{catboost} package.
 #' @param tree Integer specifying which tree to extract rules from. Uses
 #'   1-based indexing (default is `1L`). There is one tree per boosting
@@ -76,7 +77,14 @@
 #' }
 #'
 #' @export
-extract_rules.catboost.Model <- function(x, tree = 1L, data = NULL, ...) {
+extract_rules.catboost.Model <- function(
+  x,
+  tree = 1L,
+  data = NULL,
+  add_statistics = FALSE,
+  ...
+) {
+  check_bool(add_statistics)
   rlang::check_installed(c("catboost", "jsonlite"))
   json <- cb_model_json(x)
   tree <- cb_check_tree(tree, cb_num_trees(json))
@@ -106,7 +114,8 @@ extract_rules.catboost.Model <- function(x, tree = 1L, data = NULL, ...) {
     id = ids
   ) |>
     dplyr::arrange(id) |>
-    tibble::new_tibble(class = c("rule_set_catboost.Model", "rule_set"))
+    tibble::new_tibble(class = c("rule_set_catboost.Model", "rule_set")) |>
+    maybe_add_rule_statistics(add_statistics)
 }
 
 # ------------------------------------------------------------------------------
