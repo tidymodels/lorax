@@ -6,8 +6,8 @@
 #'
 #' @param split A named list with three required elements:
 #'   * `column`: character string - variable name for the split.
-#'   * `value`: numeric, character, or character vector - the split.
-#'     threshold/value(s)
+#'   * `value`: the split threshold/value(s). A single numeric or character
+#'     value, or a numeric or character vector when `operator` is `%in%`.
 #'   * `operator`: character string - one of: `<`, `<=`, `>`, `>=`, `==`,.
 #'     `%in%`
 #'
@@ -93,15 +93,15 @@ validate_split <- function(split, call = rlang::caller_env()) {
 
   # Validate value based on operator
   if (split$operator == "%in%") {
-    if (!is.character(split$value)) {
+    if (!is.character(split$value) && !is.numeric(split$value)) {
       cli::cli_abort(
-        "{.field value} must be a character vector when {.field operator} is {.val %in%}.",
+        "{.field value} must be a character or numeric vector when {.field operator} is {.val %in%}.",
         call = call
       )
     }
     if (length(split$value) == 1) {
       cli::cli_abort(
-        "Single character values should use {.val ==} operator, not {.val %in%}.",
+        "Single values should use {.val ==} operator, not {.val %in%}.",
         call = call
       )
     }

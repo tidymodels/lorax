@@ -1,6 +1,6 @@
 Package: lorax
 Title: Speak for the Trees
-Version: 0.1.0
+Version: 0.1.0.9000
 Authors@R: c(
     person("Max", "Kuhn", , "max@posit.co", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0003-2402-136X")),
@@ -33,6 +33,7 @@ Suggests:
     Cubist,
     dbarts,
     grf,
+    jsonlite,
     knitr,
     lightgbm,
     modeldata,
@@ -44,10 +45,9 @@ Suggests:
     testthat (>= 3.0.0),
     tidyr,
     xgboost
-Config/roxygen2/version: 8.0.0
+Config/roxygen2/version: 8.1.0
 Config/Needs/website: tidyverse/tidytemplate, ranger, palmerpenguins, tidyr
 Config/testthat/edition: 3
 Encoding: UTF-8
 Language: en-US
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 8.0.0

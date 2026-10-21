@@ -81,10 +81,10 @@
 # rect_split_to_expr() validates value for operator
 
     Code
-      rect_split_to_expr(list(column = "x", value = 1, operator = "%in%"))
+      rect_split_to_expr(list(column = "x", value = TRUE, operator = "%in%"))
     Condition
       Error in `rect_split_to_expr()`:
-      ! value must be a character vector when operator is "%in%".
+      ! value must be a character or numeric vector when operator is "%in%".
 
 ---
 
@@ -92,7 +92,7 @@
       rect_split_to_expr(list(column = "x", value = "red", operator = "%in%"))
     Condition
       Error in `rect_split_to_expr()`:
-      ! Single character values should use "==" operator, not "%in%".
+      ! Single values should use "==" operator, not "%in%".
 
 ---
 
