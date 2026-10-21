@@ -6,12 +6,15 @@
 \alias{lorax-package}
 \title{lorax: Speak for the Trees}
 \description{
+\if{html}{\figure{logo.png}{options: style='float: right' alt='logo' width='120'}}
+
 Extracts decision rules from tree- and rule-based models fitted in 'R'. Rules are expressed as logical predicates that identify paths to terminal nodes, making model behavior more transparent and interpretable. Provides conversion methods to 'partykit' party objects for a wide range of model types. The 'partykit' infrastructure is described in Hothorn and Zeileis (2015) \url{https://jmlr.org/papers/v16/hothorn15a.html}.
 }
 \seealso{
 Useful links:
 \itemize{
   \item \url{https://github.com/tidymodels/lorax}
+  \item \url{https://lorax.tidymodels.org/}
   \item Report bugs at \url{https://github.com/tidymodels/lorax/issues}
 }
 

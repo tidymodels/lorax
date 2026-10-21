@@ -1,4 +1,6 @@
 CMD
+CTRs
+CatBoost
 Codecov
 GRF
 Gini
@@ -17,6 +19,7 @@ XGBoost
 Zeileis
 aorsf
 bart
+catboost
 categoricals
 cforest
 funder

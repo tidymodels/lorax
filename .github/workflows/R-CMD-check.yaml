@@ -47,8 +47,42 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::rcmdcheck
+          extra-packages: |
+            any::rcmdcheck
+            catboost=?ignore
           needs: check
+
+      # catboost is not on CRAN; pak is told to ignore it above and the
+      # binary release is installed from GitHub here.
+      - name: Install catboost
+        run: |
+          version <- "1.2.10"
+          sysname <- tolower(Sys.info()[["sysname"]])
+          if (sysname == "darwin") {
+            platform <- "darwin-universal2"
+          } else if (sysname == "windows") {
+            platform <- "windows-x86_64"
+          } else if (R.version$arch == "aarch64") {
+            platform <- "linux-aarch64"
+          } else {
+            platform <- "linux-x86_64"
+          }
+          url <- sprintf(
+            "https://github.com/catboost/catboost/releases/download/v%s/catboost-R-%s-%s.tgz",
+            version,
+            platform,
+            version
+          )
+          path <- file.path(tempdir(), basename(url))
+          download.file(url, path, mode = "wb")
+          install.packages(
+            path,
+            repos = NULL,
+            type = "source",
+            INSTALL_opts = c("--no-multiarch", "--no-test-load", "--no-staged-install")
+          )
+          library(catboost)
+        shell: Rscript {0}
 
       - uses: r-lib/actions/check-r-package@v2
         with:
