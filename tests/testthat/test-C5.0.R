@@ -1073,3 +1073,15 @@ test_that("num_ensemble_members() counts C5.0 trials", {
   expect_identical(num_ensemble_members(c5_boost), 3L)
   expect_identical(num_ensemble_members(c5_rules), 3L)
 })
+
+test_that("num_ensemble_members() uses the actual number of C5.0 trials", {
+  skip_if_not_installed("C50")
+
+  set.seed(2817)
+  data <- data.frame(x = runif(100), z = runif(100))
+  data$y <- factor(ifelse(data$x > 0.5, "a", "b"))
+  c5_early <- C50::C5.0(y ~ ., data = data, trials = 10)
+
+  expect_identical(unname(c5_early$trials["Requested"]), 10)
+  expect_identical(num_ensemble_members(c5_early), 1L)
+})
