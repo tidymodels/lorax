@@ -51,3 +51,4 @@ rsconnect/
 # others
 Rplots.pdf
 train_dir
+catboost_info/

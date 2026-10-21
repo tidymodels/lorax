@@ -30,6 +30,7 @@ Imports:
 Suggests:
     aorsf,
     C50,
+    catboost,
     Cubist,
     dbarts,
     grf,

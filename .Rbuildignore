@@ -16,3 +16,4 @@
 ^inst/party-skill\.md$
 
 ^cran-comments\.md$
+^_pkgdown\.yml$
