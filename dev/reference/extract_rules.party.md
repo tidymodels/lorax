@@ -8,7 +8,7 @@ the path from root to that leaf.
 
 ``` r
 # S3 method for class 'party'
-extract_rules(x, ...)
+extract_rules(x, add_statistics = FALSE, ...)
 ```
 
 ## Arguments
@@ -16,6 +16,19 @@ extract_rules(x, ...)
 - x:
 
   A `party` or `constparty` object from the partykit package.
+
+- add_statistics:
+
+  A single logical. If `TRUE`, two integer columns are added to the
+  results:
+
+  - `num_rule_terms`: the number of conditions joined by `&` in the
+    rule.
+
+  - `num_rule_predictors`: the number of unique predictors in the rule.
+
+  A rule of `TRUE` (a tree with no splits) has zero terms and
+  predictors.
 
 - ...:
 

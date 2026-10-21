@@ -8,7 +8,7 @@ becomes one rule representing the path from root to that leaf.
 
 ``` r
 # S3 method for class 'bart'
-extract_rules(x, tree = 1L, chain = 1L, ...)
+extract_rules(x, tree = 1L, chain = 1L, add_statistics = FALSE, ...)
 ```
 
 ## Arguments
@@ -29,6 +29,19 @@ extract_rules(x, tree = 1L, chain = 1L, ...)
   Integer specifying which MCMC chain to extract from. Uses 1-based
   indexing (default is `1L`). Only relevant for models fitted with
   multiple chains.
+
+- add_statistics:
+
+  A single logical. If `TRUE`, two integer columns are added to the
+  results:
+
+  - `num_rule_terms`: the number of conditions joined by `&` in the
+    rule.
+
+  - `num_rule_predictors`: the number of unique predictors in the rule.
+
+  A rule of `TRUE` (a tree with no splits) has zero terms and
+  predictors.
 
 - ...:
 

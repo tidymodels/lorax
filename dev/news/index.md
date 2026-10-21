@@ -25,6 +25,10 @@
   for lightgbm models now assigns left and right child nodes correctly
   and compares numeric thresholds as numbers rather than strings.
 
+- [`extract_rules()`](https://lorax.tidymodels.org/dev/reference/extract_rules.md)
+  methods gain an `add_statistics` argument that appends the columns
+  `num_rule_terms` and `num_rule_predictors`.
+
 - [`rect_split_to_expr()`](https://lorax.tidymodels.org/dev/reference/rect_split_to_expr.md)
   now accepts numeric vectors for the `%in%` operator.
 

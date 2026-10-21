@@ -8,7 +8,7 @@ model applies.
 
 ``` r
 # S3 method for class 'cubist'
-extract_rules(x, committee = 1L, ...)
+extract_rules(x, committee = 1L, add_statistics = FALSE, ...)
 ```
 
 ## Arguments
@@ -22,6 +22,19 @@ extract_rules(x, committee = 1L, ...)
   An integer vector specifying which committee(s) to extract rules from.
   Defaults to `1L` (first committee). Values must be between 1 and the
   total number of committees in the model.
+
+- add_statistics:
+
+  A single logical. If `TRUE`, two integer columns are added to the
+  results:
+
+  - `num_rule_terms`: the number of conditions joined by `&` in the
+    rule.
+
+  - `num_rule_predictors`: the number of unique predictors in the rule.
+
+  A rule of `TRUE` (a tree with no splits) has zero terms and
+  predictors.
 
 - ...:
 

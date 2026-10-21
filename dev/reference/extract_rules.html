@@ -48,21 +48,21 @@ can take any form but, for most trees, they are simple statements such as
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="co"># S3 method for class 'C5.0'</span></span>
-<span><span class="fu">extract_rules</span><span class="op">(</span><span class="va">x</span>, tree <span class="op">=</span> <span class="fl">1L</span>, <span class="va">...</span><span class="op">)</span></span>
+<span><span class="fu">extract_rules</span><span class="op">(</span><span class="va">x</span>, tree <span class="op">=</span> <span class="fl">1L</span>, add_statistics <span class="op">=</span> <span class="cn">FALSE</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for class 'cforest'</span></span>
-<span><span class="fu">extract_rules</span><span class="op">(</span><span class="va">x</span>, tree <span class="op">=</span> <span class="fl">1L</span>, <span class="va">...</span><span class="op">)</span></span>
+<span><span class="fu">extract_rules</span><span class="op">(</span><span class="va">x</span>, tree <span class="op">=</span> <span class="fl">1L</span>, add_statistics <span class="op">=</span> <span class="cn">FALSE</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">extract_rules</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for class 'grf'</span></span>
-<span><span class="fu">extract_rules</span><span class="op">(</span><span class="va">x</span>, tree <span class="op">=</span> <span class="fl">1L</span>, <span class="va">...</span><span class="op">)</span></span>
+<span><span class="fu">extract_rules</span><span class="op">(</span><span class="va">x</span>, tree <span class="op">=</span> <span class="fl">1L</span>, add_statistics <span class="op">=</span> <span class="cn">FALSE</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for class 'randomForest'</span></span>
-<span><span class="fu">extract_rules</span><span class="op">(</span><span class="va">x</span>, tree <span class="op">=</span> <span class="fl">1L</span>, data <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">...</span><span class="op">)</span></span>
+<span><span class="fu">extract_rules</span><span class="op">(</span><span class="va">x</span>, tree <span class="op">=</span> <span class="fl">1L</span>, data <span class="op">=</span> <span class="cn">NULL</span>, add_statistics <span class="op">=</span> <span class="cn">FALSE</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for class 'ranger'</span></span>
-<span><span class="fu">extract_rules</span><span class="op">(</span><span class="va">x</span>, tree <span class="op">=</span> <span class="fl">1L</span>, data <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">extract_rules</span><span class="op">(</span><span class="va">x</span>, tree <span class="op">=</span> <span class="fl">1L</span>, data <span class="op">=</span> <span class="cn">NULL</span>, add_statistics <span class="op">=</span> <span class="cn">FALSE</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -77,6 +77,13 @@ can take any form but, for most trees, they are simple statements such as
 <dd><p>Integer vector specifying which trees to extract rules from.
 Default is <code>1L</code> for the first tree. Values must be between 1 and the
 number of trees in the forest (<code>x$num.trees</code>).</p></dd>
+
+
+<dt id="arg-add-statistics">add_statistics<a class="anchor" aria-label="anchor" href="#arg-add-statistics"></a></dt>
+<dd><p>A single logical. If <code>TRUE</code>, two integer columns
+are added to the results:</p><ul><li><p><code>num_rule_terms</code>: the number of conditions joined by <code>&amp;</code> in the rule.</p></li>
+<li><p><code>num_rule_predictors</code>: the number of unique predictors in the rule.</p></li>
+</ul><p>A rule of <code>TRUE</code> (a tree with no splits) has zero terms and predictors.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>

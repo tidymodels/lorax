@@ -8,7 +8,7 @@ leaf.
 
 ``` r
 # S3 method for class 'rpart'
-extract_rules(x, ...)
+extract_rules(x, add_statistics = FALSE, ...)
 ```
 
 ## Arguments
@@ -16,6 +16,19 @@ extract_rules(x, ...)
 - x:
 
   An `rpart` object from the rpart package.
+
+- add_statistics:
+
+  A single logical. If `TRUE`, two integer columns are added to the
+  results:
+
+  - `num_rule_terms`: the number of conditions joined by `&` in the
+    rule.
+
+  - `num_rule_predictors`: the number of unique predictors in the rule.
+
+  A rule of `TRUE` (a tree with no splits) has zero terms and
+  predictors.
 
 - ...:
 
