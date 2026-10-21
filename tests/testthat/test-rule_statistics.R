@@ -27,29 +27,10 @@ test_that("add_rule_statistics() computes per-rule statistics", {
 
   expect_named(
     res,
-    c("id", "rules", "num_term_nodes", "num_rule_terms", "num_rule_predictors")
+    c("id", "rules", "num_rule_terms", "num_rule_predictors")
   )
-  expect_identical(res$num_term_nodes, rep(4L, 4))
   expect_identical(res$num_rule_terms, c(0L, 3L, 2L, 1L))
   expect_identical(res$num_rule_predictors, c(0L, 2L, 3L, 1L))
-})
-
-test_that("add_rule_statistics() counts terminal nodes by tree or committee", {
-  rules <- tibble::tibble(
-    tree = c(2L, 2L, 5L, 2L, 5L),
-    id = 1:5,
-    rules = rep(list(rlang::expr(a > 1)), 5)
-  )
-  expect_identical(
-    add_rule_statistics(rules)$num_term_nodes,
-    c(3L, 3L, 2L, 3L, 2L)
-  )
-
-  names(rules)[1] <- "committee"
-  expect_identical(
-    add_rule_statistics(rules)$num_term_nodes,
-    c(3L, 3L, 2L, 3L, 2L)
-  )
 })
 
 test_that("maybe_add_rule_statistics() respects add_statistics", {
@@ -57,6 +38,6 @@ test_that("maybe_add_rule_statistics() respects add_statistics", {
   expect_identical(maybe_add_rule_statistics(rules, FALSE), rules)
   expect_named(
     maybe_add_rule_statistics(rules, TRUE),
-    c("id", "rules", "num_term_nodes", "num_rule_terms", "num_rule_predictors")
+    c("id", "rules", "num_rule_terms", "num_rule_predictors")
   )
 })

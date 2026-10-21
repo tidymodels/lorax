@@ -1082,7 +1082,7 @@ test_that("var_imp.ranger() works with single factor predictor", {
   expect_true(importance$estimate >= 0)
 })
 
-test_that("extract_rules.ranger() adds statistics per tree", {
+test_that("extract_rules.ranger() adds statistics", {
   skip_if_not_installed("ranger")
 
   data <- get_regression_data()
@@ -1102,15 +1102,9 @@ test_that("extract_rules.ranger() adds statistics per tree", {
       "id",
       "rules",
       "tree",
-      "num_term_nodes",
       "num_rule_terms",
       "num_rule_predictors"
     )
-  )
-  counts <- table(rules$tree)
-  expect_identical(
-    rules$num_term_nodes,
-    as.integer(counts[as.character(rules$tree)])
   )
   expect_all_true(rules$num_rule_terms <= 3L)
   expect_all_true(rules$num_rule_predictors <= 3L)

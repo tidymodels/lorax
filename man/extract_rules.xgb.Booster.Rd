@@ -18,11 +18,9 @@ total trees.}
 structure out of the model. The default (\code{NULL}) inherits the \code{nthread}
 the booster was trained with.}
 
-\item{add_statistics}{A single logical. If \code{TRUE}, three integer columns
+\item{add_statistics}{A single logical. If \code{TRUE}, two integer columns
 are added to the results:
 \itemize{
-\item \code{num_term_nodes}: the number of rules (terminal nodes) in the same tree
-(or committee for Cubist models).
 \item \code{num_rule_terms}: the number of conditions joined by \code{&} in the rule.
 \item \code{num_rule_predictors}: the number of unique predictors in the rule.
 }
