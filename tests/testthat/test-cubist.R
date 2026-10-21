@@ -428,3 +428,12 @@ test_that("active_predictors.cubist handles models with no active predictors", {
   # Might be empty or contain x1
   expect_lte(length(vars), 1)
 })
+
+test_that("num_ensemble_members() counts cubist committees", {
+  skip_if_not_installed("Cubist")
+
+  data <- get_simple_cubist_data()
+  mod <- Cubist::cubist(data$x, data$y, committees = 3)
+
+  expect_identical(num_ensemble_members(mod), 3L)
+})

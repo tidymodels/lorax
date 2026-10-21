@@ -1505,3 +1505,11 @@ c5_extract_rules_from_tree <- function(tree_text, trial = 1L) {
   # Convert to rules
   c5_convert_paths_to_rules(paths, trial)
 }
+
+# ------------------------------------------------------------------------------
+
+#' @rdname num_ensemble_members
+#' @export
+num_ensemble_members.C5.0 <- function(x, ...) {
+  as.integer(unname(x$trials["Actual"]))
+}

@@ -576,3 +576,11 @@ var_imp.ObliqueForest <- function(object, complete = TRUE, ...) {
 
   res
 }
+
+# ------------------------------------------------------------------------------
+
+#' @rdname num_ensemble_members
+#' @export
+num_ensemble_members.ObliqueForest <- function(x, ...) {
+  as.integer(x$n_tree)
+}

@@ -242,3 +242,11 @@ active_predictors.cubist <- function(x, ...) {
   # Return using lorax constructor
   new_active_predictors(active_vars)
 }
+
+# ------------------------------------------------------------------------------
+
+#' @rdname num_ensemble_members
+#' @export
+num_ensemble_members.cubist <- function(x, ...) {
+  as.integer(x$committees)
+}

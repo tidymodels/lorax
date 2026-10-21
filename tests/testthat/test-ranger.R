@@ -1081,3 +1081,18 @@ test_that("var_imp.ranger() works with single factor predictor", {
   expect_equal(importance$term, "x")
   expect_true(importance$estimate >= 0)
 })
+
+test_that("num_ensemble_members() counts ranger trees", {
+  skip_if_not_installed("ranger")
+
+  penguins <- get_penguins_data()
+
+  rf <- ranger::ranger(
+    species ~ .,
+    data = penguins,
+    num.trees = 5,
+    num.threads = 1
+  )
+
+  expect_identical(num_ensemble_members(rf), 5L)
+})

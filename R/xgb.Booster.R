@@ -726,3 +726,12 @@ xgb_active_vars_one_tree <- function(tree_num, x, tree_dt) {
 
   new_active_predictors(features, tree = tree_num)
 }
+
+# ------------------------------------------------------------------------------
+
+#' @rdname num_ensemble_members
+#' @export
+num_ensemble_members.xgb.Booster <- function(x, ...) {
+  tree_dt <- xgboost::xgb.model.dt.tree(x, use_int_id = TRUE)
+  as.integer(max(tree_dt$Tree) + 1L)
+}

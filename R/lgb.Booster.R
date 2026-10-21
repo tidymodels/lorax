@@ -1064,3 +1064,12 @@ lgb_active_vars_one_tree <- function(tree_num, x, tree_dt) {
 
   new_active_predictors(features, tree = tree_num)
 }
+
+# ------------------------------------------------------------------------------
+
+#' @rdname num_ensemble_members
+#' @export
+num_ensemble_members.lgb.Booster <- function(x, ...) {
+  tree_dt <- as.data.frame(lightgbm::lgb.model.dt.tree(x))
+  as.integer(max(tree_dt$tree_index, na.rm = TRUE) + 1L)
+}

@@ -410,3 +410,11 @@ var_imp.ranger <- function(object, complete = TRUE, ...) {
 
   res
 }
+
+# ------------------------------------------------------------------------------
+
+#' @rdname num_ensemble_members
+#' @export
+num_ensemble_members.ranger <- function(x, ...) {
+  as.integer(x$num.trees)
+}

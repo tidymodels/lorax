@@ -1273,3 +1273,11 @@ cb_combination_factor <- function(ctr, pred_data) {
   idx <- match(row_key, grid_key)
   factor(ctr$party_levels[idx], levels = ctr$party_levels)
 }
+
+# ------------------------------------------------------------------------------
+
+#' @rdname num_ensemble_members
+#' @export
+num_ensemble_members.catboost.Model <- function(x, ...) {
+  as.integer(cb_num_trees(cb_model_json(x)))
+}

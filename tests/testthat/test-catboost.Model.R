@@ -338,3 +338,9 @@ test_that("cb_hash_strings() matches hashes stored in the model", {
   stored <- unlist(json$features_info$categorical_features[[1]]$values)
   expect_all_true(stored %in% cb_hash_strings(levels(dat$g)))
 })
+
+test_that("num_ensemble_members() counts catboost trees", {
+  fit <- fit_catboost(mtcars[, -1], mtcars$mpg, iterations = 4)
+
+  expect_identical(num_ensemble_members(fit), 4L)
+})

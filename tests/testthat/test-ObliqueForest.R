@@ -983,3 +983,12 @@ test_that("var_imp.ObliqueForest() works with single factor predictor", {
   expect_equal(importance$term, "x")
   expect_true(importance$estimate >= 0)
 })
+
+test_that("num_ensemble_members() counts ObliqueForest trees", {
+  skip_if_not_installed("aorsf")
+  skip_if_not_installed("palmerpenguins")
+
+  forest <- get_penguins_forest()
+
+  expect_identical(num_ensemble_members(forest), 10L)
+})

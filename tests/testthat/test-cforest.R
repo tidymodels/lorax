@@ -701,3 +701,17 @@ test_that("var_imp.cforest() works with single factor predictor", {
   expect_equal(importance$term, "x")
   expect_true(all(is.numeric(importance$estimate)))
 })
+
+test_that("num_ensemble_members() counts cforest trees", {
+  skip_if_not_installed("partykit")
+
+  wa_trees <- get_wa_trees_data()[1:200, ]
+  set.seed(392)
+  cf <- partykit::cforest(
+    class ~ elevation + county,
+    data = wa_trees,
+    ntree = 3
+  )
+
+  expect_identical(num_ensemble_members(cf), 3L)
+})

@@ -486,3 +486,11 @@ grf_active_vars_one_tree <- function(tree_num, x) {
 
   new_active_predictors(active_vars, tree = tree_num)
 }
+
+# ------------------------------------------------------------------------------
+
+#' @rdname num_ensemble_members
+#' @export
+num_ensemble_members.grf <- function(x, ...) {
+  as.integer(x$`_num_trees`)
+}

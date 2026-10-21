@@ -1243,3 +1243,25 @@ test_that("var_imp.xgb.Booster() works with single numeric predictor", {
     expect_true(importance$estimate >= 0)
   }
 })
+
+test_that("num_ensemble_members() counts xgboost trees", {
+  skip_if_not_installed("xgboost")
+  skip_if_not_installed("palmerpenguins")
+
+  penguins <- get_penguins_data()
+  x <- as.matrix(penguins[, -1])
+
+  multi <- xgboost::xgb.train(
+    params = list(objective = "multi:softprob", num_class = 3, nthread = 1),
+    data = xgboost::xgb.DMatrix(x, label = as.numeric(penguins$species) - 1),
+    nrounds = 2
+  )
+  reg <- xgboost::xgb.train(
+    params = list(objective = "reg:squarederror", nthread = 1),
+    data = xgboost::xgb.DMatrix(x[, -1], label = x[, 1]),
+    nrounds = 4
+  )
+
+  expect_identical(num_ensemble_members(multi), 6L)
+  expect_identical(num_ensemble_members(reg), 4L)
+})

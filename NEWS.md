@@ -1,5 +1,7 @@
 # lorax (development version)
 
+* `num_ensemble_members()` is a new generic that returns the number of trees (or boosting trials or committees) in an ensemble model.
+
 * `active_predictors()`, `as.party()`, `extract_rules()`, and `var_imp()` now have methods for catboost models (`catboost.Model`). Symmetric and non-symmetric trees are supported. Categorical splits, both one-hot and those based on target statistics (CTRs), are converted to sets of factor levels, including CTRs on combinations of features.
 
 * `as.party()` and `extract_rules()` now support lightgbm models with categorical predictors. Category codes are mapped to factor levels using the training data, assuming the codes are `as.integer(factor) - 1L`. `extract_rules()` for lightgbm models gains an optional `data` argument for this; without it, rules use the integer codes.

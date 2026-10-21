@@ -542,3 +542,11 @@ var_imp.randomForest <- function(object, complete = TRUE, type = NULL, ...) {
 
   res
 }
+
+# ------------------------------------------------------------------------------
+
+#' @rdname num_ensemble_members
+#' @export
+num_ensemble_members.randomForest <- function(x, ...) {
+  as.integer(x$ntree)
+}

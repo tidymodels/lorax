@@ -143,3 +143,11 @@ var_imp.cforest <- function(object, complete = TRUE, ...) {
 
   res
 }
+
+# ------------------------------------------------------------------------------
+
+#' @rdname num_ensemble_members
+#' @export
+num_ensemble_members.cforest <- function(x, ...) {
+  as.integer(length(x$nodes))
+}
