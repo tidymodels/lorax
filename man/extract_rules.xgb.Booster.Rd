@@ -4,7 +4,7 @@
 \alias{extract_rules.xgb.Booster}
 \title{Extract rules from an xgb.Booster model}
 \usage{
-\method{extract_rules}{xgb.Booster}(x, tree = 1L, nthread = NULL, ...)
+\method{extract_rules}{xgb.Booster}(x, tree = 1L, nthread = NULL, add_statistics = FALSE, ...)
 }
 \arguments{
 \item{x}{An \code{xgb.Booster} object from the \pkg{xgboost} package.}
@@ -17,6 +17,15 @@ total trees.}
 \item{nthread}{Integer number of threads to use when reading the tree
 structure out of the model. The default (\code{NULL}) inherits the \code{nthread}
 the booster was trained with.}
+
+\item{add_statistics}{A single logical. If \code{TRUE}, two integer columns
+are added to the results:
+\itemize{
+\item \code{num_rule_terms}: the number of conditions joined by \code{&} in the rule.
+\item \code{num_rule_predictors}: the number of unique predictors in the rule.
+}
+
+A rule of \code{TRUE} (a tree with no splits) has zero terms and predictors.}
 
 \item{...}{Not currently used.}
 }

@@ -4,6 +4,7 @@
 #' aorsf ObliqueForest model. Each rule represents the path from the root node
 #' to a terminal node using oblique (linear combination) splits.
 #'
+#' @inheritParams extract_rules
 #' @param x An `ObliqueForest` object from the \pkg{aorsf} package
 #' @param tree Integer specifying which tree to extract rules from (1-based).
 #'   Default is `1L` for the first tree. Must be between 1 and the number of
@@ -96,7 +97,13 @@
 #' }
 #'
 #' @export
-extract_rules.ObliqueForest <- function(x, tree = 1L, ...) {
+extract_rules.ObliqueForest <- function(
+  x,
+  tree = 1L,
+  add_statistics = FALSE,
+  ...
+) {
+  check_bool(add_statistics)
   rlang::check_installed("aorsf")
   # Validate tree argument (1-based for user convenience)
   if (!is.numeric(tree) || length(tree) != 1 || tree != as.integer(tree)) {
@@ -127,7 +134,8 @@ extract_rules.ObliqueForest <- function(x, tree = 1L, ...) {
     id = as.integer(terminal_ids) + 1L # Convert from 0-indexed to 1-indexed
   ) |>
     dplyr::arrange(id) |>
-    tibble::new_tibble(class = c("rule_set_ObliqueForest", "rule_set"))
+    tibble::new_tibble(class = c("rule_set_ObliqueForest", "rule_set")) |>
+    maybe_add_rule_statistics(add_statistics)
 }
 
 # Internal helper to get terminal nodes for a tree

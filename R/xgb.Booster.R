@@ -4,6 +4,7 @@
 #' boosted tree model. Each terminal node (leaf) becomes one rule representing
 #' the path from root to that leaf.
 #'
+#' @inheritParams extract_rules
 #' @param x An `xgb.Booster` object from the \pkg{xgboost} package.
 #' @param tree Integer specifying which tree to extract rules from. Uses
 #'   1-based indexing (default is `1L`). For multiclass models with `num_class`
@@ -78,7 +79,14 @@
 #' }
 #'
 #' @export
-extract_rules.xgb.Booster <- function(x, tree = 1L, nthread = NULL, ...) {
+extract_rules.xgb.Booster <- function(
+  x,
+  tree = 1L,
+  nthread = NULL,
+  add_statistics = FALSE,
+  ...
+) {
+  check_bool(add_statistics)
   rlang::check_installed("xgboost")
   # Validate tree parameter
   if (!is.numeric(tree) || length(tree) != 1 || tree != as.integer(tree)) {
@@ -126,7 +134,8 @@ extract_rules.xgb.Booster <- function(x, tree = 1L, nthread = NULL, ...) {
         rules = list(rlang::expr(TRUE)),
         id = 1L
       ) |>
-        tibble::new_tibble(class = c("rule_set_xgb.Booster", "rule_set"))
+        tibble::new_tibble(class = c("rule_set_xgb.Booster", "rule_set")) |>
+        maybe_add_rule_statistics(add_statistics)
     )
   }
 
@@ -143,7 +152,8 @@ extract_rules.xgb.Booster <- function(x, tree = 1L, nthread = NULL, ...) {
     id = as.integer(terminal_ids) + 1L
   ) |>
     dplyr::arrange(id) |>
-    tibble::new_tibble(class = c("rule_set_xgb.Booster", "rule_set"))
+    tibble::new_tibble(class = c("rule_set_xgb.Booster", "rule_set")) |>
+    maybe_add_rule_statistics(add_statistics)
 }
 
 # Internal helper: override the booster's nthread setting in place. A `NULL`

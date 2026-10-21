@@ -1096,3 +1096,31 @@ test_that("num_ensemble_members() counts ranger trees", {
 
   expect_identical(num_ensemble_members(rf), 5L)
 })
+
+test_that("extract_rules.ranger() adds statistics", {
+  skip_if_not_installed("ranger")
+
+  data <- get_regression_data()
+  set.seed(8361)
+  rf <- ranger::ranger(
+    y ~ predictor_01 + predictor_02 + predictor_03,
+    data = data,
+    num.trees = 3,
+    num.threads = 1,
+    max.depth = 3
+  )
+  rules <- extract_rules(rf, tree = 1:3, data = data, add_statistics = TRUE)
+
+  expect_named(
+    rules,
+    c(
+      "id",
+      "rules",
+      "tree",
+      "num_rule_terms",
+      "num_rule_predictors"
+    )
+  )
+  expect_all_true(rules$num_rule_terms <= 3L)
+  expect_all_true(rules$num_rule_predictors <= 3L)
+})

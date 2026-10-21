@@ -20,6 +20,7 @@ rpart_extract_node_rule <- function(node_id, max_node_id, x) {
 #' Each terminal node becomes one rule representing the path from root to
 #' that leaf.
 #'
+#' @inheritParams extract_rules
 #' @param x An `rpart` object from the \pkg{rpart} package.
 #' @param ... Not currently used.
 #'
@@ -32,7 +33,8 @@ rpart_extract_node_rule <- function(node_id, max_node_id, x) {
 #' extract_rules(fit)
 #'
 #' @export
-extract_rules.rpart <- function(x, ...) {
+extract_rules.rpart <- function(x, add_statistics = FALSE, ...) {
+  check_bool(add_statistics)
   rlang::check_installed("rpart")
   terminal_ids <- rpart_get_terminal_nodes(x)
 
@@ -48,7 +50,8 @@ extract_rules.rpart <- function(x, ...) {
     rules = rules_list
   ) |>
     dplyr::arrange(id) |>
-    tibble::new_tibble(class = c("rule_set_rpart", "rule_set"))
+    tibble::new_tibble(class = c("rule_set_rpart", "rule_set")) |>
+    maybe_add_rule_statistics(add_statistics)
 }
 
 # rpart-specific helper to get terminal nodes
