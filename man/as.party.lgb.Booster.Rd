@@ -69,7 +69,20 @@ and other visualizations.
 \item \verb{decision_type "<="}: left child when feature <= threshold
 \item right child when feature > threshold
 \item \pkg{partykit} split created with \code{right = FALSE} (left interval closed)
+\item \verb{decision_type "=="}: categorical split. \code{threshold} lists the category
+codes that go to the left child (e.g., \code{"0||2"}); all other codes go to
+the right child.
 }
+}
+
+\subsection{Categorical predictors}{
+
+\pkg{lightgbm} requires categorical predictors to be encoded as
+non-negative integers. If the corresponding column in \code{data} is a factor,
+the codes are assumed to be \code{as.integer(factor) - 1L} (the encoding used by
+\pkg{bonsai}) and the splits use the factor levels. If the column is
+numeric (the integer codes used for training), it is converted to a factor
+whose levels are the codes seen during training.
 }
 
 \subsection{Child node references}{

@@ -33,6 +33,14 @@ test_that("rect_split_to_expr() creates %in% comparisons", {
   expect_equal(expr[[3]], c("red", "blue"))
 })
 
+test_that("rect_split_to_expr() creates numeric %in% comparisons", {
+  expr <- rect_split_to_expr(
+    list(column = "code", value = c(0L, 2L), operator = "%in%")
+  )
+  expect_equal(deparse(expr), "code %in% c(0L, 2L)")
+  expect_equal(eval(expr, list(code = 0:3)), c(TRUE, FALSE, TRUE, FALSE))
+})
+
 test_that("rect_split_to_expr() evaluates correctly", {
   test_data <- data.frame(
     age = c(20, 30, 40, 50),
@@ -169,13 +177,12 @@ test_that("rect_split_to_expr() validates operator", {
 })
 
 test_that("rect_split_to_expr() validates value for operator", {
-  # %in% requires character vector
   expect_snapshot(
-    rect_split_to_expr(list(column = "x", value = 1, operator = "%in%")),
+    rect_split_to_expr(list(column = "x", value = TRUE, operator = "%in%")),
     error = TRUE
   )
 
-  # %in% with single character should use ==
+  # %in% with single value should use ==
   expect_snapshot(
     rect_split_to_expr(list(column = "x", value = "red", operator = "%in%")),
     error = TRUE

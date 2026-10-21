@@ -530,6 +530,127 @@ test_that("as.party.lgb.Booster does not show asterisks in node summaries", {
 # active_predictors tests
 # ------------------------------------------------------------------------------
 
+test_that("extract_rules.lgb.Booster() rules match predicted leaves", {
+  skip_if_not_installed("lightgbm")
+  skip_if_not_installed("palmerpenguins")
+
+  penguins <- get_penguins_data()
+  x <- as.matrix(penguins[, c("bill_length_mm", "flipper_length_mm")])
+  bst <- lightgbm::lgb.train(
+    params = list(objective = "regression", max_depth = 3, num_threads = 1L),
+    data = lightgbm::lgb.Dataset(x, label = penguins$body_mass_g),
+    nrounds = 2,
+    verbose = -1
+  )
+  leaves <- predict(bst, x, type = "leaf") + 1L
+
+  for (i in 1:2) {
+    rules <- extract_rules(bst, tree = i)
+    expect_equal(rule_node_ids(rules, as.data.frame(x)), leaves[, i])
+  }
+})
+
+test_that("extract_rules.lgb.Booster() uses factor levels for categorical splits", {
+  cat_fit <- get_lgb_cat_fit()
+
+  rules <- extract_rules(cat_fit$fit, tree = 1L, data = cat_fit$data)
+  rule_chr <- vapply(rules$rules, rule_text, character(1))
+
+  expect_s3_class(rules, "rule_set_lgb.Booster")
+  expect_all_true(
+    grepl('f %in% c("b", "d", "e", "g")', rule_chr, fixed = TRUE) |
+      grepl('f %in% c("a", "c", "f", "h")', rule_chr, fixed = TRUE)
+  )
+
+  for (i in 1:3) {
+    rules <- extract_rules(cat_fit$fit, tree = i, data = cat_fit$data)
+    expect_equal(rule_node_ids(rules, cat_fit$data), cat_fit$leaves[, i])
+  }
+})
+
+test_that("extract_rules.lgb.Booster() uses integer codes without factor data", {
+  cat_fit <- get_lgb_cat_fit()
+
+  rules_1 <- extract_rules(cat_fit$fit, tree = 1L)
+  rule_chr <- vapply(rules_1$rules, rule_text, character(1))
+  expect_all_true(
+    grepl("f %in% c(1, 3, 4, 6)", rule_chr, fixed = TRUE) |
+      grepl("f %in% c(0, 2, 5, 7)", rule_chr, fixed = TRUE)
+  )
+
+  for (i in 1:3) {
+    rules <- extract_rules(cat_fit$fit, tree = i)
+    expect_equal(rule_node_ids(rules, cat_fit$codes), cat_fit$leaves[, i])
+  }
+
+  # Numeric columns in `data` are not translated
+  rules_codes <- extract_rules(cat_fit$fit, tree = 1L, data = cat_fit$codes)
+  expect_equal(rules_codes$rules, rules_1$rules)
+})
+
+test_that("extract_rules.lgb.Booster() validates categorical data", {
+  cat_fit <- get_lgb_cat_fit()
+
+  too_few <- cat_fit$data
+  too_few$f <- factor(as.character(too_few$f), levels = letters[1:3])
+  expect_snapshot(
+    extract_rules(cat_fit$fit, tree = 1L, data = too_few),
+    error = TRUE
+  )
+  expect_snapshot(
+    extract_rules(cat_fit$fit, tree = 1L, data = as.matrix(cat_fit$codes)),
+    error = TRUE
+  )
+})
+
+test_that("as.party.lgb.Booster() works with categorical predictors as factors", {
+  cat_fit <- get_lgb_cat_fit()
+
+  for (i in 1:3) {
+    p <- as.party(cat_fit$fit, tree = i, data = cat_fit$data)
+    expect_s3_class(p, "constparty")
+    fitted_ids <- p$fitted[["(fitted)"]]
+    expect_all_equal(rowSums(table(fitted_ids, cat_fit$leaves[, i]) > 0), 1L)
+    expect_all_equal(colSums(table(fitted_ids, cat_fit$leaves[, i]) > 0), 1L)
+  }
+
+  p <- as.party(cat_fit$fit, tree = 1L, data = cat_fit$data)
+  expect_equal(levels(p$data$f), letters[1:8])
+  rules <- extract_rules(p)
+  rule_chr <- vapply(rules$rules, rule_text, character(1))
+  expect_all_true(
+    grepl('f %in% c("b", "d", "e", "g")', rule_chr, fixed = TRUE) |
+      grepl('f %in% c("a", "c", "f", "h")', rule_chr, fixed = TRUE)
+  )
+})
+
+test_that("as.party.lgb.Booster() works with integer-coded categorical predictors", {
+  cat_fit <- get_lgb_cat_fit()
+
+  for (i in 1:3) {
+    p <- as.party(cat_fit$fit, tree = i, data = cat_fit$codes)
+    expect_s3_class(p, "constparty")
+    fitted_ids <- p$fitted[["(fitted)"]]
+    expect_all_equal(rowSums(table(fitted_ids, cat_fit$leaves[, i]) > 0), 1L)
+    expect_all_equal(colSums(table(fitted_ids, cat_fit$leaves[, i]) > 0), 1L)
+  }
+
+  p <- as.party(cat_fit$fit, tree = 1L, data = cat_fit$codes)
+  expect_s3_class(p$data$f, "factor")
+  expect_equal(levels(p$data$f), as.character(0:7))
+})
+
+test_that("as.party.lgb.Booster() validates categorical data", {
+  cat_fit <- get_lgb_cat_fit()
+
+  too_few <- cat_fit$data
+  too_few$f <- factor(as.character(too_few$f), levels = letters[1:3])
+  expect_snapshot(
+    as.party(cat_fit$fit, tree = 1L, data = too_few),
+    error = TRUE
+  )
+})
+
 test_that("active_predictors.lgb.Booster() returns correct structure", {
   skip_if_not_installed("lightgbm")
 
@@ -1297,4 +1418,19 @@ test_that("var_imp.lgb.Booster() works with single numeric predictor", {
     expect_equal(importance$term, "x")
     expect_true(importance$estimate >= 0)
   }
+})
+
+test_that("active_predictors.lgb.Booster() works with categorical predictors", {
+  cat_fit <- get_lgb_cat_fit()
+
+  res <- active_predictors(cat_fit$fit, tree = 1:3)
+  expect_equal(res$active_predictors[[1]], c("f", "g", "z"))
+})
+
+test_that("var_imp.lgb.Booster() works with categorical predictors", {
+  cat_fit <- get_lgb_cat_fit()
+
+  importance <- var_imp(cat_fit$fit)
+  expect_named(importance, c("term", "estimate"))
+  expect_setequal(importance$term, c("f", "g", "z"))
 })

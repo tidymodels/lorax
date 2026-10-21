@@ -38,6 +38,36 @@
       Error in `as.party()`:
       ! `data` must contain the response variable in addition to predictors.
 
+# extract_rules.lgb.Booster() validates categorical data
+
+    Code
+      extract_rules(cat_fit$fit, tree = 1L, data = too_few)
+    Condition
+      Error in `extract_rules()`:
+      ! Invalid category codes for f.
+      x The model uses codes 3, 4, and 6.
+      x The factor in `data` only has 3 levels.
+      i Codes are assumed to be `as.integer(factor) - 1L`.
+
+---
+
+    Code
+      extract_rules(cat_fit$fit, tree = 1L, data = as.matrix(cat_fit$codes))
+    Condition
+      Error in `extract_rules()`:
+      ! `data` must be a data frame, not a double matrix.
+
+# as.party.lgb.Booster() validates categorical data
+
+    Code
+      as.party(cat_fit$fit, tree = 1L, data = too_few)
+    Condition
+      Error in `as.party()`:
+      ! Invalid category codes for f.
+      x The model uses codes 3, 4, and 6.
+      x The factor in `data` only has 3 levels.
+      i Codes are assumed to be `as.integer(factor) - 1L`.
+
 # active_predictors.lgb.Booster() validates tree argument
 
     Code

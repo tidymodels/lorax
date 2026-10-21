@@ -10,8 +10,8 @@ rect_split_to_expr(split)
 \item{split}{A named list with three required elements:
 \itemize{
 \item \code{column}: character string - variable name for the split.
-\item \code{value}: numeric, character, or character vector - the split.
-threshold/value(s)
+\item \code{value}: the split threshold/value(s). A single numeric or character
+value, or a numeric or character vector when \code{operator} is \code{\%in\%}.
 \item \code{operator}: character string - one of: \code{<}, \code{<=}, \code{>}, \code{>=}, \code{==},.
 \code{\%in\%}
 }}
