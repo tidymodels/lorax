@@ -4,7 +4,7 @@
 \alias{extract_rules.lgb.Booster}
 \title{Extract rules from an lgb.Booster model}
 \usage{
-\method{extract_rules}{lgb.Booster}(x, tree = 1L, ...)
+\method{extract_rules}{lgb.Booster}(x, tree = 1L, data = NULL, ...)
 }
 \arguments{
 \item{x}{An \code{lgb.Booster} object from the \pkg{lightgbm} package.}
@@ -13,6 +13,11 @@
 1-based indexing (default is \code{1L}). For multiclass models with \code{num_class}
 classes and \code{nrounds} boosting rounds, there are \code{num_class * nrounds}
 total trees.}
+
+\item{data}{An optional data frame of the training data. It is only used to
+translate the integer codes of categorical predictors into factor levels.
+Factor columns with the same names as the categorical predictors are
+used; other columns are ignored.}
 
 \item{...}{Not currently used.}
 }
@@ -37,9 +42,16 @@ indexing for the \code{tree} parameter and output \code{id} column (R convention
 Split conditions in \pkg{lightgbm} follow the pattern: left child when feature <=
 threshold, right child when feature > threshold. Rules are combinations of
 these conditions using AND logic.
+\subsection{Categorical predictors}{
 
-Note: This function does not work with \pkg{lightgbm} models containing
-categorical features.
+\pkg{lightgbm} requires categorical predictors to be encoded as
+non-negative integers and the model only stores these codes. If \code{data}
+contains a factor column for a categorical predictor, the codes are
+assumed to be \code{as.integer(factor) - 1L} (the encoding used by
+\pkg{bonsai}) and the rules are written in terms of the factor levels
+(e.g., \code{island \%in\% c("Biscoe", "Dream")}). Otherwise, the rules use the
+integer codes (e.g., \code{island \%in\% c(0L, 1L)}).
+}
 }
 \examples{
 if (rlang::is_installed("lightgbm")) {
@@ -77,6 +89,35 @@ if (rlang::is_installed("lightgbm")) {
     verbose = -1
   )
   rules_reg <- extract_rules(bst_reg, tree = 1L)
+
+  # Categorical predictors, encoded as 0-based integers
+  if (rlang::is_installed("palmerpenguins")) {
+    penguins <- na.omit(palmerpenguins::penguins)
+    x_cat <- data.frame(
+      island = as.integer(penguins$island) - 1L,
+      bill_length_mm = penguins$bill_length_mm
+    )
+    dtrain_cat <- lightgbm::lgb.Dataset(
+      as.matrix(x_cat),
+      label = penguins$body_mass_g,
+      categorical_feature = "island"
+    )
+    set.seed(8126)
+    bst_cat <- lightgbm::lgb.train(
+      params = list(
+        objective = "regression", max_depth = 2, num_threads = 1L
+      ),
+      data = dtrain_cat,
+      nrounds = 3,
+      verbose = -1
+    )
+
+    # Rules with integer codes
+    extract_rules(bst_cat)
+
+    # Rules with factor levels
+    extract_rules(bst_cat, data = penguins)
+  }
 }
 
 }

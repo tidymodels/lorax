@@ -9,6 +9,10 @@
 #'   1-based indexing (default is `1L`). For multiclass models with `num_class`
 #'   classes and `nrounds` boosting rounds, there are `num_class * nrounds`
 #'   total trees.
+#' @param data An optional data frame of the training data. It is only used to
+#'   translate the integer codes of categorical predictors into factor levels.
+#'   Factor columns with the same names as the categorical predictors are
+#'   used; other columns are ignored.
 #' @param ... Not currently used.
 #'
 #' @return A tibble with class `c("rule_set_lgb.Booster", "rule_set")` and
@@ -25,8 +29,15 @@
 #' threshold, right child when feature > threshold. Rules are combinations of
 #' these conditions using AND logic.
 #'
-#' Note: This function does not work with \pkg{lightgbm} models containing
-#' categorical features.
+#' ## Categorical predictors
+#'
+#' \pkg{lightgbm} requires categorical predictors to be encoded as
+#' non-negative integers and the model only stores these codes. If `data`
+#' contains a factor column for a categorical predictor, the codes are
+#' assumed to be `as.integer(factor) - 1L` (the encoding used by
+#' \pkg{bonsai}) and the rules are written in terms of the factor levels
+#' (e.g., `island %in% c("Biscoe", "Dream")`). Otherwise, the rules use the
+#' integer codes (e.g., `island %in% c(0L, 1L)`).
 #'
 #' @examples
 #' if (rlang::is_installed("lightgbm")) {
@@ -64,10 +75,39 @@
 #'     verbose = -1
 #'   )
 #'   rules_reg <- extract_rules(bst_reg, tree = 1L)
+#'
+#'   # Categorical predictors, encoded as 0-based integers
+#'   if (rlang::is_installed("palmerpenguins")) {
+#'     penguins <- na.omit(palmerpenguins::penguins)
+#'     x_cat <- data.frame(
+#'       island = as.integer(penguins$island) - 1L,
+#'       bill_length_mm = penguins$bill_length_mm
+#'     )
+#'     dtrain_cat <- lightgbm::lgb.Dataset(
+#'       as.matrix(x_cat),
+#'       label = penguins$body_mass_g,
+#'       categorical_feature = "island"
+#'     )
+#'     set.seed(8126)
+#'     bst_cat <- lightgbm::lgb.train(
+#'       params = list(
+#'         objective = "regression", max_depth = 2, num_threads = 1L
+#'       ),
+#'       data = dtrain_cat,
+#'       nrounds = 3,
+#'       verbose = -1
+#'     )
+#'
+#'     # Rules with integer codes
+#'     extract_rules(bst_cat)
+#'
+#'     # Rules with factor levels
+#'     extract_rules(bst_cat, data = penguins)
+#'   }
 #' }
 #'
 #' @export
-extract_rules.lgb.Booster <- function(x, tree = 1L, ...) {
+extract_rules.lgb.Booster <- function(x, tree = 1L, data = NULL, ...) {
   rlang::check_installed("lightgbm")
   # Validate tree parameter
   if (!is.numeric(tree) || length(tree) != 1 || tree != as.integer(tree)) {
@@ -80,6 +120,12 @@ extract_rules.lgb.Booster <- function(x, tree = 1L, ...) {
   if (tree < 1) {
     cli::cli_abort(
       "{.arg tree} must be >= 1, not {tree}."
+    )
+  }
+
+  if (!is.null(data) && !is.data.frame(data)) {
+    cli::cli_abort(
+      "{.arg data} must be a data frame, not {.obj_type_friendly {data}}."
     )
   }
 
@@ -117,11 +163,18 @@ extract_rules.lgb.Booster <- function(x, tree = 1L, ...) {
     )
   }
 
+  cat_levels <- lgb_cat_levels(x, tree_dt, data)
+
   # Get terminal node IDs (0-based in tree_dt)
   terminal_ids <- tree_dt$leaf_index[!is.na(tree_dt$leaf_index)]
 
   # Build rules for each terminal node
-  rules_list <- lapply(terminal_ids, lgb_extract_leaf_rule, tree_dt = tree_dt)
+  rules_list <- lapply(
+    terminal_ids,
+    lgb_extract_leaf_rule,
+    tree_dt = tree_dt,
+    cat_levels = cat_levels
+  )
 
   # Return tibble with 1-based IDs
   tibble::tibble(
@@ -134,7 +187,7 @@ extract_rules.lgb.Booster <- function(x, tree = 1L, ...) {
 }
 
 # Internal helper: extract rule for a single terminal node
-lgb_extract_leaf_rule <- function(leaf_id, tree_dt) {
+lgb_extract_leaf_rule <- function(leaf_id, tree_dt, cat_levels) {
   # Build path from root to this terminal node
   path <- lgb_build_node_path(leaf_id, tree_dt)
 
@@ -144,8 +197,13 @@ lgb_extract_leaf_rule <- function(leaf_id, tree_dt) {
     parent <- path[i]
     child <- path[i + 1]
     is_child_leaf <- (i == length(path) - 1)
-    split_info <- lgb_get_split_info(parent, child, tree_dt, is_child_leaf)
-    split_exprs[[i]] <- rect_split_to_expr(split_info)
+    split_exprs[[i]] <- lgb_get_split_expr(
+      parent,
+      child,
+      tree_dt,
+      is_child_leaf,
+      cat_levels
+    )
   }
 
   combine_rule_elements(split_exprs)
@@ -191,12 +249,13 @@ lgb_build_node_path <- function(leaf_index, tree_dt) {
   path
 }
 
-# Internal helper to get split information
-lgb_get_split_info <- function(
+# Internal helper to get the split expression from a parent to one child
+lgb_get_split_expr <- function(
   parent_split_index,
   child_node,
   tree_dt,
-  is_child_leaf
+  is_child_leaf,
+  cat_levels
 ) {
   # Get parent row (must be an internal node)
   parent_row <- tree_dt[
@@ -207,52 +266,158 @@ lgb_get_split_info <- function(
     cli::cli_abort("Could not find parent node {parent_split_index}.")
   }
 
-  # Check for categorical splits (not supported)
-  decision_type <- parent_row$decision_type[1]
-  if (decision_type == "==") {
-    cli::cli_abort(
-      "Categorical features are not currently supported."
+  # lgb.model.dt.tree() rows are in pre-order (left child first), so the first
+  # child row of the parent is the left child. Split and leaf indices overlap,
+  # so each child is matched using the index column for its node type.
+  is_child_row <- (!is.na(tree_dt$split_index) &
+    !is.na(tree_dt$node_parent) &
+    tree_dt$node_parent == parent_split_index) |
+    (!is.na(tree_dt$leaf_index) &
+      !is.na(tree_dt$leaf_parent) &
+      tree_dt$leaf_parent == parent_split_index)
+  left_row <- tree_dt[which(is_child_row)[1], ]
+  if (is_child_leaf) {
+    is_left_child <- !is.na(left_row$leaf_index) &&
+      left_row$leaf_index == child_node
+  } else {
+    is_left_child <- !is.na(left_row$split_index) &&
+      left_row$split_index == child_node
+  }
+
+  feature <- parent_row$split_feature[1]
+  threshold <- parent_row$threshold[1]
+
+  if (parent_row$decision_type[1] == "==") {
+    return(
+      lgb_cat_split_expr(feature, threshold, is_left_child, cat_levels)
     )
   }
 
-  # Get all children of this parent at the next depth
-  parent_depth <- parent_row$depth[1]
-  children_internal <- tree_dt[
-    !is.na(tree_dt$split_index) &
-      tree_dt$node_parent == parent_split_index &
-      tree_dt$depth == parent_depth + 1,
-  ]
-  children_leaves <- tree_dt[
-    !is.na(tree_dt$leaf_index) &
-      tree_dt$leaf_parent == parent_split_index &
-      tree_dt$depth == parent_depth + 1,
-  ]
-
-  # Combine and get IDs
-  all_child_ids <- c(
-    children_internal$split_index,
-    children_leaves$leaf_index
-  )
-
-  # Left child is the one with smaller ID
-  is_left_child <- child_node == min(all_child_ids, na.rm = TRUE)
-
   # Numerical split (decision_type == "<=")
   # LightGBM convention: left child when feature <= threshold
-  threshold <- parent_row$threshold[1]
-  feature <- parent_row$split_feature[1]
-
   if (is_left_child) {
     operator <- "<="
   } else {
     operator <- ">"
   }
 
-  list(
+  rect_split_to_expr(list(
     column = feature,
-    value = threshold,
+    value = as.numeric(threshold),
     operator = operator
-  )
+  ))
+}
+
+# Internal helper to build the expression for a categorical split. Codes in
+# the threshold go left; all other codes go right.
+lgb_cat_split_expr <- function(feature, threshold, is_left_child, cat_levels) {
+  lvls <- cat_levels[[feature]]
+  left_codes <- lgb_parse_cat_threshold(threshold)
+  left_values <- lgb_codes_to_values(left_codes, lvls, feature)
+
+  if (is_left_child) {
+    values <- left_values
+  } else {
+    values <- setdiff(lvls, left_values)
+    if (length(values) == 0) {
+      return(rlang::call2("!", lgb_in_expr(feature, left_values)))
+    }
+  }
+
+  lgb_in_expr(feature, values)
+}
+
+# Internal helper: `==` for a single value, `%in%` otherwise
+lgb_in_expr <- function(feature, values) {
+  if (length(values) == 1) {
+    operator <- "=="
+  } else {
+    operator <- "%in%"
+  }
+  rect_split_to_expr(list(
+    column = feature,
+    value = values,
+    operator = operator
+  ))
+}
+
+# Internal helper to parse a categorical threshold such as "0||2||5"
+lgb_parse_cat_threshold <- function(threshold) {
+  as.integer(strsplit(threshold, "||", fixed = TRUE)[[1]])
+}
+
+# Internal helper: non-negative category codes seen in training for each
+# categorical feature. lgb.model.dt.tree() does not include these, so they are
+# read from the model dump.
+lgb_cat_codes <- function(x) {
+  rlang::check_installed("jsonlite")
+  feature_infos <- jsonlite::fromJSON(
+    lightgbm::lgb.dump(x),
+    simplifyVector = TRUE
+  )$feature_infos
+  lapply(feature_infos, function(info) {
+    codes <- unlist(info$values)
+    sort(as.integer(codes[codes >= 0]))
+  })
+}
+
+# Internal helper: for each categorical feature used in the splits, either the
+# factor levels from `data` (code k is level k + 1) or the integer codes seen
+# in training
+lgb_cat_levels <- function(
+  x,
+  tree_dt,
+  data = NULL,
+  call = rlang::caller_env()
+) {
+  is_cat <- !is.na(tree_dt$decision_type) & tree_dt$decision_type == "=="
+  cat_vars <- unique(tree_dt$split_feature[is_cat])
+
+  res <- list()
+  codes <- NULL
+  for (v in cat_vars) {
+    if (!is.null(data) && v %in% names(data) && is.factor(data[[v]])) {
+      res[[v]] <- levels(data[[v]])
+      split_codes <- lapply(
+        tree_dt$threshold[is_cat & tree_dt$split_feature == v],
+        lgb_parse_cat_threshold
+      )
+      lgb_codes_to_values(unlist(split_codes), res[[v]], v, call = call)
+    } else {
+      if (is.null(codes)) {
+        codes <- lgb_cat_codes(x)
+      }
+      res[[v]] <- codes[[v]]
+    }
+  }
+  res
+}
+
+# Internal helper to convert category codes to factor levels (or keep the
+# codes when no levels are available)
+lgb_codes_to_values <- function(
+  codes,
+  lvls,
+  feature,
+  call = rlang::caller_env()
+) {
+  if (!is.character(lvls)) {
+    return(codes)
+  }
+  bad <- unique(codes[codes < 0 | codes >= length(lvls)])
+  if (length(bad) > 0) {
+    n_lvls <- length(lvls)
+    cli::cli_abort(
+      c(
+        "Invalid category codes for {.field {feature}}.",
+        "x" = "The model uses {cli::qty(length(bad))}code{?s} {bad}.",
+        "x" = "The factor in {.arg data} only has {n_lvls} level{?s}.",
+        "i" = "Codes are assumed to be {.code as.integer(factor) - 1L}."
+      ),
+      call = call
+    )
+  }
+  lvls[codes + 1L]
 }
 
 # ------------------------------------------------------------------------------
@@ -310,6 +475,18 @@ lgb_get_split_info <- function(
 #' - `decision_type "<="`: left child when feature <= threshold
 #' - right child when feature > threshold
 #' - \pkg{partykit} split created with `right = FALSE` (left interval closed)
+#' - `decision_type "=="`: categorical split. `threshold` lists the category
+#'   codes that go to the left child (e.g., `"0||2"`); all other codes go to
+#'   the right child.
+#'
+#' ## Categorical predictors
+#'
+#' \pkg{lightgbm} requires categorical predictors to be encoded as
+#' non-negative integers. If the corresponding column in `data` is a factor,
+#' the codes are assumed to be `as.integer(factor) - 1L` (the encoding used by
+#' \pkg{bonsai}) and the splits use the factor levels. If the column is
+#' numeric (the integer codes used for training), it is converted to a factor
+#' whose levels are the codes seen during training.
 #'
 #' ## Child node references
 #'
@@ -438,42 +615,6 @@ as.party.lgb.Booster <- function(obj, tree = 1L, data, ...) {
     var_names <- character(0)
   }
 
-  # Handle single-node tree (root is leaf)
-  if (nrow(tree_df) == 1 && !is.na(tree_df$leaf_index[1])) {
-    root_node <- partykit::partynode(id = 1L)
-  } else {
-    # Find root node (node_parent is NA)
-    root_row <- tree_df[is.na(tree_df$node_parent), ]
-    if (nrow(root_row) == 0) {
-      # Fallback: root is at depth 0
-      root_row <- tree_df[tree_df$depth == 0, ]
-    }
-
-    if (nrow(root_row) == 0) {
-      cli::cli_abort("Cannot find root node in tree structure.")
-    }
-
-    # Root node is identified by split_index (if internal) or leaf_index (if leaf)
-    if (!is.na(root_row$split_index[1])) {
-      root_id <- root_row$split_index[1]
-      is_root_leaf <- FALSE
-    } else {
-      root_id <- root_row$leaf_index[1]
-      is_root_leaf <- TRUE
-    }
-
-    # Build partynode structure recursively from root
-    root_node <- lgb_build_partynode(
-      node_id = root_id,
-      is_leaf = is_root_leaf,
-      tree_df = tree_df,
-      var_names = var_names
-    )
-
-    # Assign sequential IDs
-    root_node <- assign_node_ids(root_node)$node
-  }
-
   # Validate and extract data
   # Map LightGBM feature names to data columns
   if (all(grepl("^Column_[0-9]+$", feature_names))) {
@@ -510,6 +651,66 @@ as.party.lgb.Booster <- function(obj, tree = 1L, data, ...) {
     for (col in response_cols) {
       orig_data[[col]] <- data[[col]]
     }
+  }
+
+  # Categorical predictors must be factors for partykit. Record the lightgbm
+  # code for each factor level so splits can be mapped to levels.
+  is_cat <- !is.na(tree_df$decision_type) & tree_df$decision_type == "=="
+  cat_codes <- list()
+  model_codes <- NULL
+  for (f in unique(tree_df$split_feature[is_cat])) {
+    col <- var_names[lgb_feature_varid(f, var_names)]
+    if (is.factor(orig_data[[col]])) {
+      split_codes <- lapply(
+        tree_df$threshold[is_cat & tree_df$split_feature == f],
+        lgb_parse_cat_threshold
+      )
+      lgb_codes_to_values(unlist(split_codes), levels(orig_data[[col]]), f)
+      cat_codes[[f]] <- seq_along(levels(orig_data[[col]])) - 1L
+    } else {
+      if (is.null(model_codes)) {
+        model_codes <- lgb_cat_codes(obj)
+      }
+      cat_codes[[f]] <- model_codes[[f]]
+      orig_data[[col]] <- factor(orig_data[[col]], levels = cat_codes[[f]])
+    }
+  }
+
+  # Handle single-node tree (root is leaf)
+  if (nrow(tree_df) == 1 && !is.na(tree_df$leaf_index[1])) {
+    root_node <- partykit::partynode(id = 1L)
+  } else {
+    # Find root node (node_parent is NA)
+    root_row <- tree_df[is.na(tree_df$node_parent), ]
+    if (nrow(root_row) == 0) {
+      # Fallback: root is at depth 0
+      root_row <- tree_df[tree_df$depth == 0, ]
+    }
+
+    if (nrow(root_row) == 0) {
+      cli::cli_abort("Cannot find root node in tree structure.")
+    }
+
+    # Root node is identified by split_index (if internal) or leaf_index (if leaf)
+    if (!is.na(root_row$split_index[1])) {
+      root_id <- root_row$split_index[1]
+      is_root_leaf <- FALSE
+    } else {
+      root_id <- root_row$leaf_index[1]
+      is_root_leaf <- TRUE
+    }
+
+    # Build partynode structure recursively from root
+    root_node <- lgb_build_partynode(
+      node_id = root_id,
+      is_leaf = is_root_leaf,
+      tree_df = tree_df,
+      var_names = var_names,
+      cat_codes = cat_codes
+    )
+
+    # Assign sequential IDs
+    root_node <- assign_node_ids(root_node)$node
   }
 
   # Check that response is included
@@ -568,9 +769,17 @@ as.party.lgb.Booster <- function(obj, tree = 1L, data, ...) {
 # @param is_leaf Logical, whether current node is a leaf
 # @param tree_df Data.frame with tree structure from lgb.model.dt.tree
 # @param var_names Character vector of variable names
+# @param cat_codes Named list with the lightgbm category code of each factor
+#   level, for each categorical feature
 #
 # @return A partynode object
-lgb_build_partynode <- function(node_id, is_leaf, tree_df, var_names) {
+lgb_build_partynode <- function(
+  node_id,
+  is_leaf,
+  tree_df,
+  var_names,
+  cat_codes
+) {
   # Find current node's row
   if (is_leaf) {
     node_row <- tree_df[
@@ -599,47 +808,35 @@ lgb_build_partynode <- function(node_id, is_leaf, tree_df, var_names) {
 
   # Internal node - get split info
   feature_name <- node_row$split_feature
-  split_val <- as.numeric(node_row$threshold)
   decision_type <- node_row$decision_type
+  is_cat_split <- !is.na(decision_type) && decision_type == "=="
 
-  # Validate split information
-  if (is.na(feature_name) || is.na(split_val) || length(split_val) == 0) {
+  if (is.na(feature_name)) {
     cli::cli_abort(
-      "Internal node {node_id} has invalid split information (feature={feature_name}, threshold={split_val})."
+      "Internal node {node_id} has invalid split information (feature={feature_name})."
     )
   }
 
-  # Check for categorical splits (not fully supported)
-  if (!is.na(decision_type) && decision_type == "==") {
-    cli::cli_abort(
-      "Categorical features are not currently supported."
-    )
-  }
+  varid <- lgb_feature_varid(feature_name, var_names)
 
-  # Map feature name to variable index (1-based)
-  varid <- which(var_names == feature_name)
-  if (length(varid) == 0) {
-    # Try matching LightGBM default names to generic names
-    if (grepl("^Column_[0-9]+$", feature_name)) {
-      feature_idx <- as.integer(sub("^Column_", "", feature_name))
-      varid <- feature_idx + 1L # Convert 0-based to 1-based
-    } else {
+  if (is_cat_split) {
+    # Codes in the threshold go to the left child, all others to the right
+    left_codes <- lgb_parse_cat_threshold(node_row$threshold)
+    split <- partykit::partysplit(
+      varid = as.integer(varid),
+      index = ifelse(cat_codes[[feature_name]] %in% left_codes, 1L, 2L)
+    )
+  } else {
+    split_val <- as.numeric(node_row$threshold)
+    if (is.na(split_val) || length(split_val) == 0) {
       cli::cli_abort(
-        "Feature {feature_name} not found in variable names."
+        "Internal node {node_id} has invalid split information (feature={feature_name}, threshold={split_val})."
       )
     }
+    # LightGBM default: decision_type "<=", left child when feature <= threshold
+    # This requires right = FALSE in partykit (left interval closed)
+    split <- build_partysplit(varid, split_val, right = FALSE)
   }
-
-  if (varid < 1 || varid > length(var_names)) {
-    cli::cli_abort(
-      "Invalid variable index {varid} for feature {feature_name}."
-    )
-  }
-
-  # Create split object
-  # LightGBM default: decision_type "<=", left child when feature <= threshold
-  # This requires right = FALSE in partykit (left interval closed)
-  split <- build_partysplit(varid, split_val, right = FALSE)
 
   # Find children of this node
   # Children have either node_parent or leaf_parent equal to current split_index
@@ -678,15 +875,15 @@ lgb_build_partynode <- function(node_id, is_leaf, tree_df, var_names) {
   right_is_leaf <- !is.na(right_child$leaf_index)
 
   # Get child IDs
-  left_child_id <- if (left_is_leaf) {
-    left_child$leaf_index
+  if (left_is_leaf) {
+    left_child_id <- left_child$leaf_index
   } else {
-    left_child$split_index
+    left_child_id <- left_child$split_index
   }
-  right_child_id <- if (right_is_leaf) {
-    right_child$leaf_index
+  if (right_is_leaf) {
+    right_child_id <- right_child$leaf_index
   } else {
-    right_child$split_index
+    right_child_id <- right_child$split_index
   }
 
   # Recursively build children
@@ -694,13 +891,15 @@ lgb_build_partynode <- function(node_id, is_leaf, tree_df, var_names) {
     left_child_id,
     left_is_leaf,
     tree_df,
-    var_names
+    var_names,
+    cat_codes
   )
   right_node <- lgb_build_partynode(
     right_child_id,
     right_is_leaf,
     tree_df,
-    var_names
+    var_names,
+    cat_codes
   )
 
   # Return internal node
@@ -710,6 +909,30 @@ lgb_build_partynode <- function(node_id, is_leaf, tree_df, var_names) {
     kids = list(left_node, right_node),
     info = list(node_id = node_id)
   )
+}
+
+# Internal helper to map a LightGBM feature name to a variable index (1-based)
+lgb_feature_varid <- function(feature_name, var_names) {
+  varid <- which(var_names == feature_name)
+  if (length(varid) == 0) {
+    # Try matching LightGBM default names to generic names
+    if (grepl("^Column_[0-9]+$", feature_name)) {
+      feature_idx <- as.integer(sub("^Column_", "", feature_name))
+      varid <- feature_idx + 1L # Convert 0-based to 1-based
+    } else {
+      cli::cli_abort(
+        "Feature {feature_name} not found in variable names."
+      )
+    }
+  }
+
+  if (varid < 1 || varid > length(var_names)) {
+    cli::cli_abort(
+      "Invalid variable index {varid} for feature {feature_name}."
+    )
+  }
+
+  varid
 }
 
 # ------------------------------------------------------------------------------

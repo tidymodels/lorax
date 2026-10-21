@@ -220,3 +220,56 @@ get_noisy_cubist_data <- function(n = 100, p = 5) {
   y <- rnorm(n) # Completely independent of x
   list(x = as.data.frame(x), y = y)
 }
+
+# Get data and a lightgbm model with categorical predictors. Factors are
+# encoded as 0-based integer codes (bonsai's convention).
+get_lgb_cat_fit <- function() {
+  skip_if_not_installed("lightgbm")
+  set.seed(8317)
+  n <- 1000
+  data <- data.frame(
+    f = factor(sample(letters[1:8], n, replace = TRUE)),
+    g = factor(sample(c("u", "v"), n, replace = TRUE)),
+    z = rnorm(n)
+  )
+  data$y <- c(0, 5, 0, 5, 5, 0, 5, 0)[as.integer(data$f)] +
+    2 * (data$g == "v") +
+    data$z +
+    rnorm(n)
+
+  codes <- data
+  codes$f <- as.integer(codes$f) - 1L
+  codes$g <- as.integer(codes$g) - 1L
+  x <- as.matrix(codes[, c("f", "g", "z")])
+
+  bst <- lightgbm::lgb.train(
+    params = list(
+      objective = "regression",
+      max_depth = 3,
+      num_threads = 1L,
+      max_cat_to_onehot = 1,
+      min_data_per_group = 5,
+      cat_smooth = 1
+    ),
+    data = lightgbm::lgb.Dataset(
+      x,
+      label = data$y,
+      categorical_feature = c("f", "g")
+    ),
+    nrounds = 3,
+    verbose = -1
+  )
+
+  list(
+    fit = bst,
+    data = data,
+    codes = codes,
+    leaves = predict(bst, x, type = "leaf") + 1L
+  )
+}
+
+# Terminal node ID from a rule set for each row of `data`
+rule_node_ids <- function(rules, data) {
+  hits <- vapply(rules$rules, \(e) eval(e, data), logical(nrow(data)))
+  rules$id[max.col(hits)]
+}
