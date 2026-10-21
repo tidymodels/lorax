@@ -27,11 +27,18 @@
 ---
 
     Code
-      extract_rules(ctr, tree = 1L, data = dat)
+      extract_rules(ctr, tree = 1L)
     Condition
       Error in `extract_rules()`:
-      ! Splits based on categorical target statistics (CTRs) cannot be converted to rules.
-      i Increase `one_hot_max_size` when training so that categorical predictors use one-hot splits.
+      ! `data` must be a data frame when the tree contains categorical splits.
+
+---
+
+    Code
+      extract_rules(ctr, tree = 1L, data = dat["g"])
+    Condition
+      Error in `extract_rules()`:
+      ! `data` must contain features: x.
 
 # as.party.catboost.Model() requires response in data
 

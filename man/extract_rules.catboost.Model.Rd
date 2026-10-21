@@ -14,9 +14,8 @@
 iteration, including for multiclass models.}
 
 \item{data}{A data frame containing the predictors used to train the model.
-This is only required when the tree contains one-hot encoded categorical
-splits since \pkg{catboost} stores hashed values instead of the factor
-levels.}
+This is only required when the tree contains categorical splits since
+\pkg{catboost} stores hashed values instead of the factor levels.}
 
 \item{...}{Not currently used.}
 }
@@ -44,10 +43,30 @@ from left to right.
 
 Numeric splits send observations with \code{feature <= border} to the left and
 \code{feature > border} to the right.
+\subsection{Categorical predictors}{
 
-Categorical predictors are supported when \pkg{catboost} uses one-hot
-splits (see the \code{one_hot_max_size} parameter). Splits based on target
-statistics (CTRs) cannot be expressed as rules and produce an error.
+One-hot categorical splits (see the \code{one_hot_max_size} parameter) become
+\code{==} or \code{\%in\%} conditions.
+
+Most categorical splits use target statistics (CTRs): the levels are
+converted to numeric values based on the outcome and the split compares
+that value to a threshold. Since each level always goes to the same side
+of a split, the split is equivalent to a set of levels. To find these sets,
+the CTR splits are placed in a separate model that \pkg{catboost} uses to
+predict every level of the categorical predictor(s) in \code{data}. A CTR split
+then becomes a condition such as \code{g \%in\% c("b", "c")}.
+
+\pkg{catboost} can also compute CTRs on combinations of features. These
+can include several categorical predictors, binned numeric predictors (e.g.,
+\code{x > 0.5}), and one-hot indicators. In this case, every combination of
+levels is evaluated, and the rule is a set of combinations, such as
+\code{(g == "a" & h \%in\% c("A", "B")) | (g == "b" & h == "C")}.
+
+Levels that were not in the training set use a prior value for the CTR.
+The side of the split that they go to is expressed as the negation of the
+other side (e.g., \code{!(g \%in\% c("a", "d"))}) so that the rules match how
+\pkg{catboost} would predict new levels.
+}
 }
 \examples{
 if (rlang::is_installed("catboost")) {

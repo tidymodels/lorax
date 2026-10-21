@@ -115,8 +115,60 @@ test_that("extract_rules.catboost.Model() errors informatively", {
   one_hot <- fit_catboost(dat[, c("x", "g")], dat$y, one_hot_max_size = 10)
   expect_snapshot(extract_rules(one_hot, tree = 1L), error = TRUE)
 
-  ctr <- fit_catboost(dat[, c("x", "g")], dat$y, iterations = 1)
-  expect_snapshot(extract_rules(ctr, tree = 1L, data = dat), error = TRUE)
+  ctr <- fit_catboost(dat[, c("x", "g")], dat$y)
+  expect_snapshot(extract_rules(ctr, tree = 1L), error = TRUE)
+  expect_snapshot(extract_rules(ctr, tree = 1L, data = dat["g"]), error = TRUE)
+})
+
+test_that("extract_rules.catboost.Model() converts CTR splits to level sets", {
+  dat <- get_catboost_ctr_data()
+  x <- dat[, c("x", "g", "h")]
+  symmetric <- fit_catboost(x, dat$y, iterations = 10)
+  depthwise <- fit_catboost(
+    x,
+    dat$y,
+    iterations = 10,
+    grow_policy = "Depthwise"
+  )
+
+  for (fit in list(symmetric, depthwise)) {
+    expect_all_true(catboost_rules_match(fit, x))
+  }
+
+  rules <- purrr::map(1:10, \(i) extract_rules(symmetric, tree = i, data = x))
+  text <- vapply(dplyr::bind_rows(rules)$rules, rule_text, character(1))
+  expect_match(text, "g %in%", fixed = TRUE, all = FALSE)
+})
+
+test_that("extract_rules.catboost.Model() converts CTR feature combinations", {
+  dat <- get_catboost_ctr_data()
+  x <- dat[, c("x", "g", "h")]
+  fit <- fit_catboost(
+    x,
+    dat$y,
+    iterations = 100,
+    depth = 6,
+    max_ctr_complexity = 4
+  )
+
+  combos <- catboost_ctr_trees(fit, x)
+  expect_gt(length(combos$categorical), 0)
+  expect_gt(length(combos$numeric), 0)
+
+  trees <- unique(c(combos$categorical[1:2], combos$numeric[1:2]))
+  expect_all_true(catboost_rules_match(fit, x, trees = trees))
+})
+
+test_that("extract_rules.catboost.Model() handles new levels in CTR splits", {
+  dat <- get_catboost_ctr_data()
+  x <- dat[, c("x", "g", "h")]
+  fit <- fit_catboost(x, dat$y, iterations = 10, max_ctr_complexity = 4)
+
+  new_x <- x[1:20, ]
+  new_x$g <- factor(rep(c("a", "new"), 10))
+  new_x$h <- factor(rep(c("unknown", "B"), each = 10))
+
+  expect_all_true(catboost_rules_match(fit, new_x, data = x))
 })
 
 # ------------------------------------------------------------------------------
@@ -155,6 +207,35 @@ test_that("as.party.catboost.Model() works with one-hot splits", {
     sort(unname(as.vector(table(p$fitted[["(fitted)"]])))),
     sort(unname(colSums(memb)[colSums(memb) > 0]))
   )
+})
+
+test_that("as.party.catboost.Model() works with CTR splits", {
+  dat <- get_catboost_ctr_data()
+  x <- dat[, c("x", "g", "h")]
+  fit <- fit_catboost(
+    x,
+    dat$y,
+    iterations = 100,
+    depth = 6,
+    max_ctr_complexity = 4
+  )
+  combos <- catboost_ctr_trees(fit, x)
+
+  for (tree in c(1L, combos$categorical[1], combos$numeric[1])) {
+    p <- as.party(fit, tree = tree, data = dat)
+    expect_s3_class(p, "constparty")
+
+    rules <- extract_rules(fit, tree = tree, data = x)
+    rule_id <- max.col(rule_membership(rules, x))
+    node_id <- p$fitted[["(fitted)"]]
+    expect_all_equal(
+      as.vector(tapply(rule_id, node_id, function(i) length(unique(i)))),
+      1L
+    )
+  }
+
+  p <- as.party(fit, tree = combos$categorical[1], data = dat)
+  expect_contains(names(p$data), "g:h")
 })
 
 test_that("as.party.catboost.Model() works with unnamed features", {

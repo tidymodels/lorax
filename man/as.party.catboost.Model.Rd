@@ -33,7 +33,13 @@ into a binary tree and branches that cannot be reached are removed.
 
 Numeric splits send observations with \code{feature <= border} to the left
 child. One-hot categorical splits send the matching level to the right
-child. Splits based on target statistics (CTRs) are not supported.
+child.
+
+Categorical splits based on target statistics (CTRs) are converted to
+factor splits using the approach described in
+\code{\link[=extract_rules.catboost.Model]{extract_rules.catboost.Model()}}. When a CTR uses a combination of
+features, a factor with one level per combination is added to the data
+(named, for example, \code{g:h}) and the split uses that factor.
 
 If the model was trained without feature names, predictors are matched to
 the columns of \code{data} by position.
