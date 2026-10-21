@@ -2,6 +2,15 @@
 
 ## lorax (development version)
 
+- [`active_predictors()`](https://lorax.tidymodels.org/dev/reference/active_predictors.md),
+  [`as.party()`](https://rdrr.io/pkg/partykit/man/party-coercion.html),
+  [`extract_rules()`](https://lorax.tidymodels.org/dev/reference/extract_rules.md),
+  and [`var_imp()`](https://generics.r-lib.org/reference/var_imp.html)
+  now have methods for catboost models (`catboost.Model`). Symmetric and
+  non-symmetric trees are supported. Categorical splits, both one-hot
+  and those based on target statistics (CTRs), are converted to sets of
+  factor levels, including CTRs on combinations of features.
+
 - [`as.party()`](https://rdrr.io/pkg/partykit/man/party-coercion.html)
   and
   [`extract_rules()`](https://lorax.tidymodels.org/dev/reference/extract_rules.md)

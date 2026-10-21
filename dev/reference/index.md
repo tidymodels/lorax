@@ -8,6 +8,8 @@
   : Convert C5.0 model to party object
 - [`as.party(`*`<bart>`*`)`](https://lorax.tidymodels.org/dev/reference/as.party.bart.md)
   : Convert BART model to party object
+- [`as.party(`*`<catboost.Model>`*`)`](https://lorax.tidymodels.org/dev/reference/as.party.catboost.Model.md)
+  : Convert catboost model to party object
 - [`as.party(`*`<grf>`*`)`](https://lorax.tidymodels.org/dev/reference/as.party.grf.md)
   : Convert grf model to party object
 - [`as.party(`*`<lgb.Booster>`*`)`](https://lorax.tidymodels.org/dev/reference/as.party.lgb.Booster.md)
@@ -26,6 +28,8 @@
   : Extract an expression that defines a path to a terminal node
 - [`extract_rules(`*`<bart>`*`)`](https://lorax.tidymodels.org/dev/reference/extract_rules.bart.md)
   : Extract rules from a BART model
+- [`extract_rules(`*`<catboost.Model>`*`)`](https://lorax.tidymodels.org/dev/reference/extract_rules.catboost.Model.md)
+  : Extract rules from a catboost model
 - [`extract_rules(`*`<cubist>`*`)`](https://lorax.tidymodels.org/dev/reference/extract_rules.cubist.md)
   : Extract rules from a Cubist model
 - [`extract_rules(`*`<lgb.Booster>`*`)`](https://lorax.tidymodels.org/dev/reference/extract_rules.lgb.Booster.md)
@@ -37,6 +41,7 @@
 - [`extract_rules(`*`<xgb.Booster>`*`)`](https://lorax.tidymodels.org/dev/reference/extract_rules.xgb.Booster.md)
   : Extract rules from an xgb.Booster model
 - [`var_imp(`*`<ObliqueForest>`*`)`](https://lorax.tidymodels.org/dev/reference/lorax_var_imp.md)
+  [`var_imp(`*`<catboost.Model>`*`)`](https://lorax.tidymodels.org/dev/reference/lorax_var_imp.md)
   [`var_imp(`*`<cforest>`*`)`](https://lorax.tidymodels.org/dev/reference/lorax_var_imp.md)
   [`var_imp(`*`<grf>`*`)`](https://lorax.tidymodels.org/dev/reference/lorax_var_imp.md)
   [`var_imp(`*`<lgb.Booster>`*`)`](https://lorax.tidymodels.org/dev/reference/lorax_var_imp.md)

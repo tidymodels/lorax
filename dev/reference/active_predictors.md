@@ -17,6 +17,9 @@ active_predictors(x, tree = 1L, ...)
 # S3 method for class 'bart'
 active_predictors(x, tree = 1L, ...)
 
+# S3 method for class 'catboost.Model'
+active_predictors(x, tree = 1L, ...)
+
 # S3 method for class 'cforest'
 active_predictors(x, tree = 1L, ...)
 

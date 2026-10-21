@@ -30,7 +30,7 @@ a common interface."><meta property="og:image" content="https://lorax.tidymodels
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Tree Importance Scores</h1>
-      <small class="dont-index">Source: <a href="https://github.com/tidymodels/lorax/blob/main/R/ObliqueForest.R" class="external-link"><code>R/ObliqueForest.R</code></a>, <a href="https://github.com/tidymodels/lorax/blob/main/R/cforest.R" class="external-link"><code>R/cforest.R</code></a>, <a href="https://github.com/tidymodels/lorax/blob/main/R/grf.R" class="external-link"><code>R/grf.R</code></a>, and 6 more</small>
+      <small class="dont-index">Source: <a href="https://github.com/tidymodels/lorax/blob/main/R/ObliqueForest.R" class="external-link"><code>R/ObliqueForest.R</code></a>, <a href="https://github.com/tidymodels/lorax/blob/main/R/catboost.Model.R" class="external-link"><code>R/catboost.Model.R</code></a>, <a href="https://github.com/tidymodels/lorax/blob/main/R/cforest.R" class="external-link"><code>R/cforest.R</code></a>, and 7 more</small>
       <div class="d-none name"><code>lorax_var_imp.Rd</code></div>
     </div>
 
@@ -42,6 +42,9 @@ a common interface.</p>
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="co"># S3 method for class 'ObliqueForest'</span></span>
+<span><span class="fu"><a href="https://generics.r-lib.org/reference/var_imp.html" class="external-link">var_imp</a></span><span class="op">(</span><span class="va">object</span>, complete <span class="op">=</span> <span class="cn">TRUE</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'catboost.Model'</span></span>
 <span><span class="fu"><a href="https://generics.r-lib.org/reference/var_imp.html" class="external-link">var_imp</a></span><span class="op">(</span><span class="va">object</span>, complete <span class="op">=</span> <span class="cn">TRUE</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for class 'cforest'</span></span>

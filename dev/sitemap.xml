@@ -8,6 +8,7 @@
 <url><loc>https://lorax.tidymodels.org/dev/reference/active_predictors.html</loc></url>
 <url><loc>https://lorax.tidymodels.org/dev/reference/as.party.C5.0.html</loc></url>
 <url><loc>https://lorax.tidymodels.org/dev/reference/as.party.bart.html</loc></url>
+<url><loc>https://lorax.tidymodels.org/dev/reference/as.party.catboost.Model.html</loc></url>
 <url><loc>https://lorax.tidymodels.org/dev/reference/as.party.grf.html</loc></url>
 <url><loc>https://lorax.tidymodels.org/dev/reference/as.party.lgb.Booster.html</loc></url>
 <url><loc>https://lorax.tidymodels.org/dev/reference/as.party.randomForest.html</loc></url>
@@ -16,6 +17,7 @@
 <url><loc>https://lorax.tidymodels.org/dev/reference/combine_rule_elements.html</loc></url>
 <url><loc>https://lorax.tidymodels.org/dev/reference/extract_rules.ObliqueForest.html</loc></url>
 <url><loc>https://lorax.tidymodels.org/dev/reference/extract_rules.bart.html</loc></url>
+<url><loc>https://lorax.tidymodels.org/dev/reference/extract_rules.catboost.Model.html</loc></url>
 <url><loc>https://lorax.tidymodels.org/dev/reference/extract_rules.cubist.html</loc></url>
 <url><loc>https://lorax.tidymodels.org/dev/reference/extract_rules.html</loc></url>
 <url><loc>https://lorax.tidymodels.org/dev/reference/extract_rules.lgb.Booster.html</loc></url>
