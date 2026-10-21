@@ -27,6 +27,7 @@ grf
 importances
 leftDaughter
 lgb
+lightgbm
 multiclass
 multiway
 partykit
