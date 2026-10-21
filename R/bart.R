@@ -4,6 +4,7 @@
 #' (Bayesian Additive Regression Trees) model. Each terminal node (leaf)
 #' becomes one rule representing the path from root to that leaf.
 #'
+#' @inheritParams extract_rules
 #' @param x A `bart` object from the \pkg{dbarts} package fitted with
 #'   `keeptrees = TRUE`.
 #' @param tree Integer specifying which tree to extract rules from. Uses
@@ -67,7 +68,14 @@
 #' }
 #'
 #' @export
-extract_rules.bart <- function(x, tree = 1L, chain = 1L, ...) {
+extract_rules.bart <- function(
+  x,
+  tree = 1L,
+  chain = 1L,
+  add_statistics = FALSE,
+  ...
+) {
+  check_bool(add_statistics)
   rlang::check_installed("dbarts")
   # Validate tree parameter
   if (!is.numeric(tree) || length(tree) != 1 || tree != as.integer(tree)) {
@@ -152,7 +160,8 @@ extract_rules.bart <- function(x, tree = 1L, chain = 1L, ...) {
         rules = list(rlang::expr(TRUE)),
         id = 1L
       ) |>
-        tibble::new_tibble(class = c("rule_set_bart", "rule_set"))
+        tibble::new_tibble(class = c("rule_set_bart", "rule_set")) |>
+        maybe_add_rule_statistics(add_statistics)
     )
   }
 
@@ -178,7 +187,8 @@ extract_rules.bart <- function(x, tree = 1L, chain = 1L, ...) {
     id = seq_along(terminal_rows)
   ) |>
     dplyr::arrange(id) |>
-    tibble::new_tibble(class = c("rule_set_bart", "rule_set"))
+    tibble::new_tibble(class = c("rule_set_bart", "rule_set")) |>
+    maybe_add_rule_statistics(add_statistics)
 }
 
 # Internal helper: extract rule for a single terminal node

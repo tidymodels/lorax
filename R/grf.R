@@ -326,7 +326,8 @@ grf_extract_rules_one <- function(tree_num, x) {
 #'   Default is `1L` for the first tree. Values must be between 1 and the
 #'   number of trees in the forest.
 #' @export
-extract_rules.grf <- function(x, tree = 1L, ...) {
+extract_rules.grf <- function(x, tree = 1L, add_statistics = FALSE, ...) {
+  check_bool(add_statistics)
   rlang::check_installed("grf")
 
   # Validate tree argument
@@ -358,7 +359,8 @@ extract_rules.grf <- function(x, tree = 1L, ...) {
 
   # Combine and sort by tree then id
   dplyr::bind_rows(results) |>
-    dplyr::arrange(tree, id)
+    dplyr::arrange(tree, id) |>
+    maybe_add_rule_statistics(add_statistics)
 }
 
 # ------------------------------------------------------------------------------

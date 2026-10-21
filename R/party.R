@@ -19,6 +19,7 @@ party_extract_node_rule <- function(node_id, x) {
 #' `constparty` object. Each terminal node becomes one rule representing the
 #' path from root to that leaf.
 #'
+#' @inheritParams extract_rules
 #' @param x A `party` or `constparty` object from the \pkg{partykit} package.
 #' @param ... Not currently used.
 #'
@@ -31,7 +32,8 @@ party_extract_node_rule <- function(node_id, x) {
 #' extract_rules(fit)
 #'
 #' @export
-extract_rules.party <- function(x, ...) {
+extract_rules.party <- function(x, add_statistics = FALSE, ...) {
+  check_bool(add_statistics)
   terminal_ids <- partykit::nodeids(x, terminal = TRUE)
 
   rules_list <- lapply(terminal_ids, party_extract_node_rule, x = x)
@@ -41,7 +43,8 @@ extract_rules.party <- function(x, ...) {
     rules = rules_list
   ) |>
     dplyr::arrange(id) |>
-    tibble::new_tibble(class = c("rule_set_party", "rule_set"))
+    tibble::new_tibble(class = c("rule_set_party", "rule_set")) |>
+    maybe_add_rule_statistics(add_statistics)
 }
 
 # party-specific helper to build path from root to target node

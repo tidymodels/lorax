@@ -273,7 +273,14 @@ ranger_extract_rules_one <- function(tree_num, x, data) {
 #' @param data Data.frame containing the training data. Required for ranger
 #'   models to properly extract rules with fitted values and node summaries.
 #' @export
-extract_rules.ranger <- function(x, tree = 1L, data = NULL, ...) {
+extract_rules.ranger <- function(
+  x,
+  tree = 1L,
+  data = NULL,
+  add_statistics = FALSE,
+  ...
+) {
+  check_bool(add_statistics)
   rlang::check_installed("ranger")
 
   # Require data parameter
@@ -315,7 +322,8 @@ extract_rules.ranger <- function(x, tree = 1L, data = NULL, ...) {
 
   # Combine and sort by tree then id
   dplyr::bind_rows(results) |>
-    dplyr::arrange(tree, id)
+    dplyr::arrange(tree, id) |>
+    maybe_add_rule_statistics(add_statistics)
 }
 
 # ------------------------------------------------------------------------------

@@ -4,7 +4,7 @@
 \alias{extract_rules.cubist}
 \title{Extract rules from a Cubist model}
 \usage{
-\method{extract_rules}{cubist}(x, committee = 1L, ...)
+\method{extract_rules}{cubist}(x, committee = 1L, add_statistics = FALSE, ...)
 }
 \arguments{
 \item{x}{A \code{cubist} object from the Cubist package.}
@@ -12,6 +12,15 @@
 \item{committee}{An integer vector specifying which committee(s) to extract
 rules from. Defaults to \code{1L} (first committee). Values must be between 1
 and the total number of committees in the model.}
+
+\item{add_statistics}{A single logical. If \code{TRUE}, two integer columns
+are added to the results:
+\itemize{
+\item \code{num_rule_terms}: the number of conditions joined by \code{&} in the rule.
+\item \code{num_rule_predictors}: the number of unique predictors in the rule.
+}
+
+A rule of \code{TRUE} (a tree with no splits) has zero terms and predictors.}
 
 \item{...}{Not used.}
 }

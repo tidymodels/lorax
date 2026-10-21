@@ -4,10 +4,19 @@
 \alias{extract_rules.rpart}
 \title{Extract rules from an rpart model}
 \usage{
-\method{extract_rules}{rpart}(x, ...)
+\method{extract_rules}{rpart}(x, add_statistics = FALSE, ...)
 }
 \arguments{
 \item{x}{An \code{rpart} object from the \pkg{rpart} package.}
+
+\item{add_statistics}{A single logical. If \code{TRUE}, two integer columns
+are added to the results:
+\itemize{
+\item \code{num_rule_terms}: the number of conditions joined by \code{&} in the rule.
+\item \code{num_rule_predictors}: the number of unique predictors in the rule.
+}
+
+A rule of \code{TRUE} (a tree with no splits) has zero terms and predictors.}
 
 \item{...}{Not currently used.}
 }
