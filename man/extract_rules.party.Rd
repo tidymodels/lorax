@@ -4,10 +4,21 @@
 \alias{extract_rules.party}
 \title{Extract rules from a party object}
 \usage{
-\method{extract_rules}{party}(x, ...)
+\method{extract_rules}{party}(x, add_statistics = FALSE, ...)
 }
 \arguments{
 \item{x}{A \code{party} or \code{constparty} object from the \pkg{partykit} package.}
+
+\item{add_statistics}{A single logical. If \code{TRUE}, three integer columns
+are added to the results:
+\itemize{
+\item \code{num_term_nodes}: the number of rules (terminal nodes) in the same tree
+(or committee for Cubist models).
+\item \code{num_rule_terms}: the number of conditions joined by \code{&} in the rule.
+\item \code{num_rule_predictors}: the number of unique predictors in the rule.
+}
+
+A rule of \code{TRUE} (a tree with no splits) has zero terms and predictors.}
 
 \item{...}{Not currently used.}
 }

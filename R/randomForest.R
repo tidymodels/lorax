@@ -368,7 +368,14 @@ rf_extract_rules_one <- function(tree_num, x, data) {
 #'   a placeholder will be created. Providing data enables better rule
 #'   extraction with proper variable context.
 #' @export
-extract_rules.randomForest <- function(x, tree = 1L, data = NULL, ...) {
+extract_rules.randomForest <- function(
+  x,
+  tree = 1L,
+  data = NULL,
+  add_statistics = FALSE,
+  ...
+) {
+  check_bool(add_statistics)
   rlang::check_installed("randomForest")
 
   # Validate tree argument
@@ -402,7 +409,8 @@ extract_rules.randomForest <- function(x, tree = 1L, data = NULL, ...) {
 
   # Combine and sort by tree then id
   dplyr::bind_rows(results) |>
-    dplyr::arrange(tree, id)
+    dplyr::arrange(tree, id) |>
+    maybe_add_rule_statistics(add_statistics)
 }
 
 # ------------------------------------------------------------------------------

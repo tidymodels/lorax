@@ -10,17 +10,17 @@
 \alias{extract_rules.ranger}
 \title{Extract an expression that defines a path to a terminal node}
 \usage{
-\method{extract_rules}{C5.0}(x, tree = 1L, ...)
+\method{extract_rules}{C5.0}(x, tree = 1L, add_statistics = FALSE, ...)
 
-\method{extract_rules}{cforest}(x, tree = 1L, ...)
+\method{extract_rules}{cforest}(x, tree = 1L, add_statistics = FALSE, ...)
 
 extract_rules(x, ...)
 
-\method{extract_rules}{grf}(x, tree = 1L, ...)
+\method{extract_rules}{grf}(x, tree = 1L, add_statistics = FALSE, ...)
 
-\method{extract_rules}{randomForest}(x, tree = 1L, data = NULL, ...)
+\method{extract_rules}{randomForest}(x, tree = 1L, data = NULL, add_statistics = FALSE, ...)
 
-\method{extract_rules}{ranger}(x, tree = 1L, data = NULL, ...)
+\method{extract_rules}{ranger}(x, tree = 1L, data = NULL, add_statistics = FALSE, ...)
 }
 \arguments{
 \item{x}{A object}
@@ -28,6 +28,17 @@ extract_rules(x, ...)
 \item{tree}{Integer vector specifying which trees to extract rules from.
 Default is \code{1L} for the first tree. Values must be between 1 and the
 number of trees in the forest (\code{x$num.trees}).}
+
+\item{add_statistics}{A single logical. If \code{TRUE}, three integer columns
+are added to the results:
+\itemize{
+\item \code{num_term_nodes}: the number of rules (terminal nodes) in the same tree
+(or committee for Cubist models).
+\item \code{num_rule_terms}: the number of conditions joined by \code{&} in the rule.
+\item \code{num_rule_predictors}: the number of unique predictors in the rule.
+}
+
+A rule of \code{TRUE} (a tree with no splits) has zero terms and predictors.}
 
 \item{...}{Other arguments passed to methods}
 

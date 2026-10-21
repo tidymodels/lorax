@@ -12,6 +12,27 @@ test_that("extract_rules.rpart() returns correct structure", {
   expect_type(rules$rules, "list")
 })
 
+test_that("extract_rules.rpart() adds statistics", {
+  skip_if_not_installed("rpart")
+
+  tree <- get_penguins_rpart_tree()
+  rules <- extract_rules(tree, add_statistics = TRUE)
+
+  expect_s3_class(rules, "rule_set_rpart")
+  expect_named(
+    rules,
+    c("id", "rules", "num_term_nodes", "num_rule_terms", "num_rule_predictors")
+  )
+  expect_all_equal(rules$num_term_nodes, nrow(rules))
+  expect_identical(
+    rules$num_rule_predictors,
+    vapply(rules$rules, \(r) length(all.vars(r)), integer(1))
+  )
+  expect_all_true(rules$num_rule_terms >= rules$num_rule_predictors)
+
+  expect_snapshot(extract_rules(tree, add_statistics = "yes"), error = TRUE)
+})
+
 test_that("extract_rules.rpart() extracts all terminal nodes", {
   skip_if_not_installed("rpart")
 

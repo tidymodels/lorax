@@ -4,7 +4,7 @@
 \alias{extract_rules.lgb.Booster}
 \title{Extract rules from an lgb.Booster model}
 \usage{
-\method{extract_rules}{lgb.Booster}(x, tree = 1L, data = NULL, ...)
+\method{extract_rules}{lgb.Booster}(x, tree = 1L, data = NULL, add_statistics = FALSE, ...)
 }
 \arguments{
 \item{x}{An \code{lgb.Booster} object from the \pkg{lightgbm} package.}
@@ -18,6 +18,17 @@ total trees.}
 translate the integer codes of categorical predictors into factor levels.
 Factor columns with the same names as the categorical predictors are
 used; other columns are ignored.}
+
+\item{add_statistics}{A single logical. If \code{TRUE}, three integer columns
+are added to the results:
+\itemize{
+\item \code{num_term_nodes}: the number of rules (terminal nodes) in the same tree
+(or committee for Cubist models).
+\item \code{num_rule_terms}: the number of conditions joined by \code{&} in the rule.
+\item \code{num_rule_predictors}: the number of unique predictors in the rule.
+}
+
+A rule of \code{TRUE} (a tree with no splits) has zero terms and predictors.}
 
 \item{...}{Not currently used.}
 }

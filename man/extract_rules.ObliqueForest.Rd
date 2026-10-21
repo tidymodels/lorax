@@ -4,7 +4,7 @@
 \alias{extract_rules.ObliqueForest}
 \title{Extract rules from an ObliqueForest model}
 \usage{
-\method{extract_rules}{ObliqueForest}(x, tree = 1L, ...)
+\method{extract_rules}{ObliqueForest}(x, tree = 1L, add_statistics = FALSE, ...)
 }
 \arguments{
 \item{x}{An \code{ObliqueForest} object from the \pkg{aorsf} package}
@@ -12,6 +12,17 @@
 \item{tree}{Integer specifying which tree to extract rules from (1-based).
 Default is \code{1L} for the first tree. Must be between 1 and the number of
 trees in the forest (\code{x$n_tree}).}
+
+\item{add_statistics}{A single logical. If \code{TRUE}, three integer columns
+are added to the results:
+\itemize{
+\item \code{num_term_nodes}: the number of rules (terminal nodes) in the same tree
+(or committee for Cubist models).
+\item \code{num_rule_terms}: the number of conditions joined by \code{&} in the rule.
+\item \code{num_rule_predictors}: the number of unique predictors in the rule.
+}
+
+A rule of \code{TRUE} (a tree with no splits) has zero terms and predictors.}
 
 \item{...}{Other arguments passed to methods}
 }

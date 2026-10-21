@@ -4,6 +4,7 @@
 #' Extracts rule conditions from a Cubist regression model as R expressions.
 #' Each rule consists of conditions that define when a linear model applies.
 #'
+#' @inheritParams extract_rules
 #' @param x A `cubist` object from the Cubist package.
 #' @param committee An integer vector specifying which committee(s) to extract
 #'   rules from. Defaults to `1L` (first committee). Values must be between 1
@@ -61,7 +62,13 @@
 #'
 #' @seealso [rules::tidy.cubist()] for extracting rules as text strings
 #' @export
-extract_rules.cubist <- function(x, committee = 1L, ...) {
+extract_rules.cubist <- function(
+  x,
+  committee = 1L,
+  add_statistics = FALSE,
+  ...
+) {
+  check_bool(add_statistics)
   rlang::check_installed("Cubist")
 
   # Validate committee parameter
@@ -98,7 +105,7 @@ extract_rules.cubist <- function(x, committee = 1L, ...) {
   # Add classes following lorax pattern
   class(result_df) <- c("rule_set_cubist", "rule_set", class(result_df))
 
-  result_df
+  maybe_add_rule_statistics(result_df, add_statistics)
 }
 
 # Internal helper to extract rules from a single committee

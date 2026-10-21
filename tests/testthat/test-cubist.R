@@ -171,6 +171,32 @@ test_that("extract_rules.cubist works with multiple committees", {
   }
 })
 
+test_that("extract_rules.cubist adds statistics per committee", {
+  skip_if_not_installed("Cubist")
+
+  data <- get_ames_data(n = 300)
+  mod <- Cubist::cubist(data$x, data$y, committees = 3)
+  rules <- extract_rules(mod, committee = 1:3, add_statistics = TRUE)
+
+  expect_s3_class(rules, "rule_set_cubist")
+  expect_named(
+    rules,
+    c(
+      "committee",
+      "id",
+      "rules",
+      "num_term_nodes",
+      "num_rule_terms",
+      "num_rule_predictors"
+    )
+  )
+  counts <- table(rules$committee)
+  expect_identical(
+    rules$num_term_nodes,
+    as.integer(counts[as.character(rules$committee)])
+  )
+})
+
 test_that("active_predictors.cubist returns correct structure", {
   skip_if_not_installed("Cubist")
   library(Cubist)

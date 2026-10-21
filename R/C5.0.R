@@ -1028,7 +1028,8 @@ c5_extract_rules_one <- function(tree_num, x, data) {
 #'   between 1 and the number of actual trials (`x$trials["Actual"]`).
 #'   For rule-based models, this parameter refers to the trial number.
 #' @export
-extract_rules.C5.0 <- function(x, tree = 1L, ...) {
+extract_rules.C5.0 <- function(x, tree = 1L, add_statistics = FALSE, ...) {
+  check_bool(add_statistics)
   rlang::check_installed("C50")
 
   # Detect model type
@@ -1057,7 +1058,8 @@ extract_rules.C5.0 <- function(x, tree = 1L, ...) {
 
   if (is_rule_model) {
     # Parse rule-based models directly
-    return(c5_extract_rules_from_rules_text(x, tree))
+    res <- c5_extract_rules_from_rules_text(x, tree)
+    return(maybe_add_rule_statistics(res, add_statistics))
   }
 
   # Tree-based model: Parse tree text directly without party conversion
@@ -1085,7 +1087,7 @@ extract_rules.C5.0 <- function(x, tree = 1L, ...) {
   # Add the appropriate S3 classes
   class(result_df) <- c("rule_set_C5.0", "rule_set", class(result_df))
 
-  result_df
+  maybe_add_rule_statistics(result_df, add_statistics)
 }
 
 # ------------------------------------------------------------------------------

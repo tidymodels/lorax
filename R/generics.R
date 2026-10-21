@@ -6,6 +6,14 @@
 #' `x < 1.2`, `y == "red"`, or `z %in% c("blue", "green")`.
 #'
 #' @param x A object
+#' @param add_statistics A single logical. If `TRUE`, three integer columns
+#'   are added to the results:
+#'   * `num_term_nodes`: the number of rules (terminal nodes) in the same tree
+#'     (or committee for Cubist models).
+#'   * `num_rule_terms`: the number of conditions joined by `&` in the rule.
+#'   * `num_rule_predictors`: the number of unique predictors in the rule.
+#'
+#'   A rule of `TRUE` (a tree with no splits) has zero terms and predictors.
 #' @param ... Other arguments passed to methods
 #'
 #' @return A data frame with column `rules` (an R expression) and `id` (an

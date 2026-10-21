@@ -4,6 +4,7 @@
 #' boosted tree model. Each terminal node (leaf) becomes one rule representing
 #' the path from root to that leaf.
 #'
+#' @inheritParams extract_rules
 #' @param x An `lgb.Booster` object from the \pkg{lightgbm} package.
 #' @param tree Integer specifying which tree to extract rules from. Uses
 #'   1-based indexing (default is `1L`). For multiclass models with `num_class`
@@ -107,7 +108,14 @@
 #' }
 #'
 #' @export
-extract_rules.lgb.Booster <- function(x, tree = 1L, data = NULL, ...) {
+extract_rules.lgb.Booster <- function(
+  x,
+  tree = 1L,
+  data = NULL,
+  add_statistics = FALSE,
+  ...
+) {
+  check_bool(add_statistics)
   rlang::check_installed("lightgbm")
   # Validate tree parameter
   if (!is.numeric(tree) || length(tree) != 1 || tree != as.integer(tree)) {
@@ -159,7 +167,8 @@ extract_rules.lgb.Booster <- function(x, tree = 1L, data = NULL, ...) {
         rules = list(rlang::expr(TRUE)),
         id = 1L
       ) |>
-        tibble::new_tibble(class = c("rule_set_lgb.Booster", "rule_set"))
+        tibble::new_tibble(class = c("rule_set_lgb.Booster", "rule_set")) |>
+        maybe_add_rule_statistics(add_statistics)
     )
   }
 
@@ -183,7 +192,8 @@ extract_rules.lgb.Booster <- function(x, tree = 1L, data = NULL, ...) {
     id = as.integer(terminal_ids) + 1L
   ) |>
     dplyr::arrange(id) |>
-    tibble::new_tibble(class = c("rule_set_lgb.Booster", "rule_set"))
+    tibble::new_tibble(class = c("rule_set_lgb.Booster", "rule_set")) |>
+    maybe_add_rule_statistics(add_statistics)
 }
 
 # Internal helper: extract rule for a single terminal node
