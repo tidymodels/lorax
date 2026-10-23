@@ -8,7 +8,7 @@ representing the path from root to that leaf.
 
 ``` r
 # S3 method for class 'catboost.Model'
-extract_rules(x, tree = 1L, data = NULL, ...)
+extract_rules(x, tree = 1L, data = NULL, add_statistics = FALSE, ...)
 ```
 
 ## Arguments
@@ -28,6 +28,19 @@ extract_rules(x, tree = 1L, data = NULL, ...)
   A data frame containing the predictors used to train the model. This
   is only required when the tree contains categorical splits since
   catboost stores hashed values instead of the factor levels.
+
+- add_statistics:
+
+  A single logical. If `TRUE`, two integer columns are added to the
+  results:
+
+  - `num_rule_terms`: the number of conditions joined by `&` in the
+    rule.
+
+  - `num_rule_predictors`: the number of unique predictors in the rule.
+
+  A rule of `TRUE` (a tree with no splits) has zero terms and
+  predictors.
 
 - ...:
 

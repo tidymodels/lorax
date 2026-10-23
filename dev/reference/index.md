@@ -51,6 +51,8 @@
   [`var_imp(`*`<rpart>`*`)`](https://lorax.tidymodels.org/dev/reference/lorax_var_imp.md)
   [`var_imp(`*`<xgb.Booster>`*`)`](https://lorax.tidymodels.org/dev/reference/lorax_var_imp.md)
   : Tree Importance Scores
+- [`num_ensemble_members()`](https://lorax.tidymodels.org/dev/reference/num_ensemble_members.md)
+  : Count the number of members in an ensemble
 - [`obliq_split_to_expr()`](https://lorax.tidymodels.org/dev/reference/obliq_split_to_expr.md)
   : Convert an oblique split to an R expression
 - [`rect_split_to_expr()`](https://lorax.tidymodels.org/dev/reference/rect_split_to_expr.md)
