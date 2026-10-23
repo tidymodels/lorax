@@ -1127,3 +1127,14 @@ test_that("var_imp.randomForest() works with single factor predictor", {
   expect_equal(importance$term, "x")
   expect_true(importance$estimate >= 0)
 })
+
+test_that("num_ensemble_members() counts randomForest trees", {
+  skip_if_not_installed("randomForest")
+
+  penguins <- get_penguins_data()
+
+  set.seed(613)
+  rf <- randomForest::randomForest(species ~ ., data = penguins, ntree = 5)
+
+  expect_identical(num_ensemble_members(rf), 5L)
+})

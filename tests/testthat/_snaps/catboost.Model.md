@@ -1,3 +1,11 @@
+# extract_rules.catboost.Model() adds statistics
+
+    Code
+      extract_rules(fit, add_statistics = "yes")
+    Condition
+      Error in `extract_rules()`:
+      ! `add_statistics` must be `TRUE` or `FALSE`, not the string "yes".
+
 # extract_rules.catboost.Model() errors informatively
 
     Code

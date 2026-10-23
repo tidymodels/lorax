@@ -884,3 +884,16 @@ active_predictors.bart <- function(x, tree = 1L, ...) {
   dplyr::bind_rows(results) |>
     dplyr::arrange(tree)
 }
+
+# ------------------------------------------------------------------------------
+
+#' @rdname num_ensemble_members
+#' @export
+num_ensemble_members.bart <- function(x, ...) {
+  if (is.null(x$fit)) {
+    cli::cli_abort(
+      "{.pkg dbarts} model must be fitted with {.code keeptrees = TRUE} to count trees."
+    )
+  }
+  as.integer(max(x$fit$getTrees()$tree))
+}

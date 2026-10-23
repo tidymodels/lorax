@@ -1058,3 +1058,30 @@ test_that("active_predictors.C5.0() works with single factor predictor", {
     expect_setequal(unique(unlist(active$active_predictors)), "x")
   }
 })
+
+test_that("num_ensemble_members() counts C5.0 trials", {
+  skip_if_not_installed("C50")
+  skip_if_not_installed("palmerpenguins")
+
+  penguins <- get_penguins_data()
+
+  c5_tree <- C50::C5.0(species ~ ., data = penguins)
+  c5_boost <- C50::C5.0(species ~ ., data = penguins, trials = 3)
+  c5_rules <- C50::C5.0(species ~ ., data = penguins, trials = 3, rules = TRUE)
+
+  expect_identical(num_ensemble_members(c5_tree), 1L)
+  expect_identical(num_ensemble_members(c5_boost), 3L)
+  expect_identical(num_ensemble_members(c5_rules), 3L)
+})
+
+test_that("num_ensemble_members() uses the actual number of C5.0 trials", {
+  skip_if_not_installed("C50")
+
+  set.seed(2817)
+  data <- data.frame(x = runif(100), z = runif(100))
+  data$y <- factor(ifelse(data$x > 0.5, "a", "b"))
+  c5_early <- C50::C5.0(y ~ ., data = data, trials = 10)
+
+  expect_identical(unname(c5_early$trials["Requested"]), 10)
+  expect_identical(num_ensemble_members(c5_early), 1L)
+})

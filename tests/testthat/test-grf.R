@@ -940,3 +940,23 @@ test_that("active_predictors.grf() works with single numeric predictor", {
     expect_setequal(unique(unlist(active$active_predictors)), "x")
   }
 })
+
+test_that("num_ensemble_members() counts grf trees", {
+  skip_if_not_installed("grf")
+  skip_if_not_installed("palmerpenguins")
+
+  penguins <- get_penguins_data()
+
+  rf <- grf::regression_forest(
+    X = as.matrix(penguins[, c(
+      "bill_depth_mm",
+      "flipper_length_mm",
+      "body_mass_g"
+    )]),
+    Y = penguins$bill_length_mm,
+    num.trees = 6,
+    num.threads = 1
+  )
+
+  expect_identical(num_ensemble_members(rf), 6L)
+})

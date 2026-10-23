@@ -15,6 +15,25 @@ test_that("extract_rules.catboost.Model() returns correct structure", {
   expect_type(rules$id, "integer")
 })
 
+test_that("extract_rules.catboost.Model() adds statistics", {
+  fit <- fit_catboost(mtcars[, -1], mtcars$mpg)
+
+  rules <- extract_rules(fit, tree = 2L, add_statistics = TRUE)
+
+  expect_s3_class(rules, c("rule_set_catboost.Model", "rule_set"))
+  expect_named(
+    rules,
+    c("tree", "rules", "id", "num_rule_terms", "num_rule_predictors")
+  )
+  expect_all_equal(rules$num_rule_terms, 3L)
+  expect_identical(
+    rules$num_rule_predictors,
+    vapply(rules$rules, \(r) length(all.vars(r)), integer(1))
+  )
+
+  expect_snapshot(extract_rules(fit, add_statistics = "yes"), error = TRUE)
+})
+
 test_that("extract_rules.catboost.Model() matches catboost leaf assignments", {
   x <- mtcars[, -1]
   fit <- fit_catboost(x, mtcars$mpg)
@@ -337,4 +356,10 @@ test_that("cb_hash_strings() matches hashes stored in the model", {
   json <- cb_model_json(fit)
   stored <- unlist(json$features_info$categorical_features[[1]]$values)
   expect_all_true(stored %in% cb_hash_strings(levels(dat$g)))
+})
+
+test_that("num_ensemble_members() counts catboost trees", {
+  fit <- fit_catboost(mtcars[, -1], mtcars$mpg, iterations = 4)
+
+  expect_identical(num_ensemble_members(fit), 4L)
 })

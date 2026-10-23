@@ -715,3 +715,32 @@ test_that("active_predictors.bart() works with single numeric predictor", {
     expect_setequal(unique(unlist(active$active_predictors)), "x")
   }
 })
+
+test_that("num_ensemble_members() counts bart trees", {
+  skip_if_not_installed("dbarts")
+  skip_if_not_installed("palmerpenguins")
+
+  penguins <- get_penguins_data()
+  x <- penguins[, c("bill_depth_mm", "flipper_length_mm", "body_mass_g")]
+
+  fit <- suppressWarnings(dbarts::bart(
+    x.train = x,
+    y.train = penguins$bill_length_mm,
+    keeptrees = TRUE,
+    verbose = FALSE,
+    ntree = 5,
+    nskip = 10,
+    ndpost = 2
+  ))
+  no_trees <- suppressWarnings(dbarts::bart(
+    x.train = x,
+    y.train = penguins$bill_length_mm,
+    verbose = FALSE,
+    ntree = 5,
+    nskip = 10,
+    ndpost = 2
+  ))
+
+  expect_identical(num_ensemble_members(fit), 5L)
+  expect_snapshot(num_ensemble_members(no_trees), error = TRUE)
+})

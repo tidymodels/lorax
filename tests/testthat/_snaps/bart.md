@@ -110,3 +110,11 @@
       Error:
       ! dbarts model must be fitted with `keeptrees = TRUE` to extract active predictors.
 
+# num_ensemble_members() counts bart trees
+
+    Code
+      num_ensemble_members(no_trees)
+    Condition
+      Error in `num_ensemble_members()`:
+      ! dbarts model must be fitted with `keeptrees = TRUE` to count trees.
+

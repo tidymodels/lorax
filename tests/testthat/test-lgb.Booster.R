@@ -1434,3 +1434,30 @@ test_that("var_imp.lgb.Booster() works with categorical predictors", {
   expect_named(importance, c("term", "estimate"))
   expect_setequal(importance$term, c("f", "g", "z"))
 })
+
+test_that("num_ensemble_members() counts lightgbm trees", {
+  skip_if_not_installed("lightgbm")
+  skip_if_not_installed("palmerpenguins")
+
+  penguins <- get_penguins_data()
+  x <- as.matrix(penguins[, -1])
+
+  multi <- lightgbm::lgb.train(
+    params = list(
+      objective = "multiclass",
+      num_class = 3,
+      num_threads = 1L,
+      verbose = -1L
+    ),
+    data = lightgbm::lgb.Dataset(x, label = as.numeric(penguins$species) - 1),
+    nrounds = 2
+  )
+  reg <- lightgbm::lgb.train(
+    params = list(objective = "regression", num_threads = 1L, verbose = -1L),
+    data = lightgbm::lgb.Dataset(x[, -1], label = x[, 1]),
+    nrounds = 4
+  )
+
+  expect_identical(num_ensemble_members(multi), 6L)
+  expect_identical(num_ensemble_members(reg), 4L)
+})

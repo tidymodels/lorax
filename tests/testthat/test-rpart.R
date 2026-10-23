@@ -573,3 +573,11 @@ test_that("var_imp.rpart() works with single factor predictor", {
     expect_equal(nrow(importance), 0)
   }
 })
+
+test_that("num_ensemble_members() has no rpart method", {
+  skip_if_not_installed("rpart")
+
+  tree <- get_penguins_rpart_tree()
+
+  expect_snapshot(num_ensemble_members(tree), error = TRUE)
+})

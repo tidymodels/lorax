@@ -79,3 +79,37 @@ extract_rules <- function(x, ...) {
 active_predictors <- function(x, ...) {
   UseMethod("active_predictors")
 }
+
+# ------------------------------------------------------------------------------
+
+#' Count the number of members in an ensemble
+#'
+#' Ensembles of trees or rules, such as random forests or boosted models,
+#' contain multiple models. This generic returns how many there are. For most
+#' models this is the number of trees. For C5.0 models it is the number of
+#' boosting trials and, for Cubist models, the number of committees. For
+#' multiclass boosted models (e.g., from \pkg{xgboost} and \pkg{lightgbm}), the
+#' count is the total number of trees across all classes.
+#'
+#' The value is the largest index that can be passed to the `tree` (or
+#' `committee`) argument of methods such as [extract_rules()] and
+#' [active_predictors()].
+#'
+#' Methods are only available for model classes that can be ensembles; single
+#' tree models (e.g., from `rpart::rpart()`) do not have a method.
+#'
+#' @param x A object
+#' @param ... Other arguments passed to methods
+#'
+#' @return A single integer.
+#'
+#' @examples
+#' if (rlang::is_installed("ranger")) {
+#'   rf <- ranger::ranger(mpg ~ ., data = mtcars, num.trees = 10)
+#'   num_ensemble_members(rf)
+#' }
+#'
+#' @export
+num_ensemble_members <- function(x, ...) {
+  UseMethod("num_ensemble_members")
+}
