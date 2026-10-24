@@ -6,8 +6,8 @@
 #'
 #' @inheritParams extract_rules
 #' @param x A `catboost.Model` object from the \pkg{catboost} package.
-#' @param tree Integer specifying which tree to extract rules from. Uses
-#'   1-based indexing (default is `1L`). There is one tree per boosting
+#' @param tree Integer vector specifying which trees to extract rules from.
+#'   Uses 1-based indexing (default is `1L`). There is one tree per boosting
 #'   iteration, including for multiclass models.
 #' @param data A data frame containing the predictors used to train the model.
 #'   This is only required when the tree contains categorical splits since
@@ -86,12 +86,27 @@ extract_rules.catboost.Model <- function(
 ) {
   check_bool(add_statistics)
   rlang::check_installed(c("catboost", "jsonlite"))
+
+  if (!is.numeric(tree) || !all(tree == as.integer(tree))) {
+    cli::cli_abort(
+      "{.arg tree} must be an integer vector, not {.obj_type_friendly {tree}}."
+    )
+  }
+  tree <- as.integer(tree)
+
+  # One export and parse of the model covers every requested tree
   json <- cb_model_json(x)
-  tree <- cb_check_tree(tree, cb_num_trees(json))
+  num_trees <- cb_num_trees(json)
+  if (any(tree < 1L) || any(tree > num_trees)) {
+    cli::cli_abort(
+      "{.arg tree} values must be between 1 and {num_trees}."
+    )
+  }
 
   features <- cb_feature_info(json)
+  needs_data <- vapply(tree, cb_tree_needs_data, logical(1), json = json)
   pred_data <- NULL
-  if (cb_tree_needs_data(json, tree)) {
+  if (any(needs_data)) {
     if (is.null(data) || !is.data.frame(data)) {
       cli::cli_abort(
         "{.arg data} must be a data frame when the tree contains categorical
@@ -100,20 +115,21 @@ extract_rules.catboost.Model <- function(
     }
     pred_data <- cb_predictor_data(data, features)
   }
-  ctrs <- cb_decode_ctrs(json, tree, features, pred_data)
   lvls <- cb_decode_levels(features, pred_data)
-  nested <- cb_tree_to_nested(json, tree, features, ctrs)
 
-  leaves <- cb_collect_rules(nested, lvls)
-  ids <- vapply(leaves, function(leaf) leaf$id, integer(1))
-  rules <- lapply(leaves, function(leaf) leaf$rule)
+  results <- lapply(tree, function(tree_num) {
+    ctrs <- cb_decode_ctrs(json, tree_num, features, pred_data)
+    nested <- cb_tree_to_nested(json, tree_num, features, ctrs)
+    leaves <- cb_collect_rules(nested, lvls)
+    tibble::tibble(
+      tree = tree_num,
+      rules = lapply(leaves, function(leaf) leaf$rule),
+      id = vapply(leaves, function(leaf) leaf$id, integer(1))
+    )
+  })
 
-  tibble::tibble(
-    tree = tree,
-    rules = rules,
-    id = ids
-  ) |>
-    dplyr::arrange(id) |>
+  dplyr::bind_rows(results) |>
+    dplyr::arrange(tree, id) |>
     tibble::new_tibble(class = c("rule_set_catboost.Model", "rule_set")) |>
     maybe_add_rule_statistics(add_statistics)
 }

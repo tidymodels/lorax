@@ -1461,3 +1461,27 @@ test_that("num_ensemble_members() counts lightgbm trees", {
   expect_identical(num_ensemble_members(multi), 6L)
   expect_identical(num_ensemble_members(reg), 4L)
 })
+
+test_that("extract_rules.lgb.Booster() handles several trees in one call", {
+  skip_if_not_installed("lightgbm")
+  skip_if_not_installed("palmerpenguins")
+
+  penguins <- get_penguins_data()
+  x <- as.matrix(penguins[, c("bill_length_mm", "flipper_length_mm")])
+  bst <- lightgbm::lgb.train(
+    params = list(objective = "regression", max_depth = 3, num_threads = 1L),
+    data = lightgbm::lgb.Dataset(x, label = penguins$body_mass_g),
+    nrounds = 3,
+    verbose = -1
+  )
+
+  all_rules <- extract_rules(bst, tree = 1:3)
+  one_at_a_time <- dplyr::bind_rows(lapply(1:3, \(i) {
+    extract_rules(bst, tree = i)
+  }))
+
+  expect_s3_class(all_rules, "rule_set_lgb.Booster")
+  expect_equal(names(all_rules), c("tree", "rules", "id"))
+  expect_equal(as.data.frame(all_rules), as.data.frame(one_at_a_time))
+  expect_equal(unique(all_rules$tree), 1:3)
+})

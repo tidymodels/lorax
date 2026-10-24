@@ -9,8 +9,8 @@
 \arguments{
 \item{x}{A \code{catboost.Model} object from the \pkg{catboost} package.}
 
-\item{tree}{Integer specifying which tree to extract rules from. Uses
-1-based indexing (default is \code{1L}). There is one tree per boosting
+\item{tree}{Integer vector specifying which trees to extract rules from.
+Uses 1-based indexing (default is \code{1L}). There is one tree per boosting
 iteration, including for multiclass models.}
 
 \item{data}{A data frame containing the predictors used to train the model.

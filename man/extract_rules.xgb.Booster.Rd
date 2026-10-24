@@ -9,8 +9,8 @@
 \arguments{
 \item{x}{An \code{xgb.Booster} object from the \pkg{xgboost} package.}
 
-\item{tree}{Integer specifying which tree to extract rules from. Uses
-1-based indexing (default is \code{1L}). For multiclass models with \code{num_class}
+\item{tree}{Integer vector specifying which trees to extract rules from.
+Uses 1-based indexing (default is \code{1L}). For multiclass models with \code{num_class}
 classes and \code{nrounds} boosting rounds, there are \code{num_class * nrounds}
 total trees.}
 

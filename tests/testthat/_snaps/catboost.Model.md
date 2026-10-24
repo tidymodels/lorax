@@ -12,17 +12,17 @@
       extract_rules(fit, tree = 0L)
     Condition
       Error in `extract_rules()`:
-      ! `tree` must be between 1 and 3, not 0.
+      ! `tree` values must be between 1 and 3.
     Code
       extract_rules(fit, tree = 10L)
     Condition
       Error in `extract_rules()`:
-      ! `tree` must be between 1 and 3, not 10.
+      ! `tree` values must be between 1 and 3.
     Code
       extract_rules(fit, tree = 1.5)
     Condition
       Error in `extract_rules()`:
-      ! `tree` must be a single integer, not a number.
+      ! `tree` must be an integer vector, not a number.
 
 ---
 

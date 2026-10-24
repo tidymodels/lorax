@@ -308,9 +308,9 @@ grf_find_max_split_var <- function(all_nodes) {
 # Extract rules from grf
 
 # Internal helper: extract rules for one tree from grf
-grf_extract_rules_one <- function(tree_num, x) {
+grf_extract_rules_one <- function(tree_num, x, data = NULL) {
   # Convert to party
-  tree_party <- as.party(x, tree = tree_num)
+  tree_party <- as.party(x, tree = tree_num, data = data)
 
   # Extract rules using party method
   rules <- extract_rules.party(tree_party)
@@ -354,8 +354,18 @@ extract_rules.grf <- function(x, tree = 1L, add_statistics = FALSE, ...) {
     )
   }
 
+  # Rules only need the column names, so a zero-row copy of the training data
+  # avoids computing fitted node ids for every row of every tree
+  rule_data <- NULL
+  if (!is.null(x$X.orig)) {
+    rule_data <- as.data.frame(x$X.orig)[0, , drop = FALSE]
+    if (is.null(colnames(x$X.orig))) {
+      names(rule_data) <- paste0("X", seq_len(ncol(rule_data)))
+    }
+  }
+
   # Extract for each tree
-  results <- lapply(tree, grf_extract_rules_one, x = x)
+  results <- lapply(tree, grf_extract_rules_one, x = x, data = rule_data)
 
   # Combine and sort by tree then id
   dplyr::bind_rows(results) |>

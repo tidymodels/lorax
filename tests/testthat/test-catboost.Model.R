@@ -363,3 +363,17 @@ test_that("num_ensemble_members() counts catboost trees", {
 
   expect_identical(num_ensemble_members(fit), 4L)
 })
+
+test_that("extract_rules.catboost.Model() handles several trees in one call", {
+  x <- mtcars[, -1]
+  fit <- fit_catboost(x, mtcars$mpg)
+
+  all_rules <- extract_rules(fit, tree = 1:3)
+  one_at_a_time <- dplyr::bind_rows(
+    lapply(1:3, \(i) extract_rules(fit, tree = i))
+  )
+
+  expect_s3_class(all_rules, "rule_set_catboost.Model")
+  expect_equal(as.data.frame(all_rules), as.data.frame(one_at_a_time))
+  expect_equal(unique(all_rules$tree), 1:3)
+})

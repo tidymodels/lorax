@@ -194,28 +194,27 @@ as.party.ranger <- function(obj, tree = 1L, data = NULL, ...) {
 # @return A partynode object
 ranger_build_partynode_from_info <- function(node_id, tree_info, var_names) {
   # Find current node's row in tree_info
-  node_row <- tree_info[tree_info$nodeID == node_id, ]
+  row <- match(node_id, tree_info$nodeID)
 
-  if (nrow(node_row) == 0) {
+  if (is.na(row)) {
     cli::cli_abort("Node {node_id} not found in tree info.")
   }
 
-  node_row <- node_row[1, ]
-
   # Check if terminal node
-  if (node_row$terminal) {
+  if (tree_info$terminal[row]) {
     # Terminal node - no info for constparty
     return(partykit::partynode(id = 1L))
   }
 
   # Internal node - get split info
   # splitvarID in treeInfo is 0-based, convert to 1-based for partykit
-  varid <- as.integer(node_row$splitvarID) + 1L
-  split_val <- node_row$splitval
+  splitvar_id <- tree_info$splitvarID[row]
+  varid <- as.integer(splitvar_id) + 1L
+  split_val <- tree_info$splitval[row]
 
   if (varid < 1 || varid > length(var_names)) {
     cli::cli_abort(
-      "Invalid variable index {node_row$splitvarID} at node {node_id}."
+      "Invalid variable index {splitvar_id} at node {node_id}."
     )
   }
 
@@ -224,8 +223,8 @@ ranger_build_partynode_from_info <- function(node_id, tree_info, var_names) {
   split <- build_partysplit(varid, split_val, right = TRUE)
 
   # Get child node IDs (0-based)
-  left_child_id <- node_row$leftChild
-  right_child_id <- node_row$rightChild
+  left_child_id <- tree_info$leftChild[row]
+  right_child_id <- tree_info$rightChild[row]
 
   # Recursively build children
   left_node <- ranger_build_partynode_from_info(
@@ -317,8 +316,12 @@ extract_rules.ranger <- function(
     )
   }
 
+  # Rules only need the column names and factor levels, so a zero-row copy
+  # avoids computing fitted node ids for every row of every tree
+  rule_data <- data[0, , drop = FALSE]
+
   # Extract for each tree
-  results <- lapply(tree, ranger_extract_rules_one, x = x, data = data)
+  results <- lapply(tree, ranger_extract_rules_one, x = x, data = rule_data)
 
   # Combine and sort by tree then id
   dplyr::bind_rows(results) |>

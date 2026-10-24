@@ -404,8 +404,15 @@ extract_rules.randomForest <- function(
     )
   }
 
+  # Rules only need the column names and factor levels, so a zero-row copy
+  # avoids computing fitted node ids for every row of every tree
+  rule_data <- data
+  if (!is.null(data)) {
+    rule_data <- data[0, , drop = FALSE]
+  }
+
   # Extract for each tree
-  results <- lapply(tree, rf_extract_rules_one, x = x, data = data)
+  results <- lapply(tree, rf_extract_rules_one, x = x, data = rule_data)
 
   # Combine and sort by tree then id
   dplyr::bind_rows(results) |>

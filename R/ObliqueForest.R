@@ -6,9 +6,9 @@
 #'
 #' @inheritParams extract_rules
 #' @param x An `ObliqueForest` object from the \pkg{aorsf} package
-#' @param tree Integer specifying which tree to extract rules from (1-based).
-#'   Default is `1L` for the first tree. Must be between 1 and the number of
-#'   trees in the forest (`x$n_tree`).
+#' @param tree Integer vector specifying which trees to extract rules from
+#'   (1-based). Default is `1L` for the first tree. Values must be between 1
+#'   and the number of trees in the forest (`x$n_tree`).
 #' @param ... Other arguments passed to methods
 #' @return A tibble with columns:
 #'   * `tree`: integer, the tree number (1-based).
@@ -106,91 +106,80 @@ extract_rules.ObliqueForest <- function(
   check_bool(add_statistics)
   rlang::check_installed("aorsf")
   # Validate tree argument (1-based for user convenience)
-  if (!is.numeric(tree) || length(tree) != 1 || tree != as.integer(tree)) {
-    cli::cli_abort("{.arg tree} must be a single integer.")
-  }
-  if (tree < 1 || tree > x$n_tree) {
+  if (!is.numeric(tree) || !all(tree == as.integer(tree))) {
     cli::cli_abort(
-      "{.arg tree} must be between 1 and {x$n_tree}, not {tree}."
+      "{.arg tree} must be an integer vector, not {.obj_type_friendly {tree}}."
+    )
+  }
+  tree <- as.integer(tree)
+  if (any(tree < 1L) || any(tree > x$n_tree)) {
+    cli::cli_abort(
+      "{.arg tree} values must be between 1 and {x$n_tree}."
     )
   }
 
-  # Get terminal node IDs for this tree
-  # Note: tree parameter is 1-based and maps directly to R's 1-based list indexing
-  # terminal_ids are 0-indexed (aorsf internal convention), converted to 1-based below
-  terminal_ids <- oblique_get_terminal_nodes(tree, x$forest)
+  # The R6 accessors are slow, so read them once for all trees and splits
+  x_cached <- oblique_cache_model(x)
 
-  # Extract rules for each terminal node (using 0-indexed IDs internally)
-  rules_list <- lapply(
-    terminal_ids,
-    oblique_extract_node_rule,
-    tree = tree,
-    x = x
-  )
+  results <- lapply(tree, function(tree_num) {
+    tree_rules <- oblique_tree_rules(tree_num, x_cached)
+    tree_rules$tree <- tree_num
+    tree_rules
+  })
 
-  tibble::tibble(
-    tree = as.integer(tree),
-    rules = rules_list,
-    id = as.integer(terminal_ids) + 1L # Convert from 0-indexed to 1-indexed
-  ) |>
-    dplyr::arrange(id) |>
+  dplyr::bind_rows(results) |>
+    dplyr::relocate(tree, rules, id) |>
+    dplyr::arrange(tree, id) |>
     tibble::new_tibble(class = c("rule_set_ObliqueForest", "rule_set")) |>
     maybe_add_rule_statistics(add_statistics)
 }
 
-# Internal helper to get terminal nodes for a tree
-oblique_get_terminal_nodes <- function(tree_num, forest) {
-  # tree_num is 1-based (for R list indexing)
-  # Returns 0-indexed node IDs (aorsf convention)
-  child_left <- forest$child_left[[tree_num]]
-
-  # Terminal nodes have child_left == 0
-  # which() returns 1-indexed positions, subtract 1 to get 0-indexed node IDs
-  which(child_left == 0) - 1
+# Internal helper: snapshot of the pieces of an ObliqueForest that the rule
+# helpers read through slow R6 accessors
+oblique_cache_model <- function(x) {
+  means <- x$get_means()
+  stdevs <- x$get_stdev()
+  fctr_info <- x$get_fctr_info()
+  names_x <- x$get_names_x()
+  list(
+    forest = x$forest,
+    get_means = function() means,
+    get_stdev = function() stdevs,
+    get_fctr_info = function() fctr_info,
+    get_names_x = function() names_x
+  )
 }
 
-# Internal helper to find parent node
-oblique_find_parent <- function(node_id, tree_num, forest) {
-  # node_id is 0-indexed (aorsf convention)
-  # tree_num is 1-based (for R list indexing)
-  # Returns 0-indexed parent node ID
-  if (node_id == 0) {
-    return(NA_integer_)
-  }
+# Internal helper: rules for every terminal node of one tree from a single
+# top-down walk. Node ids are 0-indexed (aorsf convention), `tree_num` is
+# 1-based, a terminal node has `child_left == 0`, and the right child of a node
+# is `child_left + 1`.
+oblique_tree_rules <- function(tree_num, x) {
+  child_left <- x$forest$child_left[[tree_num]]
+  ids <- integer()
+  rules <- list()
 
-  child_left <- forest$child_left[[tree_num]]
-
-  # Search for parent node
-  # i is 1-indexed from seq_along, so we subtract 1 to get 0-indexed node ID
-  for (i in seq_along(child_left)) {
-    # Check if this node is the parent of node_id
-    if (child_left[i] == node_id || child_left[i] + 1 == node_id) {
-      return(i - 1)
+  walk <- function(node_id, exprs) {
+    left_id <- child_left[node_id + 1]
+    if (left_id == 0) {
+      ids[[length(ids) + 1L]] <<- as.integer(node_id) + 1L
+      rules[[length(rules) + 1L]] <<- combine_rule_elements(exprs)
+      return(invisible(NULL))
     }
-  }
-
-  NA_integer_
-}
-
-# Internal helper to build path from root to target node
-oblique_build_node_path <- function(node_id, tree_num, forest) {
-  # node_id is 0-indexed (aorsf convention)
-  # tree_num is 1-based (for R list indexing)
-  # Returns vector of 0-indexed node IDs from root to target
-  path <- integer()
-  current <- node_id
-
-  while (current >= 0) {
-    path <- c(current, path)
-    if (current == 0) {
-      break
+    for (child_id in c(left_id, left_id + 1)) {
+      split_info <- oblique_get_split_info(node_id, child_id, tree_num, x)
+      # Build expression with scaling transformations included
+      expr <- oblique_split_to_scaled_expr(split_info, x)
+      # Replace indicator variables with factor comparisons for interpretability
+      expr <- oblique_replace_indicators(expr, x)
+      walk(child_id, c(exprs, list(expr)))
     }
-
-    current <- oblique_find_parent(current, tree_num, forest)
-    if (is.na(current)) break
+    invisible(NULL)
   }
 
-  path
+  walk(0, list())
+
+  tibble::tibble(rules = rules, id = ids)
 }
 
 # Internal helper to unscale coefficients and threshold
@@ -331,24 +320,6 @@ oblique_split_to_scaled_expr <- function(split_info, x) {
 
   lhs <- terms[[length(terms)]]
   rlang::call2(split_info$operator, lhs, split_info$threshold)
-}
-
-# Internal helper: extract rule for a single terminal node
-oblique_extract_node_rule <- function(node_id, tree, x) {
-  path <- oblique_build_node_path(node_id, tree, x$forest)
-
-  split_exprs <- list()
-  for (i in seq_along(path)[-length(path)]) {
-    parent_id <- path[i]
-    child_id <- path[i + 1]
-    split_info <- oblique_get_split_info(parent_id, child_id, tree, x)
-    # Build expression with scaling transformations included
-    expr <- oblique_split_to_scaled_expr(split_info, x)
-    # Replace indicator variables with factor comparisons for interpretability
-    split_exprs[[i]] <- oblique_replace_indicators(expr, x)
-  }
-
-  combine_rule_elements(split_exprs)
 }
 
 # Internal helper to get expanded variable names including one-hot encoded factors

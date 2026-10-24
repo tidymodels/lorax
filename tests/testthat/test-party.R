@@ -1,3 +1,27 @@
+test_that("extract_rules.party() assigns every row to exactly one rule", {
+  skip_if_not_installed("partykit")
+
+  set.seed(1)
+  dat <- data.frame(
+    x = rnorm(200),
+    f = factor(sample(letters[1:4], 200, replace = TRUE))
+  )
+  dat$y <- dat$x + (dat$f %in% c("a", "b")) + rnorm(200, sd = 0.3)
+  tree <- partykit::ctree(y ~ x + f, data = dat)
+  rules <- extract_rules(tree)
+
+  matches <- vapply(
+    rules$rules,
+    \(r) eval(r, dat),
+    logical(nrow(dat))
+  )
+  leaf <- rules$id[max.col(matches, ties.method = "first")]
+
+  expect_gt(nrow(rules), 2)
+  expect_all_equal(rowSums(matches), 1)
+  expect_equal(leaf, as.integer(predict(tree, type = "node")))
+})
+
 skip("TOOOO LONG")
 
 test_that("extract_rules.party() returns correct structure", {
