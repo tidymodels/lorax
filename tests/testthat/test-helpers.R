@@ -832,3 +832,12 @@ test_that("new_active_predictors() handles multiple scalar arguments", {
   expect_equal(result$type, "model")
   expect_equal(result$flag, TRUE)
 })
+
+test_that("check_tree_type() and check_tree_range() validate the tree argument", {
+  expect_identical(check_tree_type(c(1, 2)), 1:2)
+  expect_invisible(check_tree_range(1:3, 3))
+
+  expect_snapshot(check_tree_type("1"), error = TRUE)
+  expect_snapshot(check_tree_type(1.5), error = TRUE)
+  expect_snapshot(check_tree_range(c(0L, 2L, 11L, 11L), 10), error = TRUE)
+})

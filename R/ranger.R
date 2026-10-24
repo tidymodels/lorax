@@ -107,7 +107,7 @@ as.party.ranger <- function(obj, tree = 1L, data = NULL, ...) {
   }
 
   # Validate tree against available trees
-  num_trees <- obj$num.trees
+  num_trees <- num_ensemble_members(obj)
   if (tree > num_trees) {
     cli::cli_abort(
       "{.arg tree} must be between 1 and {num_trees}, not {tree}."
@@ -291,14 +291,7 @@ extract_rules.ranger <- function(
   }
 
   # Validate tree argument
-  if (!is.numeric(tree) || !all(tree == as.integer(tree))) {
-    cli::cli_abort(
-      "{.arg tree} must be an integer vector, not {.obj_type_friendly {tree}}.",
-      call = rlang::caller_env()
-    )
-  }
-
-  tree <- as.integer(tree)
+  tree <- check_tree_type(tree)
 
   # Check that forest exists
   if (is.null(x$forest)) {
@@ -309,12 +302,7 @@ extract_rules.ranger <- function(
   }
 
   # Validate tree range
-  if (any(tree < 1L) || any(tree > x$num.trees)) {
-    cli::cli_abort(
-      "{.arg tree} values must be between 1 and {x$num.trees}.",
-      call = rlang::caller_env()
-    )
-  }
+  check_tree_range(tree, num_ensemble_members(x))
 
   # Rules only need the column names and factor levels, so a zero-row copy
   # avoids computing fitted node ids for every row of every tree
@@ -373,9 +361,10 @@ active_predictors.ranger <- function(x, tree = 1L, ...) {
   }
 
   # Validate tree range
-  if (any(tree < 1L) || any(tree > x$num.trees)) {
+  num_trees <- num_ensemble_members(x)
+  if (any(tree < 1L) || any(tree > num_trees)) {
     cli::cli_abort(
-      "{.arg tree} values must be between 1 and {x$num.trees}.",
+      "{.arg tree} values must be between 1 and {num_trees}.",
       call = rlang::caller_env()
     )
   }

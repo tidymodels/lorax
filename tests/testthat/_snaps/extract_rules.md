@@ -4,7 +4,8 @@
       extract_rules(bst, tree = 0)
     Condition
       Error in `extract_rules()`:
-      ! `tree` values must be >= 1.
+      ! `tree` must be between 1 and 2, the number of trees in the model.
+      x Out of range: 0.
 
 ---
 
@@ -20,7 +21,8 @@
       extract_rules(bst, tree = 100)
     Condition
       Error in `extract_rules()`:
-      ! `tree` values must be between 1 and 2.
+      ! `tree` must be between 1 and 2, the number of trees in the model.
+      x Out of range: 100.
 
 # extract_rules.lgb.Booster validates tree parameter
 
@@ -28,7 +30,8 @@
       extract_rules(bst, tree = 0)
     Condition
       Error in `extract_rules()`:
-      ! `tree` values must be between 1 and 2.
+      ! `tree` must be between 1 and 2, the number of trees in the model.
+      x Out of range: 0.
 
 ---
 
@@ -44,5 +47,6 @@
       extract_rules(bst, tree = 100)
     Condition
       Error in `extract_rules()`:
-      ! `tree` values must be between 1 and 2.
+      ! `tree` must be between 1 and 2, the number of trees in the model.
+      x Out of range: 100.
 

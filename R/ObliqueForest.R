@@ -106,17 +106,8 @@ extract_rules.ObliqueForest <- function(
   check_bool(add_statistics)
   rlang::check_installed("aorsf")
   # Validate tree argument (1-based for user convenience)
-  if (!is.numeric(tree) || !all(tree == as.integer(tree))) {
-    cli::cli_abort(
-      "{.arg tree} must be an integer vector, not {.obj_type_friendly {tree}}."
-    )
-  }
-  tree <- as.integer(tree)
-  if (any(tree < 1L) || any(tree > x$n_tree)) {
-    cli::cli_abort(
-      "{.arg tree} values must be between 1 and {x$n_tree}."
-    )
-  }
+  tree <- check_tree_type(tree)
+  check_tree_range(tree, num_ensemble_members(x))
 
   # The R6 accessors are slow, so read them once for all trees and splits
   x_cached <- oblique_cache_model(x)
@@ -497,9 +488,10 @@ active_predictors.ObliqueForest <- function(x, tree = 1L, ...) {
 
   tree <- as.integer(tree)
 
-  if (any(tree < 1L) || any(tree > x$n_tree)) {
+  num_trees <- num_ensemble_members(x)
+  if (any(tree < 1L) || any(tree > num_trees)) {
     cli::cli_abort(
-      "{.arg tree} values must be between 1 and {x$n_tree}, not {tree}.",
+      "{.arg tree} values must be between 1 and {num_trees}, not {tree}.",
       call = rlang::caller_env()
     )
   }

@@ -89,22 +89,16 @@ extract_rules.xgb.Booster <- function(
   check_bool(add_statistics)
   rlang::check_installed("xgboost")
 
-  if (!is.numeric(tree) || !all(tree == as.integer(tree))) {
-    cli::cli_abort(
-      "{.arg tree} must be an integer vector, not {.obj_type_friendly {tree}}."
-    )
-  }
-  tree <- as.integer(tree)
+  tree <- check_tree_type(tree)
 
   x <- xgb_apply_nthread(x, nthread)
 
   # Get tree structure for all requested trees in one dump
   # Note: trees parameter uses 1-based indexing (R convention)
   # but the Tree column in output uses 0-based indexing (xgboost convention)
+  # The upper limit needs a full model dump, so only look it up on error
   if (any(tree < 1L)) {
-    cli::cli_abort(
-      "{.arg tree} values must be >= 1."
-    )
+    check_tree_range(tree, num_ensemble_members(x))
   }
   tree_dt <- as.data.frame(
     xgboost::xgb.model.dt.tree(
@@ -117,12 +111,7 @@ extract_rules.xgb.Booster <- function(
   # Validate tree numbers against available trees
   missing_trees <- setdiff(tree - 1L, tree_dt$Tree)
   if (length(missing_trees) > 0) {
-    max_tree_num <- max(
-      as.data.frame(xgboost::xgb.model.dt.tree(x, use_int_id = TRUE))$Tree
-    )
-    cli::cli_abort(
-      "{.arg tree} values must be between 1 and {max_tree_num + 1}."
-    )
+    check_tree_range(tree, num_ensemble_members(x))
   }
 
   tree_dts <- split(tree_dt, tree_dt$Tree)
@@ -341,8 +330,7 @@ as.party.xgb.Booster <- function(obj, tree = 1L, data, nthread = NULL, ...) {
 
   # Validate tree number against available trees
   # Tree column uses 0-based indexing
-  max_tree_internal <- max(tree_dt$Tree)
-  num_trees <- max_tree_internal + 1L # Convert to 1-based count
+  num_trees <- xgb_num_trees(tree_dt)
   if (tree > num_trees) {
     cli::cli_abort(
       "{.arg tree} must be between 1 and {num_trees}, not {tree}."
@@ -645,7 +633,7 @@ active_predictors.xgb.Booster <- function(x, tree = 1L, nthread = NULL, ...) {
   tree_dt <- xgboost::xgb.model.dt.tree(x, use_int_id = TRUE)
   tree_dt <- as.data.frame(tree_dt)
 
-  num_trees <- max(tree_dt$Tree) + 1L
+  num_trees <- xgb_num_trees(tree_dt)
 
   if (any(tree < 1L) || any(tree > num_trees)) {
     cli::cli_abort(
@@ -687,6 +675,11 @@ xgb_active_vars_one_tree <- function(tree_num, x, tree_dt) {
 #' @rdname num_ensemble_members
 #' @export
 num_ensemble_members.xgb.Booster <- function(x, ...) {
-  tree_dt <- xgboost::xgb.model.dt.tree(x, use_int_id = TRUE)
+  xgb_num_trees(xgboost::xgb.model.dt.tree(x, use_int_id = TRUE))
+}
+
+# Internal helper: number of trees from an xgb.model.dt.tree() table, where
+# `Tree` is 0-based
+xgb_num_trees <- function(tree_dt) {
   as.integer(max(tree_dt$Tree) + 1L)
 }

@@ -72,24 +72,16 @@ extract_rules.cubist <- function(
   rlang::check_installed("Cubist")
 
   # Validate committee parameter
-  if (!is.numeric(committee) || !all(committee == as.integer(committee))) {
-    cli::cli_abort(
-      "{.arg committee} must be an integer vector, not {.obj_type_friendly {committee}}.",
-      call = rlang::caller_env()
-    )
-  }
-
-  committee <- as.integer(committee)
+  committee <- check_tree_type(committee, arg = "committee")
   committee <- unique(committee)
 
   # Check bounds
-  num_committees <- x$committees
-  if (any(committee < 1L) || any(committee > num_committees)) {
-    cli::cli_abort(
-      "{.arg committee} values must be between 1 and {num_committees}, not {committee}.",
-      call = rlang::caller_env()
-    )
-  }
+  check_tree_range(
+    committee,
+    num_ensemble_members(x),
+    arg = "committee",
+    noun = "committees"
+  )
 
   # Extract rules for each committee
   results <- lapply(

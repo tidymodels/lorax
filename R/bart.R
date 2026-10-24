@@ -78,12 +78,7 @@ extract_rules.bart <- function(
   check_bool(add_statistics)
   rlang::check_installed("dbarts")
 
-  if (!is.numeric(tree) || !all(tree == as.integer(tree))) {
-    cli::cli_abort(
-      "{.arg tree} must be an integer vector, not {.obj_type_friendly {tree}}."
-    )
-  }
-  tree <- as.integer(tree)
+  tree <- check_tree_type(tree)
 
   # Validate chain parameter
   if (!is.numeric(chain) || length(chain) != 1 || chain != as.integer(chain)) {
@@ -127,12 +122,7 @@ extract_rules.bart <- function(
   }
 
   # Validate trees against available trees
-  max_tree <- max(trees_df$tree)
-  if (any(tree < 1L) || any(tree > max_tree)) {
-    cli::cli_abort(
-      "{.arg tree} values must be between 1 and {max_tree}."
-    )
-  }
+  check_tree_range(tree, bart_num_trees(trees_df))
 
   # Filter to selected trees and chain
   trees_df <- trees_df[trees_df$tree %in% tree, ]
@@ -369,10 +359,10 @@ as.party.bart <- function(obj, tree = 1L, chain = 1L, data, ...) {
   }
 
   # Validate tree against available trees
-  max_tree <- max(trees_df$tree)
-  if (tree > max_tree) {
+  num_trees <- bart_num_trees(trees_df)
+  if (tree > num_trees) {
     cli::cli_abort(
-      "{.arg tree} must be between 1 and {max_tree}, not {tree}."
+      "{.arg tree} must be between 1 and {num_trees}, not {tree}."
     )
   }
 
@@ -693,12 +683,12 @@ active_predictors.bart <- function(x, tree = 1L, ...) {
 
   # Get available trees
   trees_df <- x$fit$getTrees()
-  max_tree <- max(trees_df$tree)
+  num_trees <- bart_num_trees(trees_df)
 
   # Validate tree range
-  if (any(tree < 1L) || any(tree > max_tree)) {
+  if (any(tree < 1L) || any(tree > num_trees)) {
     cli::cli_abort(
-      "{.arg tree} values must be between 1 and {max_tree}.",
+      "{.arg tree} values must be between 1 and {num_trees}.",
       call = rlang::caller_env()
     )
   }
@@ -721,5 +711,11 @@ num_ensemble_members.bart <- function(x, ...) {
       "{.pkg dbarts} model must be fitted with {.code keeptrees = TRUE} to count trees."
     )
   }
-  as.integer(max(x$fit$getTrees()$tree))
+  bart_num_trees(x$fit$getTrees())
+}
+
+# Internal helper: number of trees from the `getTrees()` data frame, where
+# `tree` is 1-based
+bart_num_trees <- function(trees_df) {
+  as.integer(max(trees_df$tree))
 }

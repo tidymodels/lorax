@@ -87,21 +87,12 @@ extract_rules.catboost.Model <- function(
   check_bool(add_statistics)
   rlang::check_installed(c("catboost", "jsonlite"))
 
-  if (!is.numeric(tree) || !all(tree == as.integer(tree))) {
-    cli::cli_abort(
-      "{.arg tree} must be an integer vector, not {.obj_type_friendly {tree}}."
-    )
-  }
-  tree <- as.integer(tree)
+  tree <- check_tree_type(tree)
 
   # One export and parse of the model covers every requested tree
   json <- cb_model_json(x)
   num_trees <- cb_num_trees(json)
-  if (any(tree < 1L) || any(tree > num_trees)) {
-    cli::cli_abort(
-      "{.arg tree} values must be between 1 and {num_trees}."
-    )
-  }
+  check_tree_range(tree, num_trees)
 
   features <- cb_feature_info(json)
   needs_data <- vapply(tree, cb_tree_needs_data, logical(1), json = json)

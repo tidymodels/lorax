@@ -20,7 +20,8 @@
       extract_rules(forest, tree = 0)
     Condition
       Error in `extract_rules()`:
-      ! `tree` values must be between 1 and 10.
+      ! `tree` must be between 1 and 10, the number of trees in the model.
+      x Out of range: 0.
 
 ---
 
@@ -28,7 +29,8 @@
       extract_rules(forest, tree = 11)
     Condition
       Error in `extract_rules()`:
-      ! `tree` values must be between 1 and 10.
+      ! `tree` must be between 1 and 10, the number of trees in the model.
+      x Out of range: 11.
 
 # active_predictors.ObliqueForest() validates tree argument
 

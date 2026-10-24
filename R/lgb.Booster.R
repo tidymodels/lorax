@@ -118,12 +118,7 @@ extract_rules.lgb.Booster <- function(
   check_bool(add_statistics)
   rlang::check_installed("lightgbm")
 
-  if (!is.numeric(tree) || !all(tree == as.integer(tree))) {
-    cli::cli_abort(
-      "{.arg tree} must be an integer vector, not {.obj_type_friendly {tree}}."
-    )
-  }
-  tree <- as.integer(tree)
+  tree <- check_tree_type(tree)
 
   if (!is.null(data) && !is.data.frame(data)) {
     cli::cli_abort(
@@ -134,12 +129,7 @@ extract_rules.lgb.Booster <- function(
   # One dump of the model covers every requested tree
   tree_dt_all <- as.data.frame(lightgbm::lgb.model.dt.tree(x))
 
-  num_trees <- max(tree_dt_all$tree_index) + 1L
-  if (any(tree < 1L) || any(tree > num_trees)) {
-    cli::cli_abort(
-      "{.arg tree} values must be between 1 and {num_trees}."
-    )
-  }
+  check_tree_range(tree, lgb_num_trees(tree_dt_all))
 
   # Convert to 0-based indexing and split the dump by tree
   tree_dt <- tree_dt_all[tree_dt_all$tree_index %in% (tree - 1L), ]
@@ -500,8 +490,7 @@ as.party.lgb.Booster <- function(obj, tree = 1L, data, ...) {
     )
   }
 
-  max_tree_internal <- max(tree_dt$tree_index, na.rm = TRUE)
-  num_trees <- max_tree_internal + 1L # Convert to 1-based count
+  num_trees <- lgb_num_trees(tree_dt)
   if (tree > num_trees) {
     cli::cli_abort(
       "{.arg tree} must be between 1 and {num_trees}, not {tree}."
@@ -943,12 +932,7 @@ active_predictors.lgb.Booster <- function(x, tree = 1L, ...) {
   tree_dt <- lightgbm::lgb.model.dt.tree(x)
   tree_dt <- as.data.frame(tree_dt)
 
-  # Handle case where tree_index might be all NA (shouldn't happen but be safe)
-  if (nrow(tree_dt) == 0 || all(is.na(tree_dt$tree_index))) {
-    num_trees <- 1L # Assume at least one tree
-  } else {
-    num_trees <- max(tree_dt$tree_index, na.rm = TRUE) + 1L
-  }
+  num_trees <- lgb_num_trees(tree_dt)
 
   if (any(tree < 1L) || any(tree > num_trees)) {
     cli::cli_abort(
@@ -990,6 +974,15 @@ lgb_active_vars_one_tree <- function(tree_num, x, tree_dt) {
 #' @rdname num_ensemble_members
 #' @export
 num_ensemble_members.lgb.Booster <- function(x, ...) {
-  tree_dt <- as.data.frame(lightgbm::lgb.model.dt.tree(x))
+  lgb_num_trees(as.data.frame(lightgbm::lgb.model.dt.tree(x)))
+}
+
+# Internal helper: number of trees from a lgb.model.dt.tree() data frame, where
+# `tree_index` is 0-based
+lgb_num_trees <- function(tree_dt) {
+  # A model without any splits has no tree index, so assume a single tree
+  if (nrow(tree_dt) == 0 || all(is.na(tree_dt$tree_index))) {
+    return(1L)
+  }
   as.integer(max(tree_dt$tree_index, na.rm = TRUE) + 1L)
 }
