@@ -29,6 +29,7 @@ Imports:
     tibble
 Suggests:
     aorsf,
+    baguette,
     C50,
     catboost,
     Cubist,
@@ -39,6 +40,7 @@ Suggests:
     lightgbm,
     modeldata,
     palmerpenguins,
+    parsnip,
     randomForest,
     ranger,
     rpart,

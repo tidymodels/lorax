@@ -10,6 +10,10 @@
 
 * `extract_rules()` methods gain an `add_statistics` argument that appends the columns `num_rule_terms` and `num_rule_predictors`.
 
+* `active_predictors()`, `as.party()`, `extract_rules()`, and `num_ensemble_members()` now have methods for bagged trees from the baguette package (`bagger`, from `parsnip::bag_tree()` with the "rpart" or "C5.0" engine). The `tree` argument selects ensemble members, and `as.party()` needs the training data because the bootstrap samples are not saved.
+
+* `extract_rules()` for rpart models now uses the `xlevels` attribute to label categorical splits with factor levels, so it works for models that no longer have access to their training data.
+
 * `rect_split_to_expr()` now accepts numeric vectors for the `%in%` operator.
 
 # lorax 0.1.0

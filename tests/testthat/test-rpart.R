@@ -144,6 +144,18 @@ test_that("extract_rules.rpart() works with single factor predictor", {
   }
 })
 
+test_that("extract_rules.rpart() uses xlevels when the data are unavailable", {
+  skip_if_not_installed("rpart")
+
+  data <- get_single_factor_data()
+  model <- rpart::rpart(y ~ x, data = data)
+  model$call$data <- quote(dummy)
+
+  rules <- extract_rules(model)
+  rule_text <- vapply(rules$rules, rlang::expr_text, character(1))
+  expect_true(any(grepl("Biscoe|Dream|Torgersen", rule_text)))
+})
+
 test_that("extract_rules.rpart() works with single-node tree", {
   skip_if_not_installed("rpart")
   skip_if_not_installed("palmerpenguins")

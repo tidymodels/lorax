@@ -1079,7 +1079,8 @@ test_that("num_ensemble_members() uses the actual number of C5.0 trials", {
 
   set.seed(2817)
   data <- data.frame(x = runif(100), z = runif(100))
-  data$y <- factor(ifelse(data$x > 0.5, "a", "b"))
+  y_labels <- ifelse(data$x > 0.5, "a", "b")
+  data$y <- factor(y_labels)
   c5_early <- C50::C5.0(y ~ ., data = data, trials = 10)
 
   expect_identical(unname(c5_early$trials["Requested"]), 10)

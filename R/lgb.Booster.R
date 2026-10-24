@@ -832,9 +832,10 @@ lgb_build_partynode <- function(
   if (is_cat_split) {
     # Codes in the threshold go to the left child, all others to the right
     left_codes <- lgb_parse_cat_threshold(node_row$threshold)
+    child_index <- ifelse(cat_codes[[feature_name]] %in% left_codes, 1L, 2L)
     split <- partykit::partysplit(
       varid = as.integer(varid),
-      index = ifelse(cat_codes[[feature_name]] %in% left_codes, 1L, 2L)
+      index = child_index
     )
   } else {
     split_val <- as.numeric(node_row$threshold)

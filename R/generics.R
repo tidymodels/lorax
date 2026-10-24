@@ -84,8 +84,8 @@ active_predictors <- function(x, ...) {
 
 #' Count the number of members in an ensemble
 #'
-#' Ensembles of trees or rules, such as random forests or boosted models,
-#' contain multiple models. This generic returns how many there are. For most
+#' Ensembles of trees or rules, such as random forests, bagged trees, or boosted
+#' models, contain multiple models. This generic returns how many there are. For most
 #' models this is the number of trees. For C5.0 models it is the number of
 #' boosting trials and, for Cubist models, the number of committees. For
 #' multiclass boosted models (e.g., from \pkg{xgboost} and \pkg{lightgbm}), the
