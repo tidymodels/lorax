@@ -18,6 +18,7 @@
 #'
 #' @export
 extract_rules.rpart <- function(x, add_statistics = FALSE, ...) {
+  rlang::check_dots_empty()
   check_bool(add_statistics)
   rlang::check_installed("rpart")
   collected <- rpart_collect_rules(x)

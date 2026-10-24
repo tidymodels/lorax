@@ -18,6 +18,7 @@
 #'
 #' @export
 extract_rules.party <- function(x, add_statistics = FALSE, ...) {
+  rlang::check_dots_empty()
   check_bool(add_statistics)
   collected <- party_collect_rules(x)
 

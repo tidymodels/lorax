@@ -1029,6 +1029,7 @@ c5_extract_rules_one <- function(tree_num, x, data) {
 #'   For rule-based models, this parameter refers to the trial number.
 #' @export
 extract_rules.C5.0 <- function(x, tree = 1L, add_statistics = FALSE, ...) {
+  rlang::check_dots_empty()
   check_bool(add_statistics)
   rlang::check_installed("C50")
 

@@ -36,6 +36,7 @@ extract_rules.cforest <- function(
   add_statistics = FALSE,
   ...
 ) {
+  rlang::check_dots_empty()
   check_bool(add_statistics)
   rlang::check_installed("partykit")
 

@@ -320,6 +320,7 @@ grf_extract_rules_one <- function(tree_num, x, data = NULL) {
 #'   number of trees in the forest.
 #' @export
 extract_rules.grf <- function(x, tree = 1L, add_statistics = FALSE, ...) {
+  rlang::check_dots_empty()
   check_bool(add_statistics)
   rlang::check_installed("grf")
 
