@@ -34,7 +34,7 @@ x &amp;lt; 1.2, y == "red", or z %in% c("blue", "green").'><meta property="og:im
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Extract an expression that defines a path to a terminal node</h1>
-      <small class="dont-index">Source: <a href="https://github.com/tidymodels/lorax/blob/main/R/C5.0.R" class="external-link"><code>R/C5.0.R</code></a>, <a href="https://github.com/tidymodels/lorax/blob/main/R/cforest.R" class="external-link"><code>R/cforest.R</code></a>, <a href="https://github.com/tidymodels/lorax/blob/main/R/generics.R" class="external-link"><code>R/generics.R</code></a>, and 3 more</small>
+      <small class="dont-index">Source: <a href="https://github.com/tidymodels/lorax/blob/main/R/C5.0.R" class="external-link"><code>R/C5.0.R</code></a>, <a href="https://github.com/tidymodels/lorax/blob/main/R/bagger.R" class="external-link"><code>R/bagger.R</code></a>, <a href="https://github.com/tidymodels/lorax/blob/main/R/cforest.R" class="external-link"><code>R/cforest.R</code></a>, and 4 more</small>
       <div class="d-none name"><code>extract_rules.Rd</code></div>
     </div>
 
@@ -48,6 +48,9 @@ can take any form but, for most trees, they are simple statements such as
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="co"># S3 method for class 'C5.0'</span></span>
+<span><span class="fu">extract_rules</span><span class="op">(</span><span class="va">x</span>, tree <span class="op">=</span> <span class="fl">1L</span>, add_statistics <span class="op">=</span> <span class="cn">FALSE</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'bagger'</span></span>
 <span><span class="fu">extract_rules</span><span class="op">(</span><span class="va">x</span>, tree <span class="op">=</span> <span class="fl">1L</span>, add_statistics <span class="op">=</span> <span class="cn">FALSE</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for class 'cforest'</span></span>

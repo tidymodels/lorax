@@ -7,6 +7,7 @@
 <url><loc>https://lorax.tidymodels.org/dev/news/index.html</loc></url>
 <url><loc>https://lorax.tidymodels.org/dev/reference/active_predictors.html</loc></url>
 <url><loc>https://lorax.tidymodels.org/dev/reference/as.party.C5.0.html</loc></url>
+<url><loc>https://lorax.tidymodels.org/dev/reference/as.party.bagger.html</loc></url>
 <url><loc>https://lorax.tidymodels.org/dev/reference/as.party.bart.html</loc></url>
 <url><loc>https://lorax.tidymodels.org/dev/reference/as.party.catboost.Model.html</loc></url>
 <url><loc>https://lorax.tidymodels.org/dev/reference/as.party.grf.html</loc></url>

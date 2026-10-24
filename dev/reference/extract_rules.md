@@ -12,6 +12,9 @@ statements such as `x < 1.2`, `y == "red"`, or
 # S3 method for class 'C5.0'
 extract_rules(x, tree = 1L, add_statistics = FALSE, ...)
 
+# S3 method for class 'bagger'
+extract_rules(x, tree = 1L, add_statistics = FALSE, ...)
+
 # S3 method for class 'cforest'
 extract_rules(x, tree = 1L, add_statistics = FALSE, ...)
 

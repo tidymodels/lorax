@@ -136,6 +136,8 @@ By contributing to this project, you agree to abide by its terms.
   : Extract the active features from a tree
 - [`as.party(`*`<C5.0>`*`)`](https://lorax.tidymodels.org/dev/reference/as.party.C5.0.md)
   : Convert C5.0 model to party object
+- [`as.party(`*`<bagger>`*`)`](https://lorax.tidymodels.org/dev/reference/as.party.bagger.md)
+  : Convert a bagged tree to a party object
 - [`as.party(`*`<bart>`*`)`](https://lorax.tidymodels.org/dev/reference/as.party.bart.md)
   : Convert BART model to party object
 - [`as.party(`*`<catboost.Model>`*`)`](https://lorax.tidymodels.org/dev/reference/as.party.catboost.Model.md)

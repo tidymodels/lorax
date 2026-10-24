@@ -33,6 +33,24 @@
   methods gain an `add_statistics` argument that appends the columns
   `num_rule_terms` and `num_rule_predictors`.
 
+- [`active_predictors()`](https://lorax.tidymodels.org/dev/reference/active_predictors.md),
+  [`as.party()`](https://rdrr.io/pkg/partykit/man/party-coercion.html),
+  [`extract_rules()`](https://lorax.tidymodels.org/dev/reference/extract_rules.md),
+  and
+  [`num_ensemble_members()`](https://lorax.tidymodels.org/dev/reference/num_ensemble_members.md)
+  now have methods for bagged trees from the baguette package (`bagger`,
+  from
+  [`parsnip::bag_tree()`](https://parsnip.tidymodels.org/reference/bag_tree.html)
+  with the “rpart” or “C5.0” engine). The `tree` argument selects
+  ensemble members, and
+  [`as.party()`](https://rdrr.io/pkg/partykit/man/party-coercion.html)
+  needs the training data because the bootstrap samples are not saved.
+
+- [`extract_rules()`](https://lorax.tidymodels.org/dev/reference/extract_rules.md)
+  for rpart models now uses the `xlevels` attribute to label categorical
+  splits with factor levels, so it works for models that no longer have
+  access to their training data.
+
 - [`rect_split_to_expr()`](https://lorax.tidymodels.org/dev/reference/rect_split_to_expr.md)
   now accepts numeric vectors for the `%in%` operator.
 
