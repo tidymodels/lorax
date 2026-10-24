@@ -149,9 +149,10 @@ rpart_get_split_info <- function(node_id, child_id, x) {
 
 # rpart-specific helper to get factor level names
 rpart_get_factor_levels <- function(var_name, level_indices, x) {
-  # First try xlevels (fastest)
-  if (!is.null(x$xlevels) && var_name %in% names(x$xlevels)) {
-    return(x$xlevels[[var_name]][level_indices])
+  # First try xlevels (fastest); rpart stores it as an attribute
+  xlevels <- attr(x, "xlevels") %||% x$xlevels
+  if (!is.null(xlevels) && var_name %in% names(xlevels)) {
+    return(xlevels[[var_name]][level_indices])
   }
 
   # Try to get from the model's data via environment

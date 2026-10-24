@@ -37,6 +37,7 @@ air format .
 * Use the base pipe operator (`|>`) not the magrittr pipe (`%>%`)
 * Don't use `_$x` or `_$[["x"]]` since this package must work on R 4.1.
 * Use `\() ...` for single-line anonymous functions. For all other cases, use `function() {...}` 
+* Never put an inline `if`/`else` (or `ifelse()`) inside another expression, such as `paste0("a_", if (x) "b" else "c")`. Assign the result to a temporary object on its own line and use that.
 
 ### Testing
 

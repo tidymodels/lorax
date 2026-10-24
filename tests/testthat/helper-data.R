@@ -174,19 +174,9 @@ get_structured_regression_data <- function(n = 100) {
 
   # Create outcome with clear conditional structure
   # This ensures Cubist will create meaningful splits
-  y <- ifelse(
-    X$x1 > 5,
-    ifelse(
-      X$x2 > 5,
-      X$x1 + X$x2, # High x1, high x2
-      X$x1 - X$x2
-    ), # High x1, low x2
-    ifelse(
-      X$x3 == "A",
-      2 * X$x2, # Low x1, category A
-      X$x1 + 3
-    )
-  ) # Low x1, category B or C
+  y_high_x1 <- ifelse(X$x2 > 5, X$x1 + X$x2, X$x1 - X$x2)
+  y_low_x1 <- ifelse(X$x3 == "A", 2 * X$x2, X$x1 + 3)
+  y <- ifelse(X$x1 > 5, y_high_x1, y_low_x1)
   y <- y + rnorm(n, sd = 0.5)
 
   list(x = X, y = y)
