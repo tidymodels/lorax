@@ -8,6 +8,12 @@
 
 * `extract_rules()` for lightgbm models now assigns left and right child nodes correctly and compares numeric thresholds as numbers rather than strings.
 
+* `extract_rules()` methods now error when given an argument they don't use, such as a misspelled `trees = 2`, instead of silently ignoring it. This includes `data` for C5.0 models, which was accepted but never used.
+
+* `extract_rules()` for aorsf (`ObliqueForest`), BART (`bart`), catboost, lightgbm, and xgboost models now accepts a vector of tree numbers, as the other ensemble methods do, and reads the model once instead of once per tree. Rules for each tree are also built in a single pass, which makes these methods and `extract_rules()` for rpart and grf models much faster.
+
+* `extract_rules()` is much faster for ranger, randomForest, C5.0, grf, cforest, and partykit models. Rules are now collected in a single pass over the tree instead of searching for each node's parent, and the ranger and randomForest methods no longer compute fitted node ids for the training data.
+
 * `extract_rules()` methods gain an `add_statistics` argument that appends the columns `num_rule_terms` and `num_rule_predictors`.
 
 * `active_predictors()`, `as.party()`, `extract_rules()`, and `num_ensemble_members()` now have methods for bagged trees from the baguette package (`bagger`, from `parsnip::bag_tree()` with the "rpart" or "C5.0" engine). The `tree` argument selects ensemble members, and `as.party()` needs the training data because the bootstrap samples are not saved.

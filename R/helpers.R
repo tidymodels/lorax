@@ -510,3 +510,39 @@ complete_results <- function(x, names) {
   }
   x
 }
+
+# ------------------------------------------------------------------------------
+# Argument checks for the `tree` argument of ensemble methods
+
+# Check that `tree` is a vector of whole numbers and return it as integer.
+# `arg` is the argument name shown in messages (e.g., "committee" for Cubist).
+check_tree_type <- function(tree, arg = "tree", call = rlang::caller_env()) {
+  if (!is.numeric(tree) || !all(tree == as.integer(tree))) {
+    cli::cli_abort(
+      "{.arg {arg}} must be an integer vector, not {.obj_type_friendly {tree}}.",
+      call = call
+    )
+  }
+  as.integer(tree)
+}
+
+# Check that every value of `tree` is between 1 and the number of trees
+check_tree_range <- function(
+  tree,
+  num_trees,
+  arg = "tree",
+  noun = "trees",
+  call = rlang::caller_env()
+) {
+  out_of_range <- unique(tree[tree < 1L | tree > num_trees])
+  if (length(out_of_range) > 0) {
+    cli::cli_abort(
+      c(
+        "{.arg {arg}} must be between 1 and {num_trees}, the number of {noun} in the model.",
+        "x" = "Out of range: {.val {out_of_range}}."
+      ),
+      call = call
+    )
+  }
+  invisible(tree)
+}

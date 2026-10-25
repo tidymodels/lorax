@@ -1,9 +1,10 @@
 # Internal helper: extract rules for one tree from cforest
 cforest_extract_rules_one <- function(tree_num, x) {
   # Validate tree number
-  if (tree_num < 1L || tree_num > length(x$nodes)) {
+  num_trees <- num_ensemble_members(x)
+  if (tree_num < 1L || tree_num > num_trees) {
     cli::cli_abort(
-      "{.arg tree} must be between 1 and {length(x$nodes)}.",
+      "{.arg tree} must be between 1 and {num_trees}.",
       call = rlang::caller_env()
     )
   }
@@ -35,27 +36,15 @@ extract_rules.cforest <- function(
   add_statistics = FALSE,
   ...
 ) {
+  rlang::check_dots_empty()
   check_bool(add_statistics)
   rlang::check_installed("partykit")
 
   # Validate tree argument
-  if (!is.numeric(tree) || !all(tree == as.integer(tree))) {
-    cli::cli_abort(
-      "{.arg tree} must be an integer vector, not {.obj_type_friendly {tree}}.",
-      call = rlang::caller_env()
-    )
-  }
-
-  tree <- as.integer(tree)
+  tree <- check_tree_type(tree)
 
   # Validate tree range
-  n_trees <- length(x$nodes)
-  if (any(tree < 1L) || any(tree > n_trees)) {
-    cli::cli_abort(
-      "{.arg tree} values must be between 1 and {n_trees}.",
-      call = rlang::caller_env()
-    )
-  }
+  check_tree_range(tree, num_ensemble_members(x))
 
   # Extract for each tree
   results <- lapply(tree, cforest_extract_rules_one, x = x)
@@ -69,9 +58,10 @@ extract_rules.cforest <- function(
 # Internal helper: extract active predictors for one tree from cforest
 cforest_extract_active_one <- function(tree_num, x) {
   # Validate tree number
-  if (tree_num < 1L || tree_num > length(x$nodes)) {
+  num_trees <- num_ensemble_members(x)
+  if (tree_num < 1L || tree_num > num_trees) {
     cli::cli_abort(
-      "{.arg tree} must be between 1 and {length(x$nodes)}.",
+      "{.arg tree} must be between 1 and {num_trees}.",
       call = rlang::caller_env()
     )
   }
@@ -101,23 +91,10 @@ active_predictors.cforest <- function(x, tree = 1L, ...) {
   rlang::check_installed("partykit")
 
   # Validate tree argument
-  if (!is.numeric(tree) || !all(tree == as.integer(tree))) {
-    cli::cli_abort(
-      "{.arg tree} must be an integer vector, not {.obj_type_friendly {tree}}.",
-      call = rlang::caller_env()
-    )
-  }
-
-  tree <- as.integer(tree)
+  tree <- check_tree_type(tree)
 
   # Validate tree range
-  n_trees <- length(x$nodes)
-  if (any(tree < 1L) || any(tree > n_trees)) {
-    cli::cli_abort(
-      "{.arg tree} values must be between 1 and {n_trees}.",
-      call = rlang::caller_env()
-    )
-  }
+  check_tree_range(tree, num_ensemble_members(x))
 
   # Extract for each tree
   results <- lapply(tree, cforest_extract_active_one, x = x)

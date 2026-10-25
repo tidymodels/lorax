@@ -1265,3 +1265,28 @@ test_that("num_ensemble_members() counts xgboost trees", {
   expect_identical(num_ensemble_members(multi), 6L)
   expect_identical(num_ensemble_members(reg), 4L)
 })
+
+test_that("extract_rules.xgb.Booster() handles several trees in one call", {
+  skip_if_not_installed("xgboost")
+
+  data <- get_regression_data()
+  bst <- xgboost::xgb.train(
+    params = list(max_depth = 3, objective = "reg:squarederror", nthread = 1),
+    data = xgboost::xgb.DMatrix(
+      as.matrix(data[, c("predictor_01", "predictor_02", "predictor_03")]),
+      label = data$y
+    ),
+    nrounds = 3,
+    verbose = 0
+  )
+
+  all_rules <- extract_rules(bst, tree = 1:3)
+  one_at_a_time <- dplyr::bind_rows(lapply(1:3, \(i) {
+    extract_rules(bst, tree = i)
+  }))
+
+  expect_s3_class(all_rules, "rule_set_xgb.Booster")
+  expect_equal(names(all_rules), c("tree", "rules", "id"))
+  expect_equal(as.data.frame(all_rules), as.data.frame(one_at_a_time))
+  expect_equal(unique(all_rules$tree), 1:3)
+})

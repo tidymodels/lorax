@@ -35,7 +35,7 @@
     Code
       extract_rules(rf, tree = "1")
     Condition
-      Error:
+      Error in `extract_rules()`:
       ! `tree` must be an integer vector, not a string.
 
 ---
@@ -43,7 +43,7 @@
     Code
       extract_rules(rf, tree = 1.5)
     Condition
-      Error:
+      Error in `extract_rules()`:
       ! `tree` must be an integer vector, not a number.
 
 ---
@@ -51,16 +51,18 @@
     Code
       extract_rules(rf, tree = 0L)
     Condition
-      Error:
-      ! `tree` values must be between 1 and 4.
+      Error in `extract_rules()`:
+      ! `tree` must be between 1 and 4, the number of trees in the model.
+      x Out of range: 0.
 
 ---
 
     Code
       extract_rules(rf, tree = 10L)
     Condition
-      Error:
-      ! `tree` values must be between 1 and 4.
+      Error in `extract_rules()`:
+      ! `tree` must be between 1 and 4, the number of trees in the model.
+      x Out of range: 10.
 
 # active_predictors.regression_forest() validates tree argument
 

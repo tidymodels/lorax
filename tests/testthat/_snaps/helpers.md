@@ -382,3 +382,28 @@
       Error:
       ! All values in `...` must be named.
 
+# check_tree_type() and check_tree_range() validate the tree argument
+
+    Code
+      check_tree_type("1")
+    Condition
+      Error:
+      ! `tree` must be an integer vector, not a string.
+
+---
+
+    Code
+      check_tree_type(1.5)
+    Condition
+      Error:
+      ! `tree` must be an integer vector, not a number.
+
+---
+
+    Code
+      check_tree_range(c(0L, 2L, 11L, 11L), 10)
+    Condition
+      Error:
+      ! `tree` must be between 1 and 10, the number of trees in the model.
+      x Out of range: 0 and 11.
+

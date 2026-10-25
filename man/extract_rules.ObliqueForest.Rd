@@ -9,9 +9,9 @@
 \arguments{
 \item{x}{An \code{ObliqueForest} object from the \pkg{aorsf} package}
 
-\item{tree}{Integer specifying which tree to extract rules from (1-based).
-Default is \code{1L} for the first tree. Must be between 1 and the number of
-trees in the forest (\code{x$n_tree}).}
+\item{tree}{Integer vector specifying which trees to extract rules from
+(1-based). Default is \code{1L} for the first tree. Values must be between 1
+and the number of trees in the forest (\code{x$n_tree}).}
 
 \item{add_statistics}{A single logical. If \code{TRUE}, two integer columns
 are added to the results:

@@ -20,7 +20,6 @@ test_that("extract_rules.ObliqueForest() validates tree argument", {
 
   forest <- get_penguins_forest()
   expect_snapshot(extract_rules(forest, tree = "1"), error = TRUE)
-  expect_snapshot(extract_rules(forest, tree = c(1, 2)), error = TRUE)
   expect_snapshot(extract_rules(forest, tree = 1.5), error = TRUE)
   expect_snapshot(extract_rules(forest, tree = 0), error = TRUE)
   expect_snapshot(extract_rules(forest, tree = 11), error = TRUE)
@@ -991,4 +990,17 @@ test_that("num_ensemble_members() counts ObliqueForest trees", {
   forest <- get_penguins_forest()
 
   expect_identical(num_ensemble_members(forest), 10L)
+})
+
+test_that("extract_rules.ObliqueForest() handles several trees in one call", {
+  forest <- get_penguins_forest()
+
+  all_rules <- extract_rules(forest, tree = 1:3)
+  one_at_a_time <- dplyr::bind_rows(
+    lapply(1:3, \(i) extract_rules(forest, tree = i))
+  )
+
+  expect_s3_class(all_rules, "rule_set_ObliqueForest")
+  expect_equal(as.data.frame(all_rules), as.data.frame(one_at_a_time))
+  expect_equal(unique(all_rules$tree), 1:3)
 })

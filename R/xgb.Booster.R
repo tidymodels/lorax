@@ -6,8 +6,8 @@
 #'
 #' @inheritParams extract_rules
 #' @param x An `xgb.Booster` object from the \pkg{xgboost} package.
-#' @param tree Integer specifying which tree to extract rules from. Uses
-#'   1-based indexing (default is `1L`). For multiclass models with `num_class`
+#' @param tree Integer vector specifying which trees to extract rules from.
+#'   Uses 1-based indexing (default is `1L`). For multiclass models with `num_class`
 #'   classes and `nrounds` boosting rounds, there are `num_class * nrounds`
 #'   total trees.
 #' @param nthread Integer number of threads to use when reading the tree
@@ -86,72 +86,46 @@ extract_rules.xgb.Booster <- function(
   add_statistics = FALSE,
   ...
 ) {
+  rlang::check_dots_empty()
   check_bool(add_statistics)
   rlang::check_installed("xgboost")
-  # Validate tree parameter
-  if (!is.numeric(tree) || length(tree) != 1 || tree != as.integer(tree)) {
-    cli::cli_abort(
-      "{.arg tree} must be a single integer, not {.obj_type_friendly {tree}}."
-    )
-  }
-  tree <- as.integer(tree)
 
-  if (tree < 1) {
-    cli::cli_abort(
-      "{.arg tree} must be >= 1, not {tree}."
-    )
-  }
+  tree <- check_tree_type(tree)
 
   x <- xgb_apply_nthread(x, nthread)
 
-  # Get tree structure
+  # Get tree structure for all requested trees in one dump
   # Note: trees parameter uses 1-based indexing (R convention)
   # but the Tree column in output uses 0-based indexing (xgboost convention)
-  tree_dt <- xgboost::xgb.model.dt.tree(
-    model = x,
-    trees = tree,
-    use_int_id = TRUE
+  # The upper limit needs a full model dump, so only look it up on error
+  if (any(tree < 1L)) {
+    check_tree_range(tree, num_ensemble_members(x))
+  }
+  tree_dt <- as.data.frame(
+    xgboost::xgb.model.dt.tree(
+      model = x,
+      trees = unique(tree),
+      use_int_id = TRUE
+    )
   )
 
-  # Convert to data.frame for easier indexing (avoid data.table syntax)
-  tree_dt <- as.data.frame(tree_dt)
-
-  # Validate tree number against available trees
-  if (nrow(tree_dt) == 0) {
-    max_tree_num <- max(
-      as.data.frame(xgboost::xgb.model.dt.tree(x, use_int_id = TRUE))$Tree
-    )
-    cli::cli_abort(
-      "{.arg tree} must be between 1 and {max_tree_num + 1}, not {tree}."
-    )
+  # Validate tree numbers against available trees
+  missing_trees <- setdiff(tree - 1L, tree_dt$Tree)
+  if (length(missing_trees) > 0) {
+    check_tree_range(tree, num_ensemble_members(x))
   }
 
-  # Handle single-node tree (root is leaf)
-  if (nrow(tree_dt) == 1 && tree_dt$Feature[1] == "Leaf") {
-    return(
-      tibble::tibble(
-        tree = tree,
-        rules = list(rlang::expr(TRUE)),
-        id = 1L
-      ) |>
-        tibble::new_tibble(class = c("rule_set_xgb.Booster", "rule_set")) |>
-        maybe_add_rule_statistics(add_statistics)
-    )
-  }
+  tree_dts <- split(tree_dt, tree_dt$Tree)
 
-  # Get terminal node IDs (0-based in tree_dt)
-  terminal_ids <- tree_dt$Node[tree_dt$Feature == "Leaf"]
+  results <- lapply(tree, function(tree_num) {
+    tree_rules <- xgb_tree_rules(tree_dts[[as.character(tree_num - 1L)]])
+    tree_rules$tree <- tree_num
+    tree_rules
+  })
 
-  # Build rules for each terminal node
-  rules_list <- lapply(terminal_ids, xgb_extract_node_rule, tree_dt = tree_dt)
-
-  # Return tibble with 1-based IDs
-  tibble::tibble(
-    tree = tree,
-    rules = rules_list,
-    id = as.integer(terminal_ids) + 1L
-  ) |>
-    dplyr::arrange(id) |>
+  dplyr::bind_rows(results) |>
+    dplyr::relocate(tree, rules, id) |>
+    dplyr::arrange(tree, id) |>
     tibble::new_tibble(class = c("rule_set_xgb.Booster", "rule_set")) |>
     maybe_add_rule_statistics(add_statistics)
 }
@@ -166,76 +140,37 @@ xgb_apply_nthread <- function(model, nthread) {
   model
 }
 
-# Internal helper: extract rule for a single terminal node
-xgb_extract_node_rule <- function(node_id, tree_dt) {
-  # Build path from root (0) to this terminal node
-  path <- xgb_build_node_path(node_id, tree_dt)
+# Internal helper: rules for every leaf of one tree from a single top-down
+# walk of the xgb.model.dt.tree() rows. A single-node tree gives the rule TRUE.
+xgb_tree_rules <- function(tree_dt) {
+  row_of <- function(node_id) match(node_id, tree_dt$Node)
+  ids <- integer()
+  rules <- list()
 
-  # Extract split conditions along the path
-  split_exprs <- list()
-  for (i in seq_along(path)[-length(path)]) {
-    parent <- path[i]
-    child <- path[i + 1]
-    split_info <- xgb_get_split_info(parent, child, tree_dt)
-    split_exprs[[i]] <- rect_split_to_expr(split_info)
-  }
-
-  combine_rule_elements(split_exprs)
-}
-
-# Internal helper to build path from root to node
-xgb_build_node_path <- function(node_id, tree_dt) {
-  path <- integer()
-  current <- node_id
-
-  while (TRUE) {
-    path <- c(current, path)
-    if (current == 0) {
-      break
+  walk <- function(node_id, exprs) {
+    row <- row_of(node_id)
+    if (tree_dt$Feature[row] == "Leaf") {
+      ids[[length(ids) + 1L]] <<- as.integer(node_id) + 1L
+      rules[[length(rules) + 1L]] <<- combine_rule_elements(exprs)
+      return(invisible(NULL))
     }
-    current <- xgb_find_parent(current, tree_dt)
-    if (is.na(current)) {
-      break
+    # XGBoost convention: Yes branch when feature < threshold
+    children <- c(tree_dt$Yes[row], tree_dt$No[row])
+    operators <- c("<", ">=")
+    for (k in 1:2) {
+      expr <- rect_split_to_expr(list(
+        column = tree_dt$Feature[row],
+        value = tree_dt$Split[row],
+        operator = operators[k]
+      ))
+      walk(children[k], c(exprs, list(expr)))
     }
+    invisible(NULL)
   }
 
-  path
-}
+  walk(0L, list())
 
-# Internal helper to find parent node
-xgb_find_parent <- function(node_id, tree_dt) {
-  if (node_id == 0) {
-    return(NA_integer_)
-  }
-
-  # Find row where Yes or No column matches node_id
-  parent_row <- which(tree_dt$Yes == node_id | tree_dt$No == node_id)
-
-  if (length(parent_row) == 0) {
-    return(NA_integer_)
-  }
-
-  tree_dt$Node[parent_row[1]]
-}
-
-# Internal helper to get split information
-xgb_get_split_info <- function(parent_id, child_id, tree_dt) {
-  # Get parent row
-  parent_row <- tree_dt[tree_dt$Node == parent_id, ]
-
-  # Determine operator based on branch direction
-  # XGBoost convention: Yes branch when feature < threshold
-  if (child_id == parent_row$Yes) {
-    operator <- "<"
-  } else {
-    operator <- ">="
-  }
-
-  list(
-    column = parent_row$Feature,
-    value = parent_row$Split,
-    operator = operator
-  )
+  tibble::tibble(rules = rules, id = ids)
 }
 
 # ------------------------------------------------------------------------------
@@ -396,8 +331,7 @@ as.party.xgb.Booster <- function(obj, tree = 1L, data, nthread = NULL, ...) {
 
   # Validate tree number against available trees
   # Tree column uses 0-based indexing
-  max_tree_internal <- max(tree_dt$Tree)
-  num_trees <- max_tree_internal + 1L # Convert to 1-based count
+  num_trees <- xgb_num_trees(tree_dt)
   if (tree > num_trees) {
     cli::cli_abort(
       "{.arg tree} must be between 1 and {num_trees}, not {tree}."
@@ -700,7 +634,7 @@ active_predictors.xgb.Booster <- function(x, tree = 1L, nthread = NULL, ...) {
   tree_dt <- xgboost::xgb.model.dt.tree(x, use_int_id = TRUE)
   tree_dt <- as.data.frame(tree_dt)
 
-  num_trees <- max(tree_dt$Tree) + 1L
+  num_trees <- xgb_num_trees(tree_dt)
 
   if (any(tree < 1L) || any(tree > num_trees)) {
     cli::cli_abort(
@@ -742,6 +676,11 @@ xgb_active_vars_one_tree <- function(tree_num, x, tree_dt) {
 #' @rdname num_ensemble_members
 #' @export
 num_ensemble_members.xgb.Booster <- function(x, ...) {
-  tree_dt <- xgboost::xgb.model.dt.tree(x, use_int_id = TRUE)
+  xgb_num_trees(xgboost::xgb.model.dt.tree(x, use_int_id = TRUE))
+}
+
+# Internal helper: number of trees from an xgb.model.dt.tree() table, where
+# `Tree` is 0-based
+xgb_num_trees <- function(tree_dt) {
   as.integer(max(tree_dt$Tree) + 1L)
 }

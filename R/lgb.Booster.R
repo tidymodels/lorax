@@ -6,8 +6,8 @@
 #'
 #' @inheritParams extract_rules
 #' @param x An `lgb.Booster` object from the \pkg{lightgbm} package.
-#' @param tree Integer specifying which tree to extract rules from. Uses
-#'   1-based indexing (default is `1L`). For multiclass models with `num_class`
+#' @param tree Integer vector specifying which trees to extract rules from.
+#'   Uses 1-based indexing (default is `1L`). For multiclass models with `num_class`
 #'   classes and `nrounds` boosting rounds, there are `num_class * nrounds`
 #'   total trees.
 #' @param data An optional data frame of the training data. It is only used to
@@ -115,21 +115,11 @@ extract_rules.lgb.Booster <- function(
   add_statistics = FALSE,
   ...
 ) {
+  rlang::check_dots_empty()
   check_bool(add_statistics)
   rlang::check_installed("lightgbm")
-  # Validate tree parameter
-  if (!is.numeric(tree) || length(tree) != 1 || tree != as.integer(tree)) {
-    cli::cli_abort(
-      "{.arg tree} must be a single integer, not {.obj_type_friendly {tree}}."
-    )
-  }
-  tree <- as.integer(tree)
 
-  if (tree < 1) {
-    cli::cli_abort(
-      "{.arg tree} must be >= 1, not {tree}."
-    )
-  }
+  tree <- check_tree_type(tree)
 
   if (!is.null(data) && !is.data.frame(data)) {
     cli::cli_abort(
@@ -137,167 +127,79 @@ extract_rules.lgb.Booster <- function(
     )
   }
 
-  # Get tree structure for all trees
-  tree_dt_all <- lightgbm::lgb.model.dt.tree(x)
-  tree_dt_all <- as.data.frame(tree_dt_all)
+  # One dump of the model covers every requested tree
+  tree_dt_all <- as.data.frame(lightgbm::lgb.model.dt.tree(x))
 
-  # Validate tree number against available trees
-  max_tree_index <- max(tree_dt_all$tree_index)
-  if (tree > max_tree_index + 1) {
-    cli::cli_abort(
-      "{.arg tree} must be between 1 and {max_tree_index + 1}, not {tree}."
-    )
-  }
+  check_tree_range(tree, lgb_num_trees(tree_dt_all))
 
-  # Filter to selected tree (convert to 0-based indexing)
-  tree_dt <- tree_dt_all[tree_dt_all$tree_index == (tree - 1L), ]
-
-  # Validate tree exists
-  if (nrow(tree_dt) == 0) {
-    cli::cli_abort(
-      "{.arg tree} must be between 1 and {max_tree_index + 1}, not {tree}."
-    )
-  }
-
-  # Handle single-node tree (root is leaf)
-  if (nrow(tree_dt) == 1 && !is.na(tree_dt$leaf_index[1])) {
-    return(
-      tibble::tibble(
-        tree = tree,
-        rules = list(rlang::expr(TRUE)),
-        id = 1L
-      ) |>
-        tibble::new_tibble(class = c("rule_set_lgb.Booster", "rule_set")) |>
-        maybe_add_rule_statistics(add_statistics)
-    )
-  }
-
+  # Convert to 0-based indexing and split the dump by tree
+  tree_dt <- tree_dt_all[tree_dt_all$tree_index %in% (tree - 1L), ]
   cat_levels <- lgb_cat_levels(x, tree_dt, data)
+  tree_dts <- split(tree_dt, tree_dt$tree_index)
 
-  # Get terminal node IDs (0-based in tree_dt)
-  terminal_ids <- tree_dt$leaf_index[!is.na(tree_dt$leaf_index)]
+  results <- lapply(tree, function(tree_num) {
+    tree_rules <- lgb_tree_rules(
+      tree_dts[[as.character(tree_num - 1L)]],
+      cat_levels
+    )
+    tree_rules$tree <- tree_num
+    tree_rules
+  })
 
-  # Build rules for each terminal node
-  rules_list <- lapply(
-    terminal_ids,
-    lgb_extract_leaf_rule,
-    tree_dt = tree_dt,
-    cat_levels = cat_levels
-  )
-
-  # Return tibble with 1-based IDs
-  tibble::tibble(
-    tree = tree,
-    rules = rules_list,
-    id = as.integer(terminal_ids) + 1L
-  ) |>
-    dplyr::arrange(id) |>
+  dplyr::bind_rows(results) |>
+    dplyr::relocate(tree, rules, id) |>
+    dplyr::arrange(tree, id) |>
     tibble::new_tibble(class = c("rule_set_lgb.Booster", "rule_set")) |>
     maybe_add_rule_statistics(add_statistics)
 }
 
-# Internal helper: extract rule for a single terminal node
-lgb_extract_leaf_rule <- function(leaf_id, tree_dt, cat_levels) {
-  # Build path from root to this terminal node
-  path <- lgb_build_node_path(leaf_id, tree_dt)
+# Internal helper: rules for every leaf of one tree from a single top-down walk
+# of the lgb.model.dt.tree() rows. Split and leaf indices overlap, so a row's
+# parent is read from `node_parent` or `leaf_parent` depending on its type.
+# Rows are in pre-order, so the first child row of a split is the left child.
+lgb_tree_rules <- function(tree_dt, cat_levels) {
+  is_leaf <- !is.na(tree_dt$leaf_index)
+  parent <- tree_dt$node_parent
+  parent[is_leaf] <- tree_dt$leaf_parent[is_leaf]
+  child_rows <- split(seq_along(parent), parent)
 
-  # Extract split conditions along the path
-  split_exprs <- list()
-  for (i in seq_along(path)[-length(path)]) {
-    parent <- path[i]
-    child <- path[i + 1]
-    is_child_leaf <- (i == length(path) - 1)
-    split_exprs[[i]] <- lgb_get_split_expr(
-      parent,
-      child,
-      tree_dt,
-      is_child_leaf,
-      cat_levels
-    )
-  }
+  ids <- integer()
+  rules <- list()
 
-  combine_rule_elements(split_exprs)
-}
-
-# Internal helper to build path from root to leaf
-lgb_build_node_path <- function(leaf_index, tree_dt) {
-  path <- integer()
-  current <- leaf_index
-  is_leaf <- TRUE
-
-  # Start with the leaf
-  path <- c(current, path)
-
-  # Get parent of leaf
-  leaf_row <- tree_dt[
-    !is.na(tree_dt$leaf_index) & tree_dt$leaf_index == leaf_index,
-  ]
-  if (nrow(leaf_row) == 0 || is.na(leaf_row$leaf_parent[1])) {
-    return(path)
-  }
-
-  current <- leaf_row$leaf_parent[1]
-  is_leaf <- FALSE
-
-  # Traverse up to root using node_parent
-  while (TRUE) {
-    path <- c(current, path)
-
-    # Find the internal node row
-    node_row <- tree_dt[
-      !is.na(tree_dt$split_index) & tree_dt$split_index == current,
-    ]
-
-    if (nrow(node_row) == 0 || is.na(node_row$node_parent[1])) {
-      # Reached root (node_parent is NA)
-      break
+  walk <- function(row, exprs) {
+    if (is_leaf[row]) {
+      ids[[length(ids) + 1L]] <<- as.integer(tree_dt$leaf_index[row]) + 1L
+      rules[[length(rules) + 1L]] <<- combine_rule_elements(exprs)
+      return(invisible(NULL))
     }
-
-    current <- node_row$node_parent[1]
+    kids <- child_rows[[as.character(tree_dt$split_index[row])]]
+    for (k in 1:2) {
+      expr <- lgb_split_expr(
+        feature = tree_dt$split_feature[row],
+        threshold = tree_dt$threshold[row],
+        decision_type = tree_dt$decision_type[row],
+        is_left_child = (k == 1),
+        cat_levels = cat_levels
+      )
+      walk(kids[k], c(exprs, list(expr)))
+    }
+    invisible(NULL)
   }
 
-  path
+  walk(which(is.na(parent))[1], list())
+
+  tibble::tibble(id = ids, rules = rules)
 }
 
-# Internal helper to get the split expression from a parent to one child
-lgb_get_split_expr <- function(
-  parent_split_index,
-  child_node,
-  tree_dt,
-  is_child_leaf,
+# Internal helper to get the split expression for one child of a split
+lgb_split_expr <- function(
+  feature,
+  threshold,
+  decision_type,
+  is_left_child,
   cat_levels
 ) {
-  # Get parent row (must be an internal node)
-  parent_row <- tree_dt[
-    !is.na(tree_dt$split_index) & tree_dt$split_index == parent_split_index,
-  ]
-
-  if (nrow(parent_row) == 0) {
-    cli::cli_abort("Could not find parent node {parent_split_index}.")
-  }
-
-  # lgb.model.dt.tree() rows are in pre-order (left child first), so the first
-  # child row of the parent is the left child. Split and leaf indices overlap,
-  # so each child is matched using the index column for its node type.
-  is_child_row <- (!is.na(tree_dt$split_index) &
-    !is.na(tree_dt$node_parent) &
-    tree_dt$node_parent == parent_split_index) |
-    (!is.na(tree_dt$leaf_index) &
-      !is.na(tree_dt$leaf_parent) &
-      tree_dt$leaf_parent == parent_split_index)
-  left_row <- tree_dt[which(is_child_row)[1], ]
-  if (is_child_leaf) {
-    is_left_child <- !is.na(left_row$leaf_index) &&
-      left_row$leaf_index == child_node
-  } else {
-    is_left_child <- !is.na(left_row$split_index) &&
-      left_row$split_index == child_node
-  }
-
-  feature <- parent_row$split_feature[1]
-  threshold <- parent_row$threshold[1]
-
-  if (parent_row$decision_type[1] == "==") {
+  if (decision_type == "==") {
     return(
       lgb_cat_split_expr(feature, threshold, is_left_child, cat_levels)
     )
@@ -305,10 +207,9 @@ lgb_get_split_expr <- function(
 
   # Numerical split (decision_type == "<=")
   # LightGBM convention: left child when feature <= threshold
+  operator <- ">"
   if (is_left_child) {
     operator <- "<="
-  } else {
-    operator <- ">"
   }
 
   rect_split_to_expr(list(
@@ -590,8 +491,7 @@ as.party.lgb.Booster <- function(obj, tree = 1L, data, ...) {
     )
   }
 
-  max_tree_internal <- max(tree_dt$tree_index, na.rm = TRUE)
-  num_trees <- max_tree_internal + 1L # Convert to 1-based count
+  num_trees <- lgb_num_trees(tree_dt)
   if (tree > num_trees) {
     cli::cli_abort(
       "{.arg tree} must be between 1 and {num_trees}, not {tree}."
@@ -1034,12 +934,7 @@ active_predictors.lgb.Booster <- function(x, tree = 1L, ...) {
   tree_dt <- lightgbm::lgb.model.dt.tree(x)
   tree_dt <- as.data.frame(tree_dt)
 
-  # Handle case where tree_index might be all NA (shouldn't happen but be safe)
-  if (nrow(tree_dt) == 0 || all(is.na(tree_dt$tree_index))) {
-    num_trees <- 1L # Assume at least one tree
-  } else {
-    num_trees <- max(tree_dt$tree_index, na.rm = TRUE) + 1L
-  }
+  num_trees <- lgb_num_trees(tree_dt)
 
   if (any(tree < 1L) || any(tree > num_trees)) {
     cli::cli_abort(
@@ -1081,6 +976,15 @@ lgb_active_vars_one_tree <- function(tree_num, x, tree_dt) {
 #' @rdname num_ensemble_members
 #' @export
 num_ensemble_members.lgb.Booster <- function(x, ...) {
-  tree_dt <- as.data.frame(lightgbm::lgb.model.dt.tree(x))
+  lgb_num_trees(as.data.frame(lightgbm::lgb.model.dt.tree(x)))
+}
+
+# Internal helper: number of trees from a lgb.model.dt.tree() data frame, where
+# `tree_index` is 0-based
+lgb_num_trees <- function(tree_dt) {
+  # A model without any splits has no tree index, so assume a single tree
+  if (nrow(tree_dt) == 0 || all(is.na(tree_dt$tree_index))) {
+    return(1L)
+  }
   as.integer(max(tree_dt$tree_index, na.rm = TRUE) + 1L)
 }

@@ -1,4 +1,26 @@
-skip("TOOOO LONG")
+test_that("extract_rules.party() assigns every row to exactly one rule", {
+  skip_if_not_installed("partykit")
+
+  set.seed(1)
+  dat <- data.frame(
+    x = rnorm(200),
+    f = factor(sample(letters[1:4], 200, replace = TRUE))
+  )
+  dat$y <- dat$x + (dat$f %in% c("a", "b")) + rnorm(200, sd = 0.3)
+  tree <- partykit::ctree(y ~ x + f, data = dat)
+  rules <- extract_rules(tree)
+
+  matches <- vapply(
+    rules$rules,
+    \(r) eval(r, dat),
+    logical(nrow(dat))
+  )
+  leaf <- rules$id[max.col(matches, ties.method = "first")]
+
+  expect_gt(nrow(rules), 2)
+  expect_all_equal(rowSums(matches), 1)
+  expect_equal(leaf, as.integer(predict(tree, type = "node")))
+})
 
 test_that("extract_rules.party() returns correct structure", {
   skip_if_not_installed("partykit")
@@ -126,7 +148,7 @@ test_that("extract_rules.party() integrates with rule_text()", {
 test_that("extract_rules.party() works with wa_trees data", {
   skip_if_not_installed("partykit")
 
-  load(system.file(package = "lorax", "wa_trees.RData"))
+  wa_trees <- get_wa_trees_small_data()
   wa_tree <- partykit::ctree(class ~ ., data = wa_trees)
   rules <- extract_rules(wa_tree)
 
@@ -166,7 +188,7 @@ test_that("extract_rules.party() handles no-split data", {
 test_that("active_predictors.party() returns correct structure", {
   skip_if_not_installed("partykit")
 
-  load(system.file(package = "lorax", "wa_trees.RData"))
+  wa_trees <- get_wa_trees_small_data()
   wa_tree <- partykit::ctree(class ~ ., data = wa_trees)
   result <- active_predictors(wa_tree)
 
@@ -180,7 +202,7 @@ test_that("active_predictors.party() returns correct structure", {
 test_that("active_predictors.party() extracts correct variables", {
   skip_if_not_installed("partykit")
 
-  load(system.file(package = "lorax", "wa_trees.RData"))
+  wa_trees <- get_wa_trees_small_data()
   wa_tree <- partykit::ctree(
     class ~ elevation + eastness + county,
     data = wa_trees
@@ -206,7 +228,7 @@ test_that("active_predictors.party() extracts correct variables", {
 test_that("active_predictors.party() works with numeric predictors", {
   skip_if_not_installed("partykit")
 
-  load(system.file(package = "lorax", "wa_trees.RData"))
+  wa_trees <- get_wa_trees_small_data()
   num_tree <- partykit::ctree(
     elevation ~ year + roughness + dew_temp,
     data = wa_trees
@@ -225,7 +247,7 @@ test_that("active_predictors.party() works with numeric predictors", {
 test_that("active_predictors.party() works with factor predictors", {
   skip_if_not_installed("partykit")
 
-  load(system.file(package = "lorax", "wa_trees.RData"))
+  wa_trees <- get_wa_trees_small_data()
   factor_tree <- partykit::ctree(
     county ~ class + elevation + roughness,
     data = wa_trees
@@ -245,7 +267,7 @@ test_that("active_predictors.party() works with factor predictors", {
 test_that("active_predictors.party() works with mixed numeric and factor predictors", {
   skip_if_not_installed("partykit")
 
-  load(system.file(package = "lorax", "wa_trees.RData"))
+  wa_trees <- get_wa_trees_small_data()
   mixed_tree <- partykit::ctree(
     class ~ elevation + county + roughness,
     data = wa_trees
@@ -266,7 +288,7 @@ test_that("active_predictors.party() works with mixed numeric and factor predict
 test_that("active_predictors.party() handles single-node tree", {
   skip_if_not_installed("partykit")
 
-  load(system.file(package = "lorax", "wa_trees.RData"))
+  wa_trees <- get_wa_trees_small_data()
   single_tree <- partykit::ctree(
     class ~ elevation,
     data = wa_trees,
@@ -283,7 +305,7 @@ test_that("active_predictors.party() handles single-node tree", {
 test_that("active_predictors.party() handles tree with repeated variables", {
   skip_if_not_installed("partykit")
 
-  load(system.file(package = "lorax", "wa_trees.RData"))
+  wa_trees <- get_wa_trees_small_data()
   tree <- partykit::ctree(class ~ ., data = wa_trees)
   result <- active_predictors(tree)
 
@@ -313,7 +335,7 @@ test_that("active_predictors.party() handles no-split data", {
 test_that("var_imp.party() returns correct structure", {
   skip_if_not_installed("partykit")
 
-  wa_trees <- get_wa_trees_data()[1:200, ]
+  wa_trees <- get_wa_trees_small_data()
   set.seed(427)
   tree <- partykit::ctree(
     class ~ elevation + county,
@@ -330,7 +352,7 @@ test_that("var_imp.party() returns correct structure", {
 test_that("var_imp.party() extracts variable importance scores", {
   skip_if_not_installed("partykit")
 
-  wa_trees <- get_wa_trees_data()[1:200, ]
+  wa_trees <- get_wa_trees_small_data()
   set.seed(638)
   tree <- partykit::ctree(
     class ~ elevation + county,
@@ -348,7 +370,7 @@ test_that("var_imp.party() extracts variable importance scores", {
 test_that("var_imp.party() with complete=TRUE fills missing predictors", {
   skip_if_not_installed("partykit")
 
-  wa_trees <- get_wa_trees_data()[1:200, ]
+  wa_trees <- get_wa_trees_small_data()
   set.seed(749)
   tree <- partykit::ctree(
     class ~ elevation + roughness + dew_temp,
@@ -364,7 +386,7 @@ test_that("var_imp.party() with complete=TRUE fills missing predictors", {
 test_that("var_imp.party() with complete=FALSE returns only used predictors", {
   skip_if_not_installed("partykit")
 
-  wa_trees <- get_wa_trees_data()[1:200, ]
+  wa_trees <- get_wa_trees_small_data()
   set.seed(851)
   tree <- partykit::ctree(
     class ~ elevation + county,
@@ -395,7 +417,7 @@ test_that("var_imp.party() works with numeric predictors only", {
 test_that("var_imp.party() works with factor predictors", {
   skip_if_not_installed("partykit")
 
-  wa_trees <- get_wa_trees_data()[1:200, ]
+  wa_trees <- get_wa_trees_small_data()
   set.seed(174)
   tree <- partykit::ctree(
     county ~ class + elevation,
@@ -411,7 +433,7 @@ test_that("var_imp.party() works with factor predictors", {
 test_that("var_imp.party() works with mixed numeric and factor predictors", {
   skip_if_not_installed("partykit")
 
-  wa_trees <- get_wa_trees_data()[1:200, ]
+  wa_trees <- get_wa_trees_small_data()
   set.seed(285)
   tree <- partykit::ctree(
     elevation ~ class + roughness,
@@ -427,7 +449,7 @@ test_that("var_imp.party() works with mixed numeric and factor predictors", {
 test_that("var_imp.party() returns all expected predictors", {
   skip_if_not_installed("partykit")
 
-  wa_trees <- get_wa_trees_data()[1:200, ]
+  wa_trees <- get_wa_trees_small_data()
   set.seed(396)
   tree <- partykit::ctree(
     class ~ elevation + county,
@@ -446,7 +468,7 @@ test_that("var_imp.party() returns all expected predictors", {
 test_that("var_imp.party() works with classification tree", {
   skip_if_not_installed("partykit")
 
-  wa_trees <- get_wa_trees_data()[1:200, ]
+  wa_trees <- get_wa_trees_small_data()
   set.seed(507)
   tree <- partykit::ctree(
     class ~ elevation + county,

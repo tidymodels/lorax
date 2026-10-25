@@ -10,8 +10,8 @@
 \item{x}{A \code{bart} object from the \pkg{dbarts} package fitted with
 \code{keeptrees = TRUE}.}
 
-\item{tree}{Integer specifying which tree to extract rules from. Uses
-1-based indexing (default is \code{1L}). BART models contain \code{n.trees} trees
+\item{tree}{Integer vector specifying which trees to extract rules from.
+Uses 1-based indexing (default is \code{1L}). BART models contain \code{n.trees} trees
 in the ensemble.}
 
 \item{chain}{Integer specifying which MCMC chain to extract from. Uses

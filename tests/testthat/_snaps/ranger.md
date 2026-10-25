@@ -51,7 +51,7 @@
     Code
       extract_rules(rf, tree = "1", data = data)
     Condition
-      Error:
+      Error in `extract_rules()`:
       ! `tree` must be an integer vector, not a string.
 
 ---
@@ -59,7 +59,7 @@
     Code
       extract_rules(rf, tree = 1.5, data = data)
     Condition
-      Error:
+      Error in `extract_rules()`:
       ! `tree` must be an integer vector, not a number.
 
 ---
@@ -67,16 +67,18 @@
     Code
       extract_rules(rf, tree = 0L, data = data)
     Condition
-      Error:
-      ! `tree` values must be between 1 and 3.
+      Error in `extract_rules()`:
+      ! `tree` must be between 1 and 3, the number of trees in the model.
+      x Out of range: 0.
 
 ---
 
     Code
       extract_rules(rf, tree = 10L, data = data)
     Condition
-      Error:
-      ! `tree` values must be between 1 and 3.
+      Error in `extract_rules()`:
+      ! `tree` must be between 1 and 3, the number of trees in the model.
+      x Out of range: 10.
 
 # extract_rules.ranger() requires data parameter
 

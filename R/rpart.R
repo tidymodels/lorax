@@ -1,19 +1,3 @@
-# Internal helper: extract rule for a single terminal node
-rpart_extract_node_rule <- function(node_id, max_node_id, x) {
-  path <- build_node_path(node_id, max_node_id)
-
-  split_exprs <- list()
-  for (i in seq_along(path)[-length(path)]) {
-    parent <- path[i]
-    child <- path[i + 1]
-    split_info <- rpart_get_split_info(parent, child, x)
-    split_exprs[[i]] <- rect_split_to_expr(split_info)
-  }
-
-  combine_rule_elements(split_exprs)
-}
-
-
 #' Extract rules from an rpart model
 #'
 #' Extract interpretable decision rules from an \pkg{rpart} decision tree.
@@ -34,50 +18,56 @@ rpart_extract_node_rule <- function(node_id, max_node_id, x) {
 #'
 #' @export
 extract_rules.rpart <- function(x, add_statistics = FALSE, ...) {
+  rlang::check_dots_empty()
   check_bool(add_statistics)
   rlang::check_installed("rpart")
-  terminal_ids <- rpart_get_terminal_nodes(x)
-
-  rules_list <- lapply(
-    terminal_ids,
-    rpart_extract_node_rule,
-    max_node_id = max(terminal_ids),
-    x = x
-  )
+  collected <- rpart_collect_rules(x)
 
   tibble::tibble(
-    id = as.integer(terminal_ids),
-    rules = rules_list
+    id = as.integer(collected$ids),
+    rules = collected$rules
   ) |>
     dplyr::arrange(id) |>
     tibble::new_tibble(class = c("rule_set_rpart", "rule_set")) |>
     maybe_add_rule_statistics(add_statistics)
 }
 
-# rpart-specific helper to get terminal nodes
-rpart_get_terminal_nodes <- function(x) {
-  terminal_rows <- x$frame$var == "<leaf>"
-  as.integer(rownames(x$frame[terminal_rows, ]))
-}
+# rpart-specific helper: walk the tree once from the root (node 1, children
+# 2 * id and 2 * id + 1), carrying the split expressions down to each leaf
+rpart_collect_rules <- function(x) {
+  frame_ids <- as.integer(rownames(x$frame))
+  is_leaf <- x$frame$var == "<leaf>"
 
-# Potentially reusable helper to build path from root to node
-build_node_path <- function(node_id, max_node_id) {
-  path <- integer()
-  current <- node_id
+  # Each non-leaf uses 1 + ncompete + nsurrogate rows of the splits matrix, in
+  # frame order, so the primary split of a node follows all earlier splits
+  splits_used <- 1 + x$frame$ncompete + x$frame$nsurrogate
+  splits_used[is_leaf] <- 0
+  split_rows <- cumsum(c(0, splits_used))[seq_along(frame_ids)] + 1
 
-  while (current >= 1) {
-    path <- c(current, path)
-    if (current == 1) {
-      break
+  ids <- integer()
+  rules <- list()
+
+  walk <- function(node_id, exprs) {
+    pos <- match(node_id, frame_ids)
+    if (is_leaf[pos]) {
+      ids[[length(ids) + 1L]] <<- node_id
+      rules[[length(rules) + 1L]] <<- combine_rule_elements(exprs)
+      return(invisible(NULL))
     }
-    current <- floor(current / 2)
+    for (child_id in c(2L * node_id, 2L * node_id + 1L)) {
+      split_info <- rpart_get_split_info(node_id, child_id, x, split_rows[pos])
+      expr <- rect_split_to_expr(split_info)
+      walk(child_id, c(exprs, list(expr)))
+    }
+    invisible(NULL)
   }
 
-  path
+  walk(1L, list())
+  list(ids = ids, rules = rules)
 }
 
 # rpart-specific helper to get split info for a node
-rpart_get_split_info <- function(node_id, child_id, x) {
+rpart_get_split_info <- function(node_id, child_id, x, split_row) {
   # Determine if we go left or right
   is_left <- child_id == 2 * node_id
 
@@ -85,10 +75,6 @@ rpart_get_split_info <- function(node_id, child_id, x) {
   node_row <- as.character(node_id)
   var_name <- x$frame[node_row, "var"]
 
-  # Find the correct row in splits matrix
-  # Splits are ordered by tree traversal, with each primary split
-  # followed by ncompete + nsurrogate additional splits
-  split_row <- rpart_find_split_row(node_id, x)
   ncat <- x$splits[split_row, "ncat"]
   split_index <- x$splits[split_row, "index"]
 
@@ -170,32 +156,6 @@ rpart_get_factor_levels <- function(var_name, level_indices, x) {
 
   # Fallback: use numeric indices as strings
   as.character(level_indices)
-}
-
-# rpart-specific helper to find the row in splits matrix for a given node
-rpart_find_split_row <- function(node_id, x) {
-  # Get row names from frame (node IDs in tree traversal order)
-  frame_nodes <- as.integer(rownames(x$frame))
-
-  # Find position of this node in the frame
-  node_pos <- which(frame_nodes == node_id)
-
-  # Count splits used by all previous non-leaf nodes
-  splits_used <- 0
-  if (node_pos > 1) {
-    for (i in seq_len(node_pos - 1)) {
-      if (x$frame$var[i] != "<leaf>") {
-        # Each non-leaf uses 1 + ncompete + nsurrogate splits
-        splits_used <- splits_used +
-          1 +
-          x$frame$ncompete[i] +
-          x$frame$nsurrogate[i]
-      }
-    }
-  }
-
-  # The split for this node is at position splits_used + 1
-  splits_used + 1
 }
 
 #' @rdname active_predictors

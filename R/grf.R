@@ -105,14 +105,7 @@ as.party.grf <- function(obj, tree = 1L, data = NULL, ...) {
   }
 
   # Validate tree against available trees
-  num_trees <- obj$`_num_trees`
-  if (is.null(num_trees)) {
-    # Try alternative attribute names
-    num_trees <- length(obj[["_tree_drawn"]])
-    if (is.null(num_trees) || num_trees == 0) {
-      num_trees <- 1000 # Default grf value
-    }
-  }
+  num_trees <- num_ensemble_members(obj)
   if (tree > num_trees) {
     cli::cli_abort(
       "{.arg tree} must be between 1 and {num_trees}, not {tree}."
@@ -308,9 +301,9 @@ grf_find_max_split_var <- function(all_nodes) {
 # Extract rules from grf
 
 # Internal helper: extract rules for one tree from grf
-grf_extract_rules_one <- function(tree_num, x) {
+grf_extract_rules_one <- function(tree_num, x, data = NULL) {
   # Convert to party
-  tree_party <- as.party(x, tree = tree_num)
+  tree_party <- as.party(x, tree = tree_num, data = data)
 
   # Extract rules using party method
   rules <- extract_rules.party(tree_party)
@@ -327,35 +320,28 @@ grf_extract_rules_one <- function(tree_num, x) {
 #'   number of trees in the forest.
 #' @export
 extract_rules.grf <- function(x, tree = 1L, add_statistics = FALSE, ...) {
+  rlang::check_dots_empty()
   check_bool(add_statistics)
   rlang::check_installed("grf")
 
   # Validate tree argument
-  if (!is.numeric(tree) || !all(tree == as.integer(tree))) {
-    cli::cli_abort(
-      "{.arg tree} must be an integer vector, not {.obj_type_friendly {tree}}.",
-      call = rlang::caller_env()
-    )
-  }
-
-  tree <- as.integer(tree)
-
-  # Get number of trees
-  num_trees <- x$`_num_trees`
-  if (is.null(num_trees)) {
-    num_trees <- 1000 # Default grf value
-  }
+  tree <- check_tree_type(tree)
 
   # Validate tree range
-  if (any(tree < 1L) || any(tree > num_trees)) {
-    cli::cli_abort(
-      "{.arg tree} values must be between 1 and {num_trees}.",
-      call = rlang::caller_env()
-    )
+  check_tree_range(tree, num_ensemble_members(x))
+
+  # Rules only need the column names, so a zero-row copy of the training data
+  # avoids computing fitted node ids for every row of every tree
+  rule_data <- NULL
+  if (!is.null(x$X.orig)) {
+    rule_data <- as.data.frame(x$X.orig)[0, , drop = FALSE]
+    if (is.null(colnames(x$X.orig))) {
+      names(rule_data) <- paste0("X", seq_len(ncol(rule_data)))
+    }
   }
 
   # Extract for each tree
-  results <- lapply(tree, grf_extract_rules_one, x = x)
+  results <- lapply(tree, grf_extract_rules_one, x = x, data = rule_data)
 
   # Combine and sort by tree then id
   dplyr::bind_rows(results) |>
@@ -412,11 +398,7 @@ active_predictors.grf <- function(x, tree = 1L, ...) {
 
   tree <- as.integer(tree)
 
-  # Get number of trees
-  num_trees <- x$`_num_trees`
-  if (is.null(num_trees)) {
-    num_trees <- 1000 # Default grf value
-  }
+  num_trees <- num_ensemble_members(x)
 
   if (any(tree < 1L) || any(tree > num_trees)) {
     cli::cli_abort(
@@ -494,5 +476,11 @@ grf_active_vars_one_tree <- function(tree_num, x) {
 #' @rdname num_ensemble_members
 #' @export
 num_ensemble_members.grf <- function(x, ...) {
-  as.integer(x$`_num_trees`)
+  num_trees <- x$`_num_trees`
+  if (is.null(num_trees)) {
+    cli::cli_abort(
+      "Can't determine the number of trees in this {.pkg grf} model."
+    )
+  }
+  as.integer(num_trees)
 }

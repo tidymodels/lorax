@@ -26,6 +26,17 @@ get_wa_trees_data <- function() {
   get("wa_trees", envir = environment())
 }
 
+# A small version of the trees data for partykit::cforest(); splits on a factor
+# with many levels are very slow to fit, so only the most common counties are kept
+get_wa_trees_small_data <- function(n = 200) {
+  wa_trees <- get_wa_trees_data()[seq_len(n), ]
+  common <- names(sort(table(wa_trees$county), decreasing = TRUE))[1:3]
+  county <- as.character(wa_trees$county)
+  county[!county %in% common] <- "other"
+  wa_trees$county <- factor(county)
+  wa_trees
+}
+
 # Create binary classification data with predictive ability
 get_binary_data <- function() {
   skip_if_not_installed("modeldata")

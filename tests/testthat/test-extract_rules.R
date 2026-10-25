@@ -41,7 +41,6 @@ test_that("extract_rules.xgb.Booster validates tree parameter", {
   )
 
   expect_snapshot(extract_rules(bst, tree = 0), error = TRUE)
-  expect_snapshot(extract_rules(bst, tree = c(1, 2)), error = TRUE)
   expect_snapshot(extract_rules(bst, tree = "1"), error = TRUE)
   expect_snapshot(extract_rules(bst, tree = 100), error = TRUE)
 })
@@ -137,7 +136,6 @@ test_that("extract_rules.lgb.Booster validates tree parameter", {
   )
 
   expect_snapshot(extract_rules(bst, tree = 0), error = TRUE)
-  expect_snapshot(extract_rules(bst, tree = c(1, 2)), error = TRUE)
   expect_snapshot(extract_rules(bst, tree = "1"), error = TRUE)
   expect_snapshot(extract_rules(bst, tree = 100), error = TRUE)
 })

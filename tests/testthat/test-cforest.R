@@ -1,11 +1,9 @@
 # Tests for extract_rules.cforest() --------------------------------------------
-skip()
-skip_if(runif(1) <= 0.1)
 
 test_that("extract_rules.cforest() returns correct structure", {
   skip_if_not_installed("partykit")
 
-  wa_trees <- get_wa_trees_data()[1:200, ]
+  wa_trees <- get_wa_trees_small_data()
   set.seed(847)
   cf <- partykit::cforest(
     class ~ elevation + county,
@@ -26,7 +24,7 @@ test_that("extract_rules.cforest() returns correct structure", {
 test_that("extract_rules.cforest() extracts from single tree", {
   skip_if_not_installed("partykit")
 
-  wa_trees <- get_wa_trees_data()[1:200, ]
+  wa_trees <- get_wa_trees_small_data()
   set.seed(532)
   cf <- partykit::cforest(
     class ~ elevation + county + roughness,
@@ -47,7 +45,7 @@ test_that("extract_rules.cforest() extracts from single tree", {
 test_that("extract_rules.cforest() extracts from multiple trees", {
   skip_if_not_installed("partykit")
 
-  wa_trees <- get_wa_trees_data()[1:200, ]
+  wa_trees <- get_wa_trees_small_data()
   set.seed(219)
   cf <- partykit::cforest(
     class ~ elevation + county + roughness,
@@ -69,7 +67,7 @@ test_that("extract_rules.cforest() extracts from multiple trees", {
 test_that("extract_rules.cforest() validates tree argument", {
   skip_if_not_installed("partykit")
 
-  wa_trees <- get_wa_trees_data()[1:200, ]
+  wa_trees <- get_wa_trees_small_data()
   set.seed(674)
   cf <- partykit::cforest(
     class ~ elevation + county,
@@ -114,7 +112,7 @@ test_that("extract_rules.cforest() works with factor predictors", {
 test_that("extract_rules.cforest() works with mixed numeric and factor predictors", {
   skip_if_not_installed("partykit")
 
-  wa_trees <- get_wa_trees_data()[1:200, ]
+  wa_trees <- get_wa_trees_small_data()
   set.seed(746)
   cf <- partykit::cforest(
     class ~ elevation + county + roughness,
@@ -130,7 +128,7 @@ test_that("extract_rules.cforest() works with mixed numeric and factor predictor
 test_that("extract_rules.cforest() rules are sorted by tree then id", {
   skip_if_not_installed("partykit")
 
-  wa_trees <- get_wa_trees_data()[1:200, ]
+  wa_trees <- get_wa_trees_small_data()
   set.seed(803)
   cf <- partykit::cforest(
     class ~ elevation + county + roughness,
@@ -152,7 +150,7 @@ test_that("extract_rules.cforest() rules are sorted by tree then id", {
 test_that("extract_rules.cforest() handles duplicate tree numbers", {
   skip_if_not_installed("partykit")
 
-  wa_trees <- get_wa_trees_data()[1:200, ]
+  wa_trees <- get_wa_trees_small_data()
   set.seed(456)
   cf <- partykit::cforest(
     class ~ elevation + county,
@@ -169,7 +167,7 @@ test_that("extract_rules.cforest() handles duplicate tree numbers", {
 test_that("extract_rules.cforest() works with all trees", {
   skip_if_not_installed("partykit")
 
-  wa_trees <- get_wa_trees_data()[1:200, ]
+  wa_trees <- get_wa_trees_small_data()
   set.seed(927)
   cf <- partykit::cforest(
     class ~ elevation + county,
@@ -202,7 +200,7 @@ test_that("extract_rules.cforest() handles tree with no valid splits", {
 test_that("active_predictors.cforest() returns correct structure", {
   skip_if_not_installed("partykit")
 
-  wa_trees <- get_wa_trees_data()[1:200, ]
+  wa_trees <- get_wa_trees_small_data()
   set.seed(183)
   cf <- partykit::cforest(
     class ~ elevation + county,
@@ -221,7 +219,7 @@ test_that("active_predictors.cforest() returns correct structure", {
 test_that("active_predictors.cforest() extracts from single tree", {
   skip_if_not_installed("partykit")
 
-  wa_trees <- get_wa_trees_data()[1:200, ]
+  wa_trees <- get_wa_trees_small_data()
   set.seed(295)
   cf <- partykit::cforest(
     class ~ elevation + county + roughness,
@@ -238,7 +236,7 @@ test_that("active_predictors.cforest() extracts from single tree", {
 test_that("active_predictors.cforest() extracts from multiple trees", {
   skip_if_not_installed("partykit")
 
-  wa_trees <- get_wa_trees_data()[1:200, ]
+  wa_trees <- get_wa_trees_small_data()
   set.seed(418)
   cf <- partykit::cforest(
     class ~ elevation + county + roughness,
@@ -255,7 +253,7 @@ test_that("active_predictors.cforest() extracts from multiple trees", {
 test_that("active_predictors.cforest() validates tree argument", {
   skip_if_not_installed("partykit")
 
-  wa_trees <- get_wa_trees_data()[1:200, ]
+  wa_trees <- get_wa_trees_small_data()
   set.seed(563)
   cf <- partykit::cforest(
     class ~ elevation + county,
@@ -304,7 +302,7 @@ test_that("active_predictors.cforest() works with factor predictors", {
 test_that("active_predictors.cforest() works with mixed numeric and factor predictors", {
   skip_if_not_installed("partykit")
 
-  wa_trees <- get_wa_trees_data()[1:200, ]
+  wa_trees <- get_wa_trees_small_data()
   set.seed(926)
   cf <- partykit::cforest(
     class ~ elevation + county + roughness,
@@ -321,7 +319,7 @@ test_that("active_predictors.cforest() works with mixed numeric and factor predi
 test_that("active_predictors.cforest() returns sorted unique variables", {
   skip_if_not_installed("partykit")
 
-  wa_trees <- get_wa_trees_data()[1:200, ]
+  wa_trees <- get_wa_trees_small_data()
   set.seed(147)
   cf <- partykit::cforest(
     class ~ elevation + county + roughness,
@@ -338,7 +336,7 @@ test_that("active_predictors.cforest() returns sorted unique variables", {
 test_that("active_predictors.cforest() works with all trees", {
   skip_if_not_installed("partykit")
 
-  wa_trees <- get_wa_trees_data()[1:200, ]
+  wa_trees <- get_wa_trees_small_data()
   set.seed(372)
   cf <- partykit::cforest(
     class ~ elevation + county,
@@ -356,7 +354,7 @@ test_that("active_predictors.cforest() works with all trees", {
 test_that("active_predictors.cforest() handles duplicate tree numbers", {
   skip_if_not_installed("partykit")
 
-  wa_trees <- get_wa_trees_data()[1:200, ]
+  wa_trees <- get_wa_trees_small_data()
   set.seed(508)
   cf <- partykit::cforest(
     class ~ elevation + county,
@@ -389,7 +387,7 @@ test_that("active_predictors.cforest() handles tree with no splits", {
 test_that("var_imp.cforest() returns correct structure", {
   skip_if_not_installed("partykit")
 
-  wa_trees <- get_wa_trees_data()[1:200, ]
+  wa_trees <- get_wa_trees_small_data()
   set.seed(821)
   cf <- partykit::cforest(
     class ~ elevation + county,
@@ -407,7 +405,7 @@ test_that("var_imp.cforest() returns correct structure", {
 test_that("var_imp.cforest() extracts variable importance scores", {
   skip_if_not_installed("partykit")
 
-  wa_trees <- get_wa_trees_data()[1:200, ]
+  wa_trees <- get_wa_trees_small_data()
   set.seed(934)
   cf <- partykit::cforest(
     class ~ elevation + county,
@@ -426,7 +424,7 @@ test_that("var_imp.cforest() extracts variable importance scores", {
 test_that("var_imp.cforest() with complete=TRUE fills missing predictors", {
   skip_if_not_installed("partykit")
 
-  wa_trees <- get_wa_trees_data()[1:200, ]
+  wa_trees <- get_wa_trees_small_data()
   set.seed(157)
   cf <- partykit::cforest(
     class ~ elevation + roughness + dew_temp,
@@ -443,7 +441,7 @@ test_that("var_imp.cforest() with complete=TRUE fills missing predictors", {
 test_that("var_imp.cforest() with complete=FALSE returns only used predictors", {
   skip_if_not_installed("partykit")
 
-  wa_trees <- get_wa_trees_data()[1:200, ]
+  wa_trees <- get_wa_trees_small_data()
   set.seed(283)
   cf <- partykit::cforest(
     class ~ elevation + county,
@@ -479,7 +477,7 @@ test_that("var_imp.cforest() works with numeric predictors only", {
 test_that("var_imp.cforest() works with factor predictors", {
   skip_if_not_installed("partykit")
 
-  wa_trees <- get_wa_trees_data()[1:200, ]
+  wa_trees <- get_wa_trees_small_data()
   set.seed(619)
   cf <- partykit::cforest(
     county ~ class + elevation,
@@ -496,7 +494,7 @@ test_that("var_imp.cforest() works with factor predictors", {
 test_that("var_imp.cforest() works with mixed numeric and factor predictors", {
   skip_if_not_installed("partykit")
 
-  wa_trees <- get_wa_trees_data()[1:200, ]
+  wa_trees <- get_wa_trees_small_data()
   set.seed(742)
   cf <- partykit::cforest(
     elevation ~ class + roughness,
@@ -513,7 +511,7 @@ test_that("var_imp.cforest() works with mixed numeric and factor predictors", {
 test_that("var_imp.cforest() returns all expected predictors", {
   skip_if_not_installed("partykit")
 
-  wa_trees <- get_wa_trees_data()[1:200, ]
+  wa_trees <- get_wa_trees_small_data()
   set.seed(865)
   cf <- partykit::cforest(
     class ~ elevation + county,
@@ -533,7 +531,7 @@ test_that("var_imp.cforest() returns all expected predictors", {
 test_that("var_imp.cforest() works with classification forest", {
   skip_if_not_installed("partykit")
 
-  wa_trees <- get_wa_trees_data()[1:200, ]
+  wa_trees <- get_wa_trees_small_data()
   set.seed(918)
   cf <- partykit::cforest(
     class ~ elevation + county,
@@ -705,7 +703,7 @@ test_that("var_imp.cforest() works with single factor predictor", {
 test_that("num_ensemble_members() counts cforest trees", {
   skip_if_not_installed("partykit")
 
-  wa_trees <- get_wa_trees_data()[1:200, ]
+  wa_trees <- get_wa_trees_small_data()
   set.seed(392)
   cf <- partykit::cforest(
     class ~ elevation + county,

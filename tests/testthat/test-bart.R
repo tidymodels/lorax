@@ -744,3 +744,28 @@ test_that("num_ensemble_members() counts bart trees", {
   expect_identical(num_ensemble_members(fit), 5L)
   expect_snapshot(num_ensemble_members(no_trees), error = TRUE)
 })
+
+test_that("extract_rules.bart() handles several trees in one call", {
+  skip_if_not_installed("dbarts")
+  skip_if_not_installed("palmerpenguins")
+
+  penguins <- get_penguins_data()
+  fit <- suppressWarnings(dbarts::bart(
+    x.train = penguins[, c("bill_depth_mm", "flipper_length_mm")],
+    y.train = penguins$bill_length_mm,
+    keeptrees = TRUE,
+    verbose = FALSE,
+    ntree = 5,
+    nskip = 100,
+    ndpost = 1
+  ))
+
+  all_rules <- extract_rules(fit, tree = 1:3)
+  one_at_a_time <- dplyr::bind_rows(
+    lapply(1:3, \(i) extract_rules(fit, tree = i))
+  )
+
+  expect_s3_class(all_rules, "rule_set_bart")
+  expect_equal(as.data.frame(all_rules), as.data.frame(one_at_a_time))
+  expect_equal(unique(all_rules$tree), 1:3)
+})

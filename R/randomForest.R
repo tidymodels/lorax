@@ -96,7 +96,7 @@ as.party.randomForest <- function(obj, tree = 1L, data = NULL, ...) {
   }
 
   # Validate tree against available trees
-  num_trees <- obj$ntree
+  num_trees <- num_ensemble_members(obj)
   if (tree > num_trees) {
     cli::cli_abort(
       "{.arg tree} must be between 1 and {num_trees}, not {tree}."
@@ -375,18 +375,12 @@ extract_rules.randomForest <- function(
   add_statistics = FALSE,
   ...
 ) {
+  rlang::check_dots_empty()
   check_bool(add_statistics)
   rlang::check_installed("randomForest")
 
   # Validate tree argument
-  if (!is.numeric(tree) || !all(tree == as.integer(tree))) {
-    cli::cli_abort(
-      "{.arg tree} must be an integer vector, not {.obj_type_friendly {tree}}.",
-      call = rlang::caller_env()
-    )
-  }
-
-  tree <- as.integer(tree)
+  tree <- check_tree_type(tree)
 
   # Check that forest exists
   if (is.null(x$forest)) {
@@ -397,15 +391,17 @@ extract_rules.randomForest <- function(
   }
 
   # Validate tree range
-  if (any(tree < 1L) || any(tree > x$ntree)) {
-    cli::cli_abort(
-      "{.arg tree} values must be between 1 and {x$ntree}.",
-      call = rlang::caller_env()
-    )
+  check_tree_range(tree, num_ensemble_members(x))
+
+  # Rules only need the column names and factor levels, so a zero-row copy
+  # avoids computing fitted node ids for every row of every tree
+  rule_data <- data
+  if (!is.null(data)) {
+    rule_data <- data[0, , drop = FALSE]
   }
 
   # Extract for each tree
-  results <- lapply(tree, rf_extract_rules_one, x = x, data = data)
+  results <- lapply(tree, rf_extract_rules_one, x = x, data = rule_data)
 
   # Combine and sort by tree then id
   dplyr::bind_rows(results) |>
@@ -461,9 +457,10 @@ active_predictors.randomForest <- function(x, tree = 1L, ...) {
   }
 
   # Validate tree range
-  if (any(tree < 1L) || any(tree > x$ntree)) {
+  num_trees <- num_ensemble_members(x)
+  if (any(tree < 1L) || any(tree > num_trees)) {
     cli::cli_abort(
-      "{.arg tree} values must be between 1 and {x$ntree}.",
+      "{.arg tree} values must be between 1 and {num_trees}.",
       call = rlang::caller_env()
     )
   }

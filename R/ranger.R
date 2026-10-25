@@ -107,7 +107,7 @@ as.party.ranger <- function(obj, tree = 1L, data = NULL, ...) {
   }
 
   # Validate tree against available trees
-  num_trees <- obj$num.trees
+  num_trees <- num_ensemble_members(obj)
   if (tree > num_trees) {
     cli::cli_abort(
       "{.arg tree} must be between 1 and {num_trees}, not {tree}."
@@ -194,28 +194,27 @@ as.party.ranger <- function(obj, tree = 1L, data = NULL, ...) {
 # @return A partynode object
 ranger_build_partynode_from_info <- function(node_id, tree_info, var_names) {
   # Find current node's row in tree_info
-  node_row <- tree_info[tree_info$nodeID == node_id, ]
+  row <- match(node_id, tree_info$nodeID)
 
-  if (nrow(node_row) == 0) {
+  if (is.na(row)) {
     cli::cli_abort("Node {node_id} not found in tree info.")
   }
 
-  node_row <- node_row[1, ]
-
   # Check if terminal node
-  if (node_row$terminal) {
+  if (tree_info$terminal[row]) {
     # Terminal node - no info for constparty
     return(partykit::partynode(id = 1L))
   }
 
   # Internal node - get split info
   # splitvarID in treeInfo is 0-based, convert to 1-based for partykit
-  varid <- as.integer(node_row$splitvarID) + 1L
-  split_val <- node_row$splitval
+  splitvar_id <- tree_info$splitvarID[row]
+  varid <- as.integer(splitvar_id) + 1L
+  split_val <- tree_info$splitval[row]
 
   if (varid < 1 || varid > length(var_names)) {
     cli::cli_abort(
-      "Invalid variable index {node_row$splitvarID} at node {node_id}."
+      "Invalid variable index {splitvar_id} at node {node_id}."
     )
   }
 
@@ -224,8 +223,8 @@ ranger_build_partynode_from_info <- function(node_id, tree_info, var_names) {
   split <- build_partysplit(varid, split_val, right = TRUE)
 
   # Get child node IDs (0-based)
-  left_child_id <- node_row$leftChild
-  right_child_id <- node_row$rightChild
+  left_child_id <- tree_info$leftChild[row]
+  right_child_id <- tree_info$rightChild[row]
 
   # Recursively build children
   left_node <- ranger_build_partynode_from_info(
@@ -280,6 +279,7 @@ extract_rules.ranger <- function(
   add_statistics = FALSE,
   ...
 ) {
+  rlang::check_dots_empty()
   check_bool(add_statistics)
   rlang::check_installed("ranger")
 
@@ -292,14 +292,7 @@ extract_rules.ranger <- function(
   }
 
   # Validate tree argument
-  if (!is.numeric(tree) || !all(tree == as.integer(tree))) {
-    cli::cli_abort(
-      "{.arg tree} must be an integer vector, not {.obj_type_friendly {tree}}.",
-      call = rlang::caller_env()
-    )
-  }
-
-  tree <- as.integer(tree)
+  tree <- check_tree_type(tree)
 
   # Check that forest exists
   if (is.null(x$forest)) {
@@ -310,15 +303,14 @@ extract_rules.ranger <- function(
   }
 
   # Validate tree range
-  if (any(tree < 1L) || any(tree > x$num.trees)) {
-    cli::cli_abort(
-      "{.arg tree} values must be between 1 and {x$num.trees}.",
-      call = rlang::caller_env()
-    )
-  }
+  check_tree_range(tree, num_ensemble_members(x))
+
+  # Rules only need the column names and factor levels, so a zero-row copy
+  # avoids computing fitted node ids for every row of every tree
+  rule_data <- data[0, , drop = FALSE]
 
   # Extract for each tree
-  results <- lapply(tree, ranger_extract_rules_one, x = x, data = data)
+  results <- lapply(tree, ranger_extract_rules_one, x = x, data = rule_data)
 
   # Combine and sort by tree then id
   dplyr::bind_rows(results) |>
@@ -370,9 +362,10 @@ active_predictors.ranger <- function(x, tree = 1L, ...) {
   }
 
   # Validate tree range
-  if (any(tree < 1L) || any(tree > x$num.trees)) {
+  num_trees <- num_ensemble_members(x)
+  if (any(tree < 1L) || any(tree > num_trees)) {
     cli::cli_abort(
-      "{.arg tree} values must be between 1 and {x$num.trees}.",
+      "{.arg tree} values must be between 1 and {num_trees}.",
       call = rlang::caller_env()
     )
   }

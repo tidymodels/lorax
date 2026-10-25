@@ -117,7 +117,7 @@ as.party.C5.0 <- function(obj, tree = 1L, data = NULL, ...) {
   }
 
   # Validate tree against trials
-  num_trials <- obj$trials["Actual"]
+  num_trials <- num_ensemble_members(obj)
   if (tree > num_trials) {
     cli::cli_warn(
       "{.arg tree} = {tree} exceeds number of trials ({num_trials}). Using {.arg tree} = {num_trials} instead."
@@ -826,7 +826,7 @@ c5_extract_rules_from_rules_text <- function(x, tree) {
     tree,
     c5_extract_rules_one_trial,
     rules_lines = rules_lines,
-    num_trials = x$trials["Actual"]
+    num_trials = num_ensemble_members(x)
   )
 
   # Combine and format
@@ -1029,6 +1029,7 @@ c5_extract_rules_one <- function(tree_num, x, data) {
 #'   For rule-based models, this parameter refers to the trial number.
 #' @export
 extract_rules.C5.0 <- function(x, tree = 1L, add_statistics = FALSE, ...) {
+  rlang::check_dots_empty()
   check_bool(add_statistics)
   rlang::check_installed("C50")
 
@@ -1036,25 +1037,10 @@ extract_rules.C5.0 <- function(x, tree = 1L, add_statistics = FALSE, ...) {
   is_rule_model <- !is.null(x$rules) && nchar(x$rules) > 0
 
   # Validate tree argument
-  if (!is.numeric(tree) || !all(tree == as.integer(tree))) {
-    cli::cli_abort(
-      "{.arg tree} must be an integer vector, not {.obj_type_friendly {tree}}.",
-      call = rlang::caller_env()
-    )
-  }
-
-  tree <- as.integer(tree)
-
-  # Get number of trials
-  num_trials <- x$trials["Actual"]
+  tree <- check_tree_type(tree)
 
   # Validate tree range
-  if (any(tree < 1L) || any(tree > num_trials)) {
-    cli::cli_abort(
-      "{.arg tree} values must be between 1 and {num_trials}.",
-      call = rlang::caller_env()
-    )
-  }
+  check_tree_range(tree, num_ensemble_members(x), noun = "trials")
 
   if (is_rule_model) {
     # Parse rule-based models directly
@@ -1122,7 +1108,7 @@ active_predictors.C5.0 <- function(x, tree = 1L, ...) {
   tree <- as.integer(tree)
   tree <- unique(tree)
 
-  num_trials <- as.integer(x$trials["Actual"])
+  num_trials <- num_ensemble_members(x)
   if (any(tree < 1L) || any(tree > num_trials)) {
     cli::cli_abort(
       "{.arg tree} values must be between 1 and {num_trials}, not {tree}.",
