@@ -19,9 +19,9 @@ extract_rules(x, tree = 1L, add_statistics = FALSE, ...)
 
 - tree:
 
-  Integer specifying which tree to extract rules from (1-based). Default
-  is `1L` for the first tree. Must be between 1 and the number of trees
-  in the forest (`x$n_tree`).
+  Integer vector specifying which trees to extract rules from (1-based).
+  Default is `1L` for the first tree. Values must be between 1 and the
+  number of trees in the forest (`x$n_tree`).
 
 - add_statistics:
 

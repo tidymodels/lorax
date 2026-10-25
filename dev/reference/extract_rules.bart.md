@@ -20,9 +20,9 @@ extract_rules(x, tree = 1L, chain = 1L, add_statistics = FALSE, ...)
 
 - tree:
 
-  Integer specifying which tree to extract rules from. Uses 1-based
-  indexing (default is `1L`). BART models contain `n.trees` trees in the
-  ensemble.
+  Integer vector specifying which trees to extract rules from. Uses
+  1-based indexing (default is `1L`). BART models contain `n.trees`
+  trees in the ensemble.
 
 - chain:
 

@@ -19,9 +19,9 @@ extract_rules(x, tree = 1L, data = NULL, add_statistics = FALSE, ...)
 
 - tree:
 
-  Integer specifying which tree to extract rules from. Uses 1-based
-  indexing (default is `1L`). There is one tree per boosting iteration,
-  including for multiclass models.
+  Integer vector specifying which trees to extract rules from. Uses
+  1-based indexing (default is `1L`). There is one tree per boosting
+  iteration, including for multiclass models.
 
 - data:
 

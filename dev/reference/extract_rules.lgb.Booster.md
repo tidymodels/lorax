@@ -19,10 +19,10 @@ extract_rules(x, tree = 1L, data = NULL, add_statistics = FALSE, ...)
 
 - tree:
 
-  Integer specifying which tree to extract rules from. Uses 1-based
-  indexing (default is `1L`). For multiclass models with `num_class`
-  classes and `nrounds` boosting rounds, there are `num_class * nrounds`
-  total trees.
+  Integer vector specifying which trees to extract rules from. Uses
+  1-based indexing (default is `1L`). For multiclass models with
+  `num_class` classes and `nrounds` boosting rounds, there are
+  `num_class * nrounds` total trees.
 
 - data:
 
