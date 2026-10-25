@@ -91,23 +91,10 @@ active_predictors.cforest <- function(x, tree = 1L, ...) {
   rlang::check_installed("partykit")
 
   # Validate tree argument
-  if (!is.numeric(tree) || !all(tree == as.integer(tree))) {
-    cli::cli_abort(
-      "{.arg tree} must be an integer vector, not {.obj_type_friendly {tree}}.",
-      call = rlang::caller_env()
-    )
-  }
-
-  tree <- as.integer(tree)
+  tree <- check_tree_type(tree)
 
   # Validate tree range
-  num_trees <- num_ensemble_members(x)
-  if (any(tree < 1L) || any(tree > num_trees)) {
-    cli::cli_abort(
-      "{.arg tree} values must be between 1 and {num_trees}.",
-      call = rlang::caller_env()
-    )
-  }
+  check_tree_range(tree, num_ensemble_members(x))
 
   # Extract for each tree
   results <- lapply(tree, cforest_extract_active_one, x = x)
