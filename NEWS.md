@@ -1,5 +1,7 @@
 # lorax (development version)
 
+* `active_predictors()`, `as.party()`, `extract_rules()`, `num_ensemble_members()`, and `var_imp()` now have methods for fitted parsnip `model_fit` and workflows `workflow` objects. These extract the engine model with `extract_fit_engine()` and pass other arguments to the engine's method.
+
 * `num_ensemble_members()` is a new generic that returns the number of trees (or boosting trials or committees) in an ensemble model.
 
 * `active_predictors()`, `as.party()`, `extract_rules()`, and `var_imp()` now have methods for catboost models (`catboost.Model`). Symmetric and non-symmetric trees are supported. Categorical splits, both one-hot and those based on target statistics (CTRs), are converted to sets of factor levels, including CTRs on combinations of features.

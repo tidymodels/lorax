@@ -23,6 +23,7 @@ Imports:
     cli,
     dplyr,
     generics,
+    hardhat,
     partykit,
     purrr,
     rlang (>= 1.1.0),
@@ -47,6 +48,7 @@ Suggests:
     spelling,
     testthat (>= 3.0.0),
     tidyr,
+    workflows,
     xgboost
 Config/roxygen2/version: 8.1.0
 Config/Needs/website: tidyverse/tidytemplate, ranger, palmerpenguins, tidyr
