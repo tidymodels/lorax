@@ -26,7 +26,7 @@
 #'     fit(mpg ~ ., data = mtcars)
 #'
 #'   num_ensemble_members(rf_fit)
-#'   extract_rules(rf_fit, tree = 1:2)
+#'   extract_rules(rf_fit, tree = 1:2, data = mtcars)
 #' }
 #' @name tidymodels-methods
 NULL

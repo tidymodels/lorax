@@ -36,4 +36,6 @@ randomForest
 rightDaughter
 rpart
 tibble
+tidymodels
 xgb
+xgboost
