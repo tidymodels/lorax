@@ -108,9 +108,10 @@ extract_rules.catboost.Model <- function(
     pred_data <- cb_predictor_data(data, features)
   }
   lvls <- cb_decode_levels(features, pred_data)
+  probe_base <- cb_probe_base(json)
 
   results <- lapply(tree, function(tree_num) {
-    ctrs <- cb_decode_ctrs(json, tree_num, features, pred_data)
+    ctrs <- cb_decode_ctrs(json, tree_num, features, pred_data, probe_base)
     nested <- cb_tree_to_nested(json, tree_num, features, ctrs)
     leaves <- cb_collect_rules(nested, lvls)
     tibble::tibble(
@@ -859,6 +860,7 @@ cb_decode_ctrs <- function(
   tree,
   features,
   pred_data,
+  probe_base = NULL,
   call = rlang::caller_env()
 ) {
   splits <- cb_tree_splits(json, tree)
@@ -894,7 +896,8 @@ cb_decode_ctrs <- function(
     leaves <- cb_probe_leaves(
       json,
       lapply(info[chunk], function(i) i$split),
-      do.call(rbind, probes)
+      do.call(rbind, probes),
+      probe_base
     )
     probe_id <- rep(seq_along(chunk), vapply(probes, nrow, integer(1)))
 
@@ -1090,28 +1093,50 @@ cb_axis_states <- function(axis, values) {
 }
 
 # Predict leaf indices from a model containing only the given splits
-cb_probe_leaves <- function(json, splits, probe) {
-  n_leaves <- 2^length(splits)
+# The model without its trees, serialized once as JSON text (minus the closing
+# brace) so that each probe only has to serialize its own one-tree ensemble.
+cb_probe_base <- function(json) {
   n_dim <- length(json$scale_and_bias[[2]])
-
   model <- json
   model$trees <- NULL
-  model$oblivious_trees <- list(list(
-    splits = unname(splits),
-    leaf_values = as.list(rep(seq_len(n_leaves) - 1, each = n_dim)),
-    leaf_weights = as.list(rep(1, n_leaves))
-  ))
-  model$scale_and_bias <- list(1, as.list(rep(0, n_dim)))
-
-  path <- tempfile(fileext = ".json")
-  on.exit(unlink(path), add = TRUE)
-  jsonlite::write_json(
+  model$oblivious_trees <- NULL
+  model$scale_and_bias <- NULL
+  base <- jsonlite::toJSON(
     model,
-    path,
     auto_unbox = TRUE,
     digits = NA,
     null = "null"
   )
+  base <- sub("}[[:space:]]*$", "", as.character(base))
+  list(text = base, n_dim = n_dim)
+}
+
+cb_probe_leaves <- function(json, splits, probe, probe_base = NULL) {
+  if (is.null(probe_base)) {
+    probe_base <- cb_probe_base(json)
+  }
+  n_leaves <- 2^length(splits)
+  n_dim <- probe_base$n_dim
+
+  tree <- list(list(
+    splits = unname(splits),
+    leaf_values = as.list(rep(seq_len(n_leaves) - 1, each = n_dim)),
+    leaf_weights = as.list(rep(1, n_leaves))
+  ))
+  tail_json <- jsonlite::toJSON(
+    list(
+      oblivious_trees = tree,
+      scale_and_bias = list(1, as.list(rep(0, n_dim)))
+    ),
+    auto_unbox = TRUE,
+    digits = NA,
+    null = "null"
+  )
+  tail_json <- sub("^[[:space:]]*\\{", "", as.character(tail_json))
+
+  path <- tempfile(fileext = ".json")
+  on.exit(unlink(path), add = TRUE)
+  writeLines(paste0(probe_base$text, ",", tail_json), path)
 
   cl <- rlang::call2(
     "catboost.load_model",
