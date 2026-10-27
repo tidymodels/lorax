@@ -61,3 +61,14 @@
   : Convert a rectangular split to an R expression
 - [`rule_text()`](https://lorax.tidymodels.org/dev/reference/rule_text.md)
   : Convert a rule expression to a readable text format
+- [`extract_rules(`*`<model_fit>`*`)`](https://lorax.tidymodels.org/dev/reference/tidymodels-methods.md)
+  [`extract_rules(`*`<workflow>`*`)`](https://lorax.tidymodels.org/dev/reference/tidymodels-methods.md)
+  [`active_predictors(`*`<model_fit>`*`)`](https://lorax.tidymodels.org/dev/reference/tidymodels-methods.md)
+  [`active_predictors(`*`<workflow>`*`)`](https://lorax.tidymodels.org/dev/reference/tidymodels-methods.md)
+  [`num_ensemble_members(`*`<model_fit>`*`)`](https://lorax.tidymodels.org/dev/reference/tidymodels-methods.md)
+  [`num_ensemble_members(`*`<workflow>`*`)`](https://lorax.tidymodels.org/dev/reference/tidymodels-methods.md)
+  [`as.party(`*`<model_fit>`*`)`](https://lorax.tidymodels.org/dev/reference/tidymodels-methods.md)
+  [`as.party(`*`<workflow>`*`)`](https://lorax.tidymodels.org/dev/reference/tidymodels-methods.md)
+  [`var_imp(`*`<model_fit>`*`)`](https://lorax.tidymodels.org/dev/reference/tidymodels-methods.md)
+  [`var_imp(`*`<workflow>`*`)`](https://lorax.tidymodels.org/dev/reference/tidymodels-methods.md)
+  : Methods for tidymodels objects

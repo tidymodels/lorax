@@ -2,6 +2,16 @@
 
 ## lorax (development version)
 
+- [`active_predictors()`](https://lorax.tidymodels.org/dev/reference/active_predictors.md),
+  [`as.party()`](https://rdrr.io/pkg/partykit/man/party-coercion.html),
+  [`extract_rules()`](https://lorax.tidymodels.org/dev/reference/extract_rules.md),
+  [`num_ensemble_members()`](https://lorax.tidymodels.org/dev/reference/num_ensemble_members.md),
+  and [`var_imp()`](https://generics.r-lib.org/reference/var_imp.html)
+  now have methods for fitted parsnip `model_fit` and workflows
+  `workflow` objects. These extract the engine model with
+  [`extract_fit_engine()`](https://hardhat.tidymodels.org/reference/hardhat-extract.html)
+  and pass other arguments to the engine’s method.
+
 - [`num_ensemble_members()`](https://lorax.tidymodels.org/dev/reference/num_ensemble_members.md)
   is a new generic that returns the number of trees (or boosting trials
   or committees) in an ensemble model.
