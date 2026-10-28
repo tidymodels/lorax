@@ -14,7 +14,7 @@ generics::var_imp
 
 ## usethis namespace: end
 
-utils::globalVariables("id")
+utils::globalVariables(c("id", "rules"))
 
 ## mockable bindings: start
 ## mockable bindings: end
