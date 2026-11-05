@@ -76,26 +76,69 @@ The side of the split that they go to is expressed as the negation of the
 other side (e.g., \code{!(g \%in\% c("a", "d"))}) so that the rules match how
 \pkg{catboost} would predict new levels.
 }
-}
-\examples{
-if (rlang::is_installed("catboost")) {
-  pool <- catboost::catboost.load_pool(mtcars[, -1], label = mtcars$mpg)
-  set.seed(3926)
-  fit <- catboost::catboost.train(
-    pool,
-    params = list(
-      iterations = 3,
-      depth = 2,
-      thread_count = 1,
-      logging_level = "Silent",
-      allow_writing_files = FALSE
-    )
+
+\subsection{Examples}{
+
+These examples require the catboost package, which is not on CRAN. See
+the \href{https://catboost.ai/docs/en/concepts/r-installation}{catboost installation instructions} for
+details.
+
+Fit a small model:
+
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{pool <- catboost::catboost.load_pool(mtcars[, -1], label = mtcars$mpg)
+set.seed(3926)
+fit <- catboost::catboost.train(
+  pool,
+  params = list(
+    iterations = 3,
+    depth = 2,
+    thread_count = 1,
+    logging_level = "Silent",
+    allow_writing_files = FALSE
   )
+)
+}\if{html}{\out{</div>}}
 
-  rules <- extract_rules(fit, tree = 1L)
-  rules
+Extract the rules for the first tree:
 
-  rule_text(rules$rules[[1]])
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{rules <- extract_rules(fit, tree = 1L)
+rules
+}\if{html}{\out{</div>}}
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{#> # A tibble: 3 x 3
+#>    tree rules         id
+#>   <int> <list>     <int>
+#> 1     1 <language>     1
+#> 2     1 <language>     2
+#> 3     1 <language>     4
+}\if{html}{\out{</div>}}
+
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{rule_text(rules$rules[[1]])
+}\if{html}{\out{</div>}}
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{#> [1] "cyl <= 5"
+}\if{html}{\out{</div>}}
+
+Convert the first tree to a party object. The response is the first
+column that is not a predictor:
+
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{party_tree <- as.party(fit, tree = 1L, data = mtcars)
+party_tree
+}\if{html}{\out{</div>}}
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{#> 
+#> Model formula:
+#> ~cyl + disp + hp + drat + wt + qsec + vs + am + gear + carb
+#> 
+#> Fitted party:
+#> [1] root
+#> |   [2] cyl < 5: 26.664 (n = 11, err = 203.4)
+#> |   [3] cyl >= 5
+#> |   |   [4] cyl < 7: 19.743 (n = 7, err = 12.7)
+#> |   |   [5] cyl >= 7: 15.100 (n = 14, err = 85.2)
+#> 
+#> Number of inner nodes:    2
+#> Number of terminal nodes: 3
+}\if{html}{\out{</div>}}
 }
-
 }

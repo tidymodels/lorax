@@ -290,7 +290,7 @@ test_that("var_imp.catboost.Model() returns importance scores", {
   expect_named(imp, c("term", "estimate"))
   expect_equal(imp$term, names(x))
 
-  native <- catboost::catboost.get_feature_importance(fit)
+  native <- cb_call("catboost.get_feature_importance", fit)
   expect_equal(imp$estimate, unname(native[, 1]))
 
   used <- var_imp(fit, complete = FALSE)

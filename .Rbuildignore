@@ -18,3 +18,4 @@
 ^cran-comments\.md$
 ^_pkgdown\.yml$
 ^plans$
+^man/_rmd$

@@ -55,26 +55,7 @@
 #' other side (e.g., `!(g %in% c("a", "d"))`) so that the rules match how
 #' \pkg{catboost} would predict new levels.
 #'
-#' @examples
-#' if (rlang::is_installed("catboost")) {
-#'   pool <- catboost::catboost.load_pool(mtcars[, -1], label = mtcars$mpg)
-#'   set.seed(3926)
-#'   fit <- catboost::catboost.train(
-#'     pool,
-#'     params = list(
-#'       iterations = 3,
-#'       depth = 2,
-#'       thread_count = 1,
-#'       logging_level = "Silent",
-#'       allow_writing_files = FALSE
-#'     )
-#'   )
-#'
-#'   rules <- extract_rules(fit, tree = 1L)
-#'   rules
-#'
-#'   rule_text(rules$rules[[1]])
-#' }
+#' @includeRmd man/_rmd/catboost.Rmd
 #'
 #' @export
 extract_rules.catboost.Model <- function(
@@ -146,7 +127,7 @@ extract_rules.catboost.Model <- function(
 #'
 #' @details
 #' The tree structure is obtained by saving the model in JSON format via
-#' `catboost::catboost.save_model()`. Symmetric (oblivious) trees are expanded
+#' `catboost.save_model()` from \pkg{catboost}. Symmetric (oblivious) trees are expanded
 #' into a binary tree and branches that cannot be reached are removed.
 #'
 #' Numeric splits send observations with `feature <= border` to the left
@@ -162,26 +143,7 @@ extract_rules.catboost.Model <- function(
 #' If the model was trained without feature names, predictors are matched to
 #' the columns of `data` by position.
 #'
-#' @examples
-#' if (rlang::is_installed("catboost")) {
-#'   pool <- catboost::catboost.load_pool(mtcars[, -1], label = mtcars$mpg)
-#'   set.seed(8153)
-#'   fit <- catboost::catboost.train(
-#'     pool,
-#'     params = list(
-#'       iterations = 3,
-#'       depth = 2,
-#'       thread_count = 1,
-#'       logging_level = "Silent",
-#'       allow_writing_files = FALSE
-#'     )
-#'   )
-#'
-#'   # The response is the first non-predictor column
-#'   party_tree <- as.party(fit, tree = 1L, data = mtcars)
-#'   print(party_tree)
-#'   plot(party_tree)
-#' }
+#' @includeRmd man/_rmd/catboost.Rmd
 #'
 #' @export
 as.party.catboost.Model <- function(obj, tree = 1L, data, ...) {
