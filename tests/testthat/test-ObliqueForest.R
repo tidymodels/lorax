@@ -266,7 +266,6 @@ test_that("extract_rules.ObliqueForest() rules match aorsf node assignments", {
 test_that("extract_rules.ObliqueForest() node assignments are consistent", {
   skip_if_not_installed("aorsf")
   skip_if_not_installed("palmerpenguins")
-  skip_on_os("mac") # some numerical issues on macos
 
   # Test that each node's observations match between aorsf and extracted rules
   penguins <- palmerpenguins::penguins[
@@ -311,10 +310,16 @@ test_that("extract_rules.ObliqueForest() node assignments are consistent", {
     rule_matches <- eval(rules$rules[[j]], penguins_numeric)
     obs_in_node_rule <- which(rule_matches)
 
-    # Should be the same observations; macos differences happen here
+    # Observations within floating-point tolerance of a split boundary can fall
+    # on either side depending on the platform (e.g. FMA on arm64)
+    near_boundary <- which(rule_near_boundary(
+      rules$rules[[j]],
+      penguins_numeric
+    ))
+
     expect_setequal(
-      obs_in_node_aorsf,
-      obs_in_node_rule
+      setdiff(obs_in_node_aorsf, near_boundary),
+      setdiff(obs_in_node_rule, near_boundary)
     )
   }
 })
