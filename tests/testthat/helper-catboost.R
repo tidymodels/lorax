@@ -1,8 +1,13 @@
+# Call a catboost function without a static namespace reference
+cb_call <- function(fn, ...) {
+  rlang::eval_bare(rlang::call2(fn, ..., .ns = "catboost"))
+}
+
 # Fit a small, silent catboost model
 fit_catboost <- function(x, y, ...) {
   skip_if_not_installed("catboost")
   skip_if_not_installed("jsonlite")
-  pool <- catboost::catboost.load_pool(x, label = y)
+  pool <- cb_call("catboost.load_pool", x, label = y)
   params <- list(
     iterations = 3,
     depth = 3,
@@ -11,7 +16,11 @@ fit_catboost <- function(x, y, ...) {
     logging_level = "Silent",
     allow_writing_files = FALSE
   )
-  catboost::catboost.train(pool, params = utils::modifyList(params, list(...)))
+  cb_call(
+    "catboost.train",
+    pool,
+    params = utils::modifyList(params, list(...))
+  )
 }
 
 # Data with a categorical predictor for catboost one-hot splits
@@ -61,12 +70,13 @@ get_catboost_ctr_data <- function() {
 
 # Per-tree contributions to the raw predictions (one matrix per tree)
 catboost_tree_contributions <- function(model, x) {
-  pool <- catboost::catboost.load_pool(x)
+  pool <- cb_call("catboost.load_pool", x)
   n_trees <- cb_num_trees(cb_model_json(model))
   res <- vector("list", n_trees)
   prev <- 0
   for (i in seq_len(n_trees)) {
-    pred <- catboost::catboost.predict(
+    pred <- cb_call(
+      "catboost.predict",
       model,
       pool,
       prediction_type = "RawFormulaVal",

@@ -1,0 +1,44 @@
+```{r}
+#| include: false
+knitr::opts_chunk$set(comment = "#>", fig.alt = "A tree diagram.")
+```
+
+## Examples
+
+These examples require the catboost package, which is not on CRAN. See the [catboost installation instructions](https://catboost.ai/docs/en/concepts/r-installation) for details.
+
+Fit a small model:
+
+```{r}
+#| label: fit
+pool <- catboost::catboost.load_pool(mtcars[, -1], label = mtcars$mpg)
+set.seed(3926)
+fit <- catboost::catboost.train(
+  pool,
+  params = list(
+    iterations = 3,
+    depth = 2,
+    thread_count = 1,
+    logging_level = "Silent",
+    allow_writing_files = FALSE
+  )
+)
+```
+
+Extract the rules for the first tree:
+
+```{r}
+#| label: rules
+rules <- extract_rules(fit, tree = 1L)
+rules
+
+rule_text(rules$rules[[1]])
+```
+
+Convert the first tree to a party object. The response is the first column that is not a predictor:
+
+```{r}
+#| label: party
+party_tree <- as.party(fit, tree = 1L, data = mtcars)
+party_tree
+```

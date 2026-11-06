@@ -118,13 +118,14 @@ library(palmerpenguins)
 #| label: ranger-ex
 #| results: hide
 set.seed(822)
-rngr_fit <- ranger(species ~ ., data = penguins, max.depth = 3, num.trees = 10)
+rngr_fit <- ranger(species ~ ., data = palmerpenguins::penguins, 
+                   max.depth = 3, num.trees = 10)
 ```
 
 
 ```{r}
 #| label: ranger-party
-rngr_party <- as.party(rngr_fit, tree = 1, data = penguins)
+rngr_party <- as.party(rngr_fit, tree = 1, data = palmerpenguins::penguins)
 rngr_party
 
 plot(rngr_party)
@@ -132,7 +133,7 @@ plot(rngr_party)
 
 ```{r}
 #| label: ranger-rules
-all_rules <- extract_rules(rngr_party, trees = 10)
+all_rules <- extract_rules(rngr_fit, tree = 10, data = palmerpenguins::penguins)
 
 # An expression
 all_rules$rules[[1]]
