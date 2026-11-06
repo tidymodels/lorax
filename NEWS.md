@@ -1,3 +1,5 @@
+# lorax (development version)
+
 # lorax 0.2.0
 
 * `active_predictors()`, `as.party()`, `extract_rules()`, `num_ensemble_members()`, and `var_imp()` now have methods for fitted parsnip `model_fit` and workflows `workflow` objects. These extract the engine model with `extract_fit_engine()` and pass other arguments to the engine's method.
