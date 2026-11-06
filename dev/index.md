@@ -20,20 +20,24 @@ lorax supports a few APIs:
 
 Here is a list of which classes have which methods:
 
-| class         | var_imp | active_predictors | as.party | extract_rules |
-|:--------------|:--------|:------------------|:---------|:--------------|
-| bart          | n/a     | ✔                 | ✔        | ✔             |
-| C5.0          | n/a     | ✔                 | ✔        | ✔             |
-| cforest       | ✔       | ✔                 | n/a      | ✔             |
-| cubist        | ✖       | ✔                 | ✖        | ✔             |
-| grf           | ✔       | ✔                 | ✔        | ✔             |
-| lgb.Booster   | ✔       | ✔                 | ✔        | ✔             |
-| ObliqueForest | ✔       | ✔                 | ✖        | ✔             |
-| party         | ✔       | ✔                 | n/a      | ✔             |
-| randomForest  | ✔       | ✔                 | ✔        | ✔             |
-| ranger        | ✔       | ✔                 | ✔        | ✔             |
-| rpart         | ✔       | ✔                 | n/a      | ✔             |
-| xgb.Booster   | ✔       | ✔                 | ✔        | ✔             |
+| class          | var_imp | active_predictors | as.party | extract_rules |
+|:---------------|:--------|:------------------|:---------|:--------------|
+| bagger         | ✖       | ✔                 | ✔        | ✔             |
+| bart           | n/a     | ✔                 | ✔        | ✔             |
+| C5.0           | n/a     | ✔                 | ✔        | ✔             |
+| catboost.Model | ✔       | ✔                 | ✔        | ✔             |
+| cforest        | ✔       | ✔                 | n/a      | ✔             |
+| cubist         | ✖       | ✔                 | ✖        | ✔             |
+| grf            | ✔       | ✔                 | ✔        | ✔             |
+| lgb.Booster    | ✔       | ✔                 | ✔        | ✔             |
+| model_fit      | ✔       | ✔                 | ✔        | ✔             |
+| ObliqueForest  | ✔       | ✔                 | ✖        | ✔             |
+| party          | ✔       | ✔                 | n/a      | ✔             |
+| randomForest   | ✔       | ✔                 | ✔        | ✔             |
+| ranger         | ✔       | ✔                 | ✔        | ✔             |
+| rpart          | ✔       | ✔                 | n/a      | ✔             |
+| workflow       | ✔       | ✔                 | ✔        | ✔             |
+| xgb.Booster    | ✔       | ✔                 | ✔        | ✔             |
 
 Note that `as.party.rpart()` is in the partykit package and that cforest
 is made out of party objects.
@@ -59,12 +63,13 @@ pak::pak("tidymodels/lorax")
 ``` r
 
 set.seed(822)
-rngr_fit <- ranger(species ~ ., data = penguins, max.depth = 3, num.trees = 10)
+rngr_fit <- ranger(species ~ ., data = palmerpenguins::penguins, 
+                   max.depth = 3, num.trees = 10)
 ```
 
 ``` r
 
-rngr_party <- as.party(rngr_fit, tree = 1, data = penguins)
+rngr_party <- as.party(rngr_fit, tree = 1, data = palmerpenguins::penguins)
 rngr_party
 #> 
 #> Model formula:
@@ -92,15 +97,16 @@ plot(rngr_party)
 
 ``` r
 
-all_rules <- extract_rules(rngr_party, trees = 10)
+all_rules <- extract_rules(rngr_fit, tree = 10, data = palmerpenguins::penguins)
 
 # An expression
 all_rules$rules[[1]]
-#> flipper_length_mm <= 206.5 & body_mass_g <= 2800
+#> flipper_length_mm <= 206.5 & bill_length_mm <= 44.2 & sex <= 
+#>     1.5
 
 # Text
 all_rules$rules[[1]] |> rule_text()
-#> [1] "flipper_length_mm <= 206.5 & body_mass_g <= 2800"
+#> [1] "flipper_length_mm <= 206.5 & bill_length_mm <= 44.2 & sex <= 1.5"
 
 # Substitutions
 new_names <- 
@@ -111,14 +117,15 @@ new_names <-
  )
  
 all_rules$rules[[1]] |> rule_text(key = new_names)
-#> [1] "Flipper Length <= 206.5 & Body Mass <= 2800"
+#> [1] "Flipper Length <= 206.5 & bill_length_mm <= 44.2 & sex <= 1.5"
 
 # Bullets:
 all_rules$rules[[1]] |> 
  rule_text(key = new_names, bullets = TRUE) |> 
  cat()
 #> * Flipper Length <= 206.5
-#> * Body Mass <= 2800
+#> * bill_length_mm <= 44.2
+#> * sex <= 1.5
 ```
 
 ## Code of Conduct
