@@ -26,7 +26,7 @@
 
     <a class="navbar-brand me-2" href="index.html">lorax</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -71,13 +71,13 @@
 <code><a href="https://generics.r-lib.org/reference/var_imp.html" class="external-link">var_imp()</a></code> is a wrapper for any importance method contained in the package. This is a wrapper that enables a common interface to the scores.</li>
 </ul>
 <p>Here is a list of which classes have which methods:</p>
-<table class="table">
+<table style="width:100%;" class="table">
 <colgroup>
-<col width="22%">
+<col width="23%">
 <col width="13%">
 <col width="27%">
 <col width="14%">
-<col width="22%">
+<col width="21%">
 </colgroup>
 <thead><tr>
 <th align="left">class</th>
@@ -88,6 +88,13 @@
 </tr></thead>
 <tbody>
 <tr>
+<td align="left">bagger</td>
+<td align="left">✖</td>
+<td align="left">✔</td>
+<td align="left">✔</td>
+<td align="left">✔</td>
+</tr>
+<tr>
 <td align="left">bart</td>
 <td align="left">n/a</td>
 <td align="left">✔</td>
@@ -97,6 +104,13 @@
 <tr>
 <td align="left">C5.0</td>
 <td align="left">n/a</td>
+<td align="left">✔</td>
+<td align="left">✔</td>
+<td align="left">✔</td>
+</tr>
+<tr>
+<td align="left">catboost.Model</td>
+<td align="left">✔</td>
 <td align="left">✔</td>
 <td align="left">✔</td>
 <td align="left">✔</td>
@@ -124,6 +138,13 @@
 </tr>
 <tr>
 <td align="left">lgb.Booster</td>
+<td align="left">✔</td>
+<td align="left">✔</td>
+<td align="left">✔</td>
+<td align="left">✔</td>
+</tr>
+<tr>
+<td align="left">model_fit</td>
 <td align="left">✔</td>
 <td align="left">✔</td>
 <td align="left">✔</td>
@@ -165,6 +186,13 @@
 <td align="left">✔</td>
 </tr>
 <tr>
+<td align="left">workflow</td>
+<td align="left">✔</td>
+<td align="left">✔</td>
+<td align="left">✔</td>
+<td align="left">✔</td>
+</tr>
+<tr>
 <td align="left">xgb.Booster</td>
 <td align="left">✔</td>
 <td align="left">✔</td>
@@ -189,9 +217,10 @@
 </h2>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">822</span><span class="op">)</span></span>
-<span><span class="va">rngr_fit</span> <span class="op">&lt;-</span> <span class="fu">ranger</span><span class="op">(</span><span class="va">species</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">penguins</span>, max.depth <span class="op">=</span> <span class="fl">3</span>, num.trees <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">rngr_fit</span> <span class="op">&lt;-</span> <span class="fu">ranger</span><span class="op">(</span><span class="va">species</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="fu">palmerpenguins</span><span class="fu">::</span><span class="va"><a href="https://allisonhorst.github.io/palmerpenguins/reference/penguins.html" class="external-link">penguins</a></span>, </span>
+<span>                   max.depth <span class="op">=</span> <span class="fl">3</span>, num.trees <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">rngr_party</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/partykit/man/party-coercion.html" class="external-link">as.party</a></span><span class="op">(</span><span class="va">rngr_fit</span>, tree <span class="op">=</span> <span class="fl">1</span>, data <span class="op">=</span> <span class="va">penguins</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">rngr_party</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/partykit/man/party-coercion.html" class="external-link">as.party</a></span><span class="op">(</span><span class="va">rngr_fit</span>, tree <span class="op">=</span> <span class="fl">1</span>, data <span class="op">=</span> <span class="fu">palmerpenguins</span><span class="fu">::</span><span class="va"><a href="https://allisonhorst.github.io/palmerpenguins/reference/penguins.html" class="external-link">penguins</a></span><span class="op">)</span></span>
 <span><span class="va">rngr_party</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Model formula:</span></span>
@@ -215,15 +244,16 @@
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">rngr_party</span><span class="op">)</span></span></code></pre></div>
 <p><img src="reference/figures/README-ranger-party-1.png" alt="" width="100%"></p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">all_rules</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/extract_rules.html">extract_rules</a></span><span class="op">(</span><span class="va">rngr_party</span>, trees <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">all_rules</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/extract_rules.html">extract_rules</a></span><span class="op">(</span><span class="va">rngr_fit</span>, tree <span class="op">=</span> <span class="fl">10</span>, data <span class="op">=</span> <span class="fu">palmerpenguins</span><span class="fu">::</span><span class="va"><a href="https://allisonhorst.github.io/palmerpenguins/reference/penguins.html" class="external-link">penguins</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># An expression</span></span>
 <span><span class="va">all_rules</span><span class="op">$</span><span class="va">rules</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
-<span><span class="co">#&gt; flipper_length_mm &lt;= 206.5 &amp; body_mass_g &lt;= 2800</span></span>
+<span><span class="co">#&gt; flipper_length_mm &lt;= 206.5 &amp; bill_length_mm &lt;= 44.2 &amp; sex &lt;= </span></span>
+<span><span class="co">#&gt;     1.5</span></span>
 <span></span>
 <span><span class="co"># Text</span></span>
 <span><span class="va">all_rules</span><span class="op">$</span><span class="va">rules</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span> <span class="op">|&gt;</span> <span class="fu"><a href="reference/rule_text.html">rule_text</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "flipper_length_mm &lt;= 206.5 &amp; body_mass_g &lt;= 2800"</span></span>
+<span><span class="co">#&gt; [1] "flipper_length_mm &lt;= 206.5 &amp; bill_length_mm &lt;= 44.2 &amp; sex &lt;= 1.5"</span></span>
 <span></span>
 <span><span class="co"># Substitutions</span></span>
 <span><span class="va">new_names</span> <span class="op">&lt;-</span> </span>
@@ -234,14 +264,15 @@
 <span> <span class="op">)</span></span>
 <span> </span>
 <span><span class="va">all_rules</span><span class="op">$</span><span class="va">rules</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span> <span class="op">|&gt;</span> <span class="fu"><a href="reference/rule_text.html">rule_text</a></span><span class="op">(</span>key <span class="op">=</span> <span class="va">new_names</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "Flipper Length &lt;= 206.5 &amp; Body Mass &lt;= 2800"</span></span>
+<span><span class="co">#&gt; [1] "Flipper Length &lt;= 206.5 &amp; bill_length_mm &lt;= 44.2 &amp; sex &lt;= 1.5"</span></span>
 <span></span>
 <span><span class="co"># Bullets:</span></span>
 <span><span class="va">all_rules</span><span class="op">$</span><span class="va">rules</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span> <span class="op">|&gt;</span> </span>
 <span> <span class="fu"><a href="reference/rule_text.html">rule_text</a></span><span class="op">(</span>key <span class="op">=</span> <span class="va">new_names</span>, bullets <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span> <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; * Flipper Length &lt;= 206.5</span></span>
-<span><span class="co">#&gt; * Body Mass &lt;= 2800</span></span></code></pre></div>
+<span><span class="co">#&gt; * bill_length_mm &lt;= 44.2</span></span>
+<span><span class="co">#&gt; * sex &lt;= 1.5</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="code-of-conduct">Code of Conduct<a class="anchor" aria-label="anchor" href="#code-of-conduct"></a>

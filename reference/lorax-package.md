@@ -14,6 +14,8 @@ Useful links:
 
 - <https://github.com/tidymodels/lorax>
 
+- <https://lorax.tidymodels.org/>
+
 - Report bugs at <https://github.com/tidymodels/lorax/issues>
 
 ## Author

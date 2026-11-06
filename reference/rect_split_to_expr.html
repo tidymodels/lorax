@@ -11,7 +11,7 @@ extract_rules() to construct paths to terminal nodes."><meta property="og:image"
 
     <a class="navbar-brand me-2" href="../index.html">lorax</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -53,8 +53,8 @@ valid R expression. It is primarily used as a building block for
 
 <dl><dt id="arg-split">split<a class="anchor" aria-label="anchor" href="#arg-split"></a></dt>
 <dd><p>A named list with three required elements:</p><ul><li><p><code>column</code>: character string - variable name for the split.</p></li>
-<li><p><code>value</code>: numeric, character, or character vector - the split.
-threshold/value(s)</p></li>
+<li><p><code>value</code>: the split threshold/value(s). A single numeric or character
+value, or a numeric or character vector when <code>operator</code> is <code>%in%</code>.</p></li>
 <li><p><code>operator</code>: character string - one of: <code>&lt;</code>, <code>&lt;=</code>, <code>&gt;</code>, <code>&gt;=</code>, <code>==</code>,.
 <code>%in%</code></p></li>
 </ul></dd>

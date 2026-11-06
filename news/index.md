@@ -1,5 +1,92 @@
 # Changelog
 
+## lorax 0.2.0
+
+CRAN release: 2026-11-05
+
+- [`active_predictors()`](https://lorax.tidymodels.org/reference/active_predictors.md),
+  [`as.party()`](https://rdrr.io/pkg/partykit/man/party-coercion.html),
+  [`extract_rules()`](https://lorax.tidymodels.org/reference/extract_rules.md),
+  [`num_ensemble_members()`](https://lorax.tidymodels.org/reference/num_ensemble_members.md),
+  and [`var_imp()`](https://generics.r-lib.org/reference/var_imp.html)
+  now have methods for fitted parsnip `model_fit` and workflows
+  `workflow` objects. These extract the engine model with
+  [`extract_fit_engine()`](https://hardhat.tidymodels.org/reference/hardhat-extract.html)
+  and pass other arguments to the engine’s method.
+
+- [`num_ensemble_members()`](https://lorax.tidymodels.org/reference/num_ensemble_members.md)
+  is a new generic that returns the number of trees (or boosting trials
+  or committees) in an ensemble model.
+
+- [`active_predictors()`](https://lorax.tidymodels.org/reference/active_predictors.md),
+  [`as.party()`](https://rdrr.io/pkg/partykit/man/party-coercion.html),
+  [`extract_rules()`](https://lorax.tidymodels.org/reference/extract_rules.md),
+  and [`var_imp()`](https://generics.r-lib.org/reference/var_imp.html)
+  now have methods for catboost models (`catboost.Model`). Symmetric and
+  non-symmetric trees are supported. Categorical splits, both one-hot
+  and those based on target statistics (CTRs), are converted to sets of
+  factor levels, including CTRs on combinations of features.
+
+- [`as.party()`](https://rdrr.io/pkg/partykit/man/party-coercion.html)
+  and
+  [`extract_rules()`](https://lorax.tidymodels.org/reference/extract_rules.md)
+  now support lightgbm models with categorical predictors. Category
+  codes are mapped to factor levels using the training data, assuming
+  the codes are `as.integer(factor) - 1L`.
+  [`extract_rules()`](https://lorax.tidymodels.org/reference/extract_rules.md)
+  for lightgbm models gains an optional `data` argument for this;
+  without it, rules use the integer codes.
+
+- [`extract_rules()`](https://lorax.tidymodels.org/reference/extract_rules.md)
+  for lightgbm models now assigns left and right child nodes correctly
+  and compares numeric thresholds as numbers rather than strings.
+
+- [`extract_rules()`](https://lorax.tidymodels.org/reference/extract_rules.md)
+  methods now error when given an argument they don’t use, such as a
+  misspelled `trees = 2`, instead of silently ignoring it. This includes
+  `data` for C5.0 models, which was accepted but never used.
+
+- [`extract_rules()`](https://lorax.tidymodels.org/reference/extract_rules.md)
+  for aorsf (`ObliqueForest`), BART (`bart`), catboost, lightgbm, and
+  xgboost models now accepts a vector of tree numbers, as the other
+  ensemble methods do, and reads the model once instead of once per
+  tree. Rules for each tree are also built in a single pass, which makes
+  these methods and
+  [`extract_rules()`](https://lorax.tidymodels.org/reference/extract_rules.md)
+  for rpart and grf models much faster.
+
+- [`extract_rules()`](https://lorax.tidymodels.org/reference/extract_rules.md)
+  is much faster for ranger, randomForest, C5.0, grf, cforest, and
+  partykit models. Rules are now collected in a single pass over the
+  tree instead of searching for each node’s parent, and the ranger and
+  randomForest methods no longer compute fitted node ids for the
+  training data.
+
+- [`extract_rules()`](https://lorax.tidymodels.org/reference/extract_rules.md)
+  methods gain an `add_statistics` argument that appends the columns
+  `num_rule_terms` and `num_rule_predictors`.
+
+- [`active_predictors()`](https://lorax.tidymodels.org/reference/active_predictors.md),
+  [`as.party()`](https://rdrr.io/pkg/partykit/man/party-coercion.html),
+  [`extract_rules()`](https://lorax.tidymodels.org/reference/extract_rules.md),
+  and
+  [`num_ensemble_members()`](https://lorax.tidymodels.org/reference/num_ensemble_members.md)
+  now have methods for bagged trees from the baguette package (`bagger`,
+  from
+  [`parsnip::bag_tree()`](https://parsnip.tidymodels.org/reference/bag_tree.html)
+  with the “rpart” or “C5.0” engine). The `tree` argument selects
+  ensemble members, and
+  [`as.party()`](https://rdrr.io/pkg/partykit/man/party-coercion.html)
+  needs the training data because the bootstrap samples are not saved.
+
+- [`extract_rules()`](https://lorax.tidymodels.org/reference/extract_rules.md)
+  for rpart models now uses the `xlevels` attribute to label categorical
+  splits with factor levels, so it works for models that no longer have
+  access to their training data.
+
+- [`rect_split_to_expr()`](https://lorax.tidymodels.org/reference/rect_split_to_expr.md)
+  now accepts numeric vectors for the `%in%` operator.
+
 ## lorax 0.1.0
 
 CRAN release: 2026-07-16

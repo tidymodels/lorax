@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">lorax</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -32,10 +32,26 @@
     </div>
 
     <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.2.0" id="lorax-020">lorax 0.2.0<a class="anchor" aria-label="anchor" href="#lorax-020"></a></h2><p class="text-muted">CRAN release: 2026-11-05</p>
+<ul><li><p><code><a href="../reference/active_predictors.html">active_predictors()</a></code>, <code><a href="https://rdrr.io/pkg/partykit/man/party-coercion.html" class="external-link">as.party()</a></code>, <code><a href="../reference/extract_rules.html">extract_rules()</a></code>, <code><a href="../reference/num_ensemble_members.html">num_ensemble_members()</a></code>, and <code><a href="https://generics.r-lib.org/reference/var_imp.html" class="external-link">var_imp()</a></code> now have methods for fitted parsnip <code>model_fit</code> and workflows <code>workflow</code> objects. These extract the engine model with <code><a href="https://hardhat.tidymodels.org/reference/hardhat-extract.html" class="external-link">extract_fit_engine()</a></code> and pass other arguments to the engine’s method.</p></li>
+<li><p><code><a href="../reference/num_ensemble_members.html">num_ensemble_members()</a></code> is a new generic that returns the number of trees (or boosting trials or committees) in an ensemble model.</p></li>
+<li><p><code><a href="../reference/active_predictors.html">active_predictors()</a></code>, <code><a href="https://rdrr.io/pkg/partykit/man/party-coercion.html" class="external-link">as.party()</a></code>, <code><a href="../reference/extract_rules.html">extract_rules()</a></code>, and <code><a href="https://generics.r-lib.org/reference/var_imp.html" class="external-link">var_imp()</a></code> now have methods for catboost models (<code>catboost.Model</code>). Symmetric and non-symmetric trees are supported. Categorical splits, both one-hot and those based on target statistics (CTRs), are converted to sets of factor levels, including CTRs on combinations of features.</p></li>
+<li><p><code><a href="https://rdrr.io/pkg/partykit/man/party-coercion.html" class="external-link">as.party()</a></code> and <code><a href="../reference/extract_rules.html">extract_rules()</a></code> now support lightgbm models with categorical predictors. Category codes are mapped to factor levels using the training data, assuming the codes are <code>as.integer(factor) - 1L</code>. <code><a href="../reference/extract_rules.html">extract_rules()</a></code> for lightgbm models gains an optional <code>data</code> argument for this; without it, rules use the integer codes.</p></li>
+<li><p><code><a href="../reference/extract_rules.html">extract_rules()</a></code> for lightgbm models now assigns left and right child nodes correctly and compares numeric thresholds as numbers rather than strings.</p></li>
+<li><p><code><a href="../reference/extract_rules.html">extract_rules()</a></code> methods now error when given an argument they don’t use, such as a misspelled <code>trees = 2</code>, instead of silently ignoring it. This includes <code>data</code> for C5.0 models, which was accepted but never used.</p></li>
+<li><p><code><a href="../reference/extract_rules.html">extract_rules()</a></code> for aorsf (<code>ObliqueForest</code>), BART (<code>bart</code>), catboost, lightgbm, and xgboost models now accepts a vector of tree numbers, as the other ensemble methods do, and reads the model once instead of once per tree. Rules for each tree are also built in a single pass, which makes these methods and <code><a href="../reference/extract_rules.html">extract_rules()</a></code> for rpart and grf models much faster.</p></li>
+<li><p><code><a href="../reference/extract_rules.html">extract_rules()</a></code> is much faster for ranger, randomForest, C5.0, grf, cforest, and partykit models. Rules are now collected in a single pass over the tree instead of searching for each node’s parent, and the ranger and randomForest methods no longer compute fitted node ids for the training data.</p></li>
+<li><p><code><a href="../reference/extract_rules.html">extract_rules()</a></code> methods gain an <code>add_statistics</code> argument that appends the columns <code>num_rule_terms</code> and <code>num_rule_predictors</code>.</p></li>
+<li><p><code><a href="../reference/active_predictors.html">active_predictors()</a></code>, <code><a href="https://rdrr.io/pkg/partykit/man/party-coercion.html" class="external-link">as.party()</a></code>, <code><a href="../reference/extract_rules.html">extract_rules()</a></code>, and <code><a href="../reference/num_ensemble_members.html">num_ensemble_members()</a></code> now have methods for bagged trees from the baguette package (<code>bagger</code>, from <code><a href="https://parsnip.tidymodels.org/reference/bag_tree.html" class="external-link">parsnip::bag_tree()</a></code> with the “rpart” or “C5.0” engine). The <code>tree</code> argument selects ensemble members, and <code><a href="https://rdrr.io/pkg/partykit/man/party-coercion.html" class="external-link">as.party()</a></code> needs the training data because the bootstrap samples are not saved.</p></li>
+<li><p><code><a href="../reference/extract_rules.html">extract_rules()</a></code> for rpart models now uses the <code>xlevels</code> attribute to label categorical splits with factor levels, so it works for models that no longer have access to their training data.</p></li>
+<li><p><code><a href="../reference/rect_split_to_expr.html">rect_split_to_expr()</a></code> now accepts numeric vectors for the <code>%in%</code> operator.</p></li>
+</ul></div>
+    <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.1.0" id="lorax-010">lorax 0.1.0<a class="anchor" aria-label="anchor" href="#lorax-010"></a></h2><p class="text-muted">CRAN release: 2026-07-16</p>
 <ul><li>Initial version.</li>
 </ul></div>
-  </main></div>
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
+    </nav></aside></div>
 
 
    </div>

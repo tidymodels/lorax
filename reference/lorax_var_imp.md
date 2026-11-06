@@ -9,6 +9,9 @@ using a common interface.
 # S3 method for class 'ObliqueForest'
 var_imp(object, complete = TRUE, ...)
 
+# S3 method for class 'catboost.Model'
+var_imp(object, complete = TRUE, ...)
+
 # S3 method for class 'cforest'
 var_imp(object, complete = TRUE, ...)
 

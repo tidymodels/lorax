@@ -8,7 +8,7 @@ root node to a terminal node using oblique (linear combination) splits.
 
 ``` r
 # S3 method for class 'ObliqueForest'
-extract_rules(x, tree = 1L, ...)
+extract_rules(x, tree = 1L, add_statistics = FALSE, ...)
 ```
 
 ## Arguments
@@ -19,9 +19,22 @@ extract_rules(x, tree = 1L, ...)
 
 - tree:
 
-  Integer specifying which tree to extract rules from (1-based). Default
-  is `1L` for the first tree. Must be between 1 and the number of trees
-  in the forest (`x$n_tree`).
+  Integer vector specifying which trees to extract rules from (1-based).
+  Default is `1L` for the first tree. Values must be between 1 and the
+  number of trees in the forest (`x$n_tree`).
+
+- add_statistics:
+
+  A single logical. If `TRUE`, two integer columns are added to the
+  results:
+
+  - `num_rule_terms`: the number of conditions joined by `&` in the
+    rule.
+
+  - `num_rule_predictors`: the number of unique predictors in the rule.
+
+  A rule of `TRUE` (a tree with no splits) has zero terms and
+  predictors.
 
 - ...:
 

@@ -19,8 +19,8 @@ rect_split_to_expr(split)
 
   - `column`: character string - variable name for the split.
 
-  - `value`: numeric, character, or character vector - the split.
-    threshold/value(s)
+  - `value`: the split threshold/value(s). A single numeric or character
+    value, or a numeric or character vector when `operator` is `%in%`.
 
   - `operator`: character string - one of: `<`, `<=`, `>`, `>=`, `==`,.
     `%in%`

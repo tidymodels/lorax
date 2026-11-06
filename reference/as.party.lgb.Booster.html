@@ -9,7 +9,7 @@ for use with partykit visualization and analysis tools."><meta property="og:imag
 
     <a class="navbar-brand me-2" href="../index.html">lorax</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -120,7 +120,22 @@ and other visualizations.</p>
 <ul><li><p><code>decision_type "&lt;="</code>: left child when feature &lt;= threshold</p></li>
 <li><p>right child when feature &gt; threshold</p></li>
 <li><p><span class="pkg">partykit</span> split created with <code>right = FALSE</code> (left interval closed)</p></li>
+<li><p><code>decision_type "=="</code>: categorical split. <code>threshold</code> lists the category
+codes that go to the left child (e.g., <code>"0||2"</code>); all other codes go to
+the right child.</p></li>
 </ul></div>
+
+<div class="section">
+<h3 id="categorical-predictors">Categorical predictors<a class="anchor" aria-label="anchor" href="#categorical-predictors"></a></h3>
+
+
+<p><span class="pkg">lightgbm</span> requires categorical predictors to be encoded as
+non-negative integers. If the corresponding column in <code>data</code> is a factor,
+the codes are assumed to be <code>as.integer(factor) - 1L</code> (the encoding used by
+<span class="pkg">bonsai</span>) and the splits use the factor levels. If the column is
+numeric (the integer codes used for training), it is converted to a factor
+whose levels are the codes seen during training.</p>
+</div>
 
 <div class="section">
 <h3 id="child-node-references">Child node references<a class="anchor" aria-label="anchor" href="#child-node-references"></a></h3>

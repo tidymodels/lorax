@@ -14,13 +14,13 @@
 Source:
 [`DESCRIPTION`](https://github.com/tidymodels/lorax/blob/main/DESCRIPTION)
 
-Kuhn M (2026). *lorax: Speak for the Trees*. R package version 0.1.0,
+Kuhn M (2026). *lorax: Speak for the Trees*. R package version 0.2.0,
 <https://github.com/tidymodels/lorax>.
 
     @Manual{,
       title = {lorax: Speak for the Trees},
       author = {Max Kuhn},
       year = {2026},
-      note = {R package version 0.1.0},
+      note = {R package version 0.2.0},
       url = {https://github.com/tidymodels/lorax},
     }

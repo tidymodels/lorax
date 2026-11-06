@@ -6,8 +6,12 @@
   : Extract the active features from a tree
 - [`as.party(`*`<C5.0>`*`)`](https://lorax.tidymodels.org/reference/as.party.C5.0.md)
   : Convert C5.0 model to party object
+- [`as.party(`*`<bagger>`*`)`](https://lorax.tidymodels.org/reference/as.party.bagger.md)
+  : Convert a bagged tree to a party object
 - [`as.party(`*`<bart>`*`)`](https://lorax.tidymodels.org/reference/as.party.bart.md)
   : Convert BART model to party object
+- [`as.party(`*`<catboost.Model>`*`)`](https://lorax.tidymodels.org/reference/as.party.catboost.Model.md)
+  : Convert catboost model to party object
 - [`as.party(`*`<grf>`*`)`](https://lorax.tidymodels.org/reference/as.party.grf.md)
   : Convert grf model to party object
 - [`as.party(`*`<lgb.Booster>`*`)`](https://lorax.tidymodels.org/reference/as.party.lgb.Booster.md)
@@ -26,6 +30,8 @@
   : Extract an expression that defines a path to a terminal node
 - [`extract_rules(`*`<bart>`*`)`](https://lorax.tidymodels.org/reference/extract_rules.bart.md)
   : Extract rules from a BART model
+- [`extract_rules(`*`<catboost.Model>`*`)`](https://lorax.tidymodels.org/reference/extract_rules.catboost.Model.md)
+  : Extract rules from a catboost model
 - [`extract_rules(`*`<cubist>`*`)`](https://lorax.tidymodels.org/reference/extract_rules.cubist.md)
   : Extract rules from a Cubist model
 - [`extract_rules(`*`<lgb.Booster>`*`)`](https://lorax.tidymodels.org/reference/extract_rules.lgb.Booster.md)
@@ -37,6 +43,7 @@
 - [`extract_rules(`*`<xgb.Booster>`*`)`](https://lorax.tidymodels.org/reference/extract_rules.xgb.Booster.md)
   : Extract rules from an xgb.Booster model
 - [`var_imp(`*`<ObliqueForest>`*`)`](https://lorax.tidymodels.org/reference/lorax_var_imp.md)
+  [`var_imp(`*`<catboost.Model>`*`)`](https://lorax.tidymodels.org/reference/lorax_var_imp.md)
   [`var_imp(`*`<cforest>`*`)`](https://lorax.tidymodels.org/reference/lorax_var_imp.md)
   [`var_imp(`*`<grf>`*`)`](https://lorax.tidymodels.org/reference/lorax_var_imp.md)
   [`var_imp(`*`<lgb.Booster>`*`)`](https://lorax.tidymodels.org/reference/lorax_var_imp.md)
@@ -46,9 +53,22 @@
   [`var_imp(`*`<rpart>`*`)`](https://lorax.tidymodels.org/reference/lorax_var_imp.md)
   [`var_imp(`*`<xgb.Booster>`*`)`](https://lorax.tidymodels.org/reference/lorax_var_imp.md)
   : Tree Importance Scores
+- [`num_ensemble_members()`](https://lorax.tidymodels.org/reference/num_ensemble_members.md)
+  : Count the number of members in an ensemble
 - [`obliq_split_to_expr()`](https://lorax.tidymodels.org/reference/obliq_split_to_expr.md)
   : Convert an oblique split to an R expression
 - [`rect_split_to_expr()`](https://lorax.tidymodels.org/reference/rect_split_to_expr.md)
   : Convert a rectangular split to an R expression
 - [`rule_text()`](https://lorax.tidymodels.org/reference/rule_text.md) :
   Convert a rule expression to a readable text format
+- [`extract_rules(`*`<model_fit>`*`)`](https://lorax.tidymodels.org/reference/tidymodels-methods.md)
+  [`extract_rules(`*`<workflow>`*`)`](https://lorax.tidymodels.org/reference/tidymodels-methods.md)
+  [`active_predictors(`*`<model_fit>`*`)`](https://lorax.tidymodels.org/reference/tidymodels-methods.md)
+  [`active_predictors(`*`<workflow>`*`)`](https://lorax.tidymodels.org/reference/tidymodels-methods.md)
+  [`num_ensemble_members(`*`<model_fit>`*`)`](https://lorax.tidymodels.org/reference/tidymodels-methods.md)
+  [`num_ensemble_members(`*`<workflow>`*`)`](https://lorax.tidymodels.org/reference/tidymodels-methods.md)
+  [`as.party(`*`<model_fit>`*`)`](https://lorax.tidymodels.org/reference/tidymodels-methods.md)
+  [`as.party(`*`<workflow>`*`)`](https://lorax.tidymodels.org/reference/tidymodels-methods.md)
+  [`var_imp(`*`<model_fit>`*`)`](https://lorax.tidymodels.org/reference/tidymodels-methods.md)
+  [`var_imp(`*`<workflow>`*`)`](https://lorax.tidymodels.org/reference/tidymodels-methods.md)
+  : Methods for tidymodels objects

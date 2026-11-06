@@ -8,7 +8,7 @@ representing the path from root to that leaf.
 
 ``` r
 # S3 method for class 'xgb.Booster'
-extract_rules(x, tree = 1L, nthread = NULL, ...)
+extract_rules(x, tree = 1L, nthread = NULL, add_statistics = FALSE, ...)
 ```
 
 ## Arguments
@@ -19,16 +19,29 @@ extract_rules(x, tree = 1L, nthread = NULL, ...)
 
 - tree:
 
-  Integer specifying which tree to extract rules from. Uses 1-based
-  indexing (default is `1L`). For multiclass models with `num_class`
-  classes and `nrounds` boosting rounds, there are `num_class * nrounds`
-  total trees.
+  Integer vector specifying which trees to extract rules from. Uses
+  1-based indexing (default is `1L`). For multiclass models with
+  `num_class` classes and `nrounds` boosting rounds, there are
+  `num_class * nrounds` total trees.
 
 - nthread:
 
   Integer number of threads to use when reading the tree structure out
   of the model. The default (`NULL`) inherits the `nthread` the booster
   was trained with.
+
+- add_statistics:
+
+  A single logical. If `TRUE`, two integer columns are added to the
+  results:
+
+  - `num_rule_terms`: the number of conditions joined by `&` in the
+    rule.
+
+  - `num_rule_predictors`: the number of unique predictors in the rule.
+
+  A rule of `TRUE` (a tree with no splits) has zero terms and
+  predictors.
 
 - ...:
 

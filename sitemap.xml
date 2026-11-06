@@ -8,7 +8,9 @@
 <url><loc>https://lorax.tidymodels.org/news/index.html</loc></url>
 <url><loc>https://lorax.tidymodels.org/reference/active_predictors.html</loc></url>
 <url><loc>https://lorax.tidymodels.org/reference/as.party.C5.0.html</loc></url>
+<url><loc>https://lorax.tidymodels.org/reference/as.party.bagger.html</loc></url>
 <url><loc>https://lorax.tidymodels.org/reference/as.party.bart.html</loc></url>
+<url><loc>https://lorax.tidymodels.org/reference/as.party.catboost.Model.html</loc></url>
 <url><loc>https://lorax.tidymodels.org/reference/as.party.grf.html</loc></url>
 <url><loc>https://lorax.tidymodels.org/reference/as.party.lgb.Booster.html</loc></url>
 <url><loc>https://lorax.tidymodels.org/reference/as.party.randomForest.html</loc></url>
@@ -17,6 +19,7 @@
 <url><loc>https://lorax.tidymodels.org/reference/combine_rule_elements.html</loc></url>
 <url><loc>https://lorax.tidymodels.org/reference/extract_rules.ObliqueForest.html</loc></url>
 <url><loc>https://lorax.tidymodels.org/reference/extract_rules.bart.html</loc></url>
+<url><loc>https://lorax.tidymodels.org/reference/extract_rules.catboost.Model.html</loc></url>
 <url><loc>https://lorax.tidymodels.org/reference/extract_rules.cubist.html</loc></url>
 <url><loc>https://lorax.tidymodels.org/reference/extract_rules.html</loc></url>
 <url><loc>https://lorax.tidymodels.org/reference/extract_rules.lgb.Booster.html</loc></url>
@@ -26,9 +29,11 @@
 <url><loc>https://lorax.tidymodels.org/reference/index.html</loc></url>
 <url><loc>https://lorax.tidymodels.org/reference/lorax-package.html</loc></url>
 <url><loc>https://lorax.tidymodels.org/reference/lorax_var_imp.html</loc></url>
+<url><loc>https://lorax.tidymodels.org/reference/num_ensemble_members.html</loc></url>
 <url><loc>https://lorax.tidymodels.org/reference/obliq_split_to_expr.html</loc></url>
 <url><loc>https://lorax.tidymodels.org/reference/rect_split_to_expr.html</loc></url>
 <url><loc>https://lorax.tidymodels.org/reference/reexports.html</loc></url>
 <url><loc>https://lorax.tidymodels.org/reference/rule_text.html</loc></url>
+<url><loc>https://lorax.tidymodels.org/reference/tidymodels-methods.html</loc></url>
 </urlset>
 

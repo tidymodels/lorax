@@ -93,6 +93,19 @@ Each tree is represented as rows in a table:
 
 - partykit split created with `right = FALSE` (left interval closed)
 
+- `decision_type "=="`: categorical split. `threshold` lists the
+  category codes that go to the left child (e.g., `"0||2"`); all other
+  codes go to the right child.
+
+### Categorical predictors
+
+lightgbm requires categorical predictors to be encoded as non-negative
+integers. If the corresponding column in `data` is a factor, the codes
+are assumed to be `as.integer(factor) - 1L` (the encoding used by
+bonsai) and the splits use the factor levels. If the column is numeric
+(the integer codes used for training), it is converted to a factor whose
+levels are the codes seen during training.
+
 ### Child node references
 
 - Internal nodes have explicit `left_child` and `right_child` IDs
