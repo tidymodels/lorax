@@ -123,3 +123,44 @@ validate_split <- function(split, call = rlang::caller_env()) {
 
   invisible(NULL)
 }
+
+# Internal helper: `==` for a single value, `%in%` otherwise
+cat_in_expr <- function(feature, values) {
+  if (length(values) == 1) {
+    operator <- "=="
+  } else {
+    operator <- "%in%"
+  }
+  rect_split_to_expr(list(
+    column = feature,
+    value = values,
+    operator = operator
+  ))
+}
+
+# Internal helper to convert category codes to factor levels (or keep the
+# codes when no levels are available)
+cat_codes_to_values <- function(
+  codes,
+  lvls,
+  feature,
+  call = rlang::caller_env()
+) {
+  if (!is.character(lvls)) {
+    return(codes)
+  }
+  bad <- unique(codes[codes < 0 | codes >= length(lvls)])
+  if (length(bad) > 0) {
+    n_lvls <- length(lvls)
+    cli::cli_abort(
+      c(
+        "Invalid category codes for {.field {feature}}.",
+        "x" = "The model uses {cli::qty(length(bad))}code{?s} {bad}.",
+        "x" = "The factor in {.arg data} only has {n_lvls} level{?s}.",
+        "i" = "Codes are assumed to be {.code as.integer(factor) - 1L}."
+      ),
+      call = call
+    )
+  }
+  lvls[codes + 1L]
+}

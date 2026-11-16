@@ -1290,3 +1290,185 @@ test_that("extract_rules.xgb.Booster() handles several trees in one call", {
   expect_equal(as.data.frame(all_rules), as.data.frame(one_at_a_time))
   expect_equal(unique(all_rules$tree), 1:3)
 })
+
+# ------------------------------------------------------------------------------
+# Categorical predictors
+
+test_that("xgb_parse_dump() agrees with xgb.model.dt.tree()", {
+  skip_if_not_installed("xgboost")
+
+  set.seed(40718)
+  bst <- xgboost::xgb.train(
+    data = xgboost::xgb.DMatrix(
+      as.matrix(mtcars[, -1]),
+      label = mtcars$mpg,
+      nthread = 1
+    ),
+    nrounds = 3,
+    params = xgboost::xgb.params(max_depth = 3, nthread = 1)
+  )
+
+  from_table <- xgb_tree_table(bst)
+  from_dump <- xgb_parse_dump(xgboost::xgb.dump(bst, with_stats = TRUE))
+  from_dump <- from_dump[order(from_dump$Tree, from_dump$Node), ]
+
+  expect_named(from_dump, names(from_table))
+  expect_equal(from_dump, from_table, ignore_attr = TRUE, tolerance = 1e-6)
+  expect_all_equal(xgb_tree_table(bst, trees = 2L)$Tree, 1L)
+})
+
+test_that("xgb_parse_dump() handles feature names with special characters", {
+  lines <- c(
+    "booster[0]",
+    "0:[a<b:{c}<1.5] yes=1,no=2,missing=2,gain=10,cover=20",
+    "1:leaf=-0.5,cover=8",
+    "2:[a:b<c:{0,3}] yes=4,no=3,missing=3,gain=4,cover=12",
+    "3:leaf=0.25,cover=5",
+    "4:leaf=1,cover=7"
+  )
+  res <- xgb_parse_dump(lines)
+
+  expect_equal(res$Feature, c("a<b:{c}", "Leaf", "a:b<c", "Leaf", "Leaf"))
+  expect_equal(res$Split, c(1.5, NA, NA, NA, NA))
+  expect_equal(res$Categories, list(NULL, NULL, c(0L, 3L), NULL, NULL))
+  expect_equal(res$Yes, c(1L, NA, 4L, NA, NA))
+  expect_equal(res$Missing, c(2L, NA, 3L, NA, NA))
+  expect_equal(res$Gain, c(10, -0.5, 4, 0.25, 1))
+})
+
+test_that("extract_rules.xgb.Booster() uses factor levels for categorical splits", {
+  cat_fit <- get_xgb_cat_fit()
+
+  rules <- extract_rules(cat_fit$fit, tree = 1L, data = cat_fit$data)
+  rule_chr <- vapply(rules$rules, rule_text, character(1))
+
+  expect_s3_class(rules, "rule_set_xgb.Booster")
+  expect_all_true(
+    grepl('f %in% c("b", "d", "e", "g")', rule_chr, fixed = TRUE) |
+      grepl('f %in% c("a", "c", "f", "h")', rule_chr, fixed = TRUE)
+  )
+
+  rules <- extract_rules(cat_fit$fit, tree = 1:3, data = cat_fit$data)
+  for (i in 1:3) {
+    expect_equal(
+      rule_node_ids(rules[rules$tree == i, ], cat_fit$data),
+      cat_fit$leaves[, i]
+    )
+  }
+})
+
+test_that("extract_rules.xgb.Booster() uses integer codes without factor data", {
+  cat_fit <- get_xgb_cat_fit()
+
+  rules_1 <- extract_rules(cat_fit$fit, tree = 1L)
+  rule_chr <- vapply(rules_1$rules, rule_text, character(1))
+  expect_all_true(grepl("f %in% c(0, 2, 5, 7)", rule_chr, fixed = TRUE))
+
+  for (i in 1:3) {
+    rules <- extract_rules(cat_fit$fit, tree = i)
+    expect_equal(rule_node_ids(rules, cat_fit$codes), cat_fit$leaves[, i])
+  }
+
+  # Numeric columns in `data` are not translated
+  rules_codes <- extract_rules(cat_fit$fit, tree = 1L, data = cat_fit$codes)
+  expect_equal(rules_codes$rules, rules_1$rules)
+})
+
+test_that("extract_rules.xgb.Booster() works with one-hot categorical splits", {
+  cat_fit <- get_xgb_cat_fit(max_cat_to_onehot = 20)
+
+  rules <- extract_rules(cat_fit$fit, tree = 1L, data = cat_fit$data)
+  rule_chr <- vapply(rules$rules, rule_text, character(1))
+  expect_match(rule_chr, 'f == "f"', fixed = TRUE, all = FALSE)
+
+  for (i in 1:3) {
+    rules <- extract_rules(cat_fit$fit, tree = i, data = cat_fit$data)
+    expect_equal(rule_node_ids(rules, cat_fit$data), cat_fit$leaves[, i])
+    rules <- extract_rules(cat_fit$fit, tree = i)
+    expect_equal(rule_node_ids(rules, cat_fit$codes), cat_fit$leaves[, i])
+  }
+})
+
+test_that("extract_rules.xgb.Booster() validates categorical data", {
+  cat_fit <- get_xgb_cat_fit()
+
+  too_few <- cat_fit$data
+  too_few$f <- factor(as.character(too_few$f), levels = letters[1:3])
+  expect_snapshot(
+    extract_rules(cat_fit$fit, tree = 1L, data = too_few),
+    error = TRUE
+  )
+  expect_snapshot(
+    extract_rules(cat_fit$fit, tree = 1L, data = as.matrix(cat_fit$codes)),
+    error = TRUE
+  )
+})
+
+test_that("as.party.xgb.Booster() works with categorical predictors as factors", {
+  cat_fit <- get_xgb_cat_fit()
+
+  for (i in 1:3) {
+    p <- as.party(cat_fit$fit, tree = i, data = cat_fit$data)
+    expect_s3_class(p, "constparty")
+    fitted_ids <- p$fitted[["(fitted)"]]
+    expect_all_equal(rowSums(table(fitted_ids, cat_fit$leaves[, i]) > 0), 1L)
+    expect_all_equal(colSums(table(fitted_ids, cat_fit$leaves[, i]) > 0), 1L)
+  }
+
+  p <- as.party(cat_fit$fit, tree = 1L, data = cat_fit$data)
+  expect_equal(levels(p$data$f), letters[1:8])
+  rules <- extract_rules(p)
+  rule_chr <- vapply(rules$rules, rule_text, character(1))
+  expect_all_true(
+    grepl('f %in% c("b", "d", "e", "g")', rule_chr, fixed = TRUE) |
+      grepl('f %in% c("a", "c", "f", "h")', rule_chr, fixed = TRUE)
+  )
+})
+
+test_that("as.party.xgb.Booster() works with integer-coded categorical predictors", {
+  cat_fit <- get_xgb_cat_fit()
+
+  for (i in 1:3) {
+    p <- as.party(cat_fit$fit, tree = i, data = cat_fit$codes)
+    expect_s3_class(p, "constparty")
+    fitted_ids <- p$fitted[["(fitted)"]]
+    expect_all_equal(rowSums(table(fitted_ids, cat_fit$leaves[, i]) > 0), 1L)
+    expect_all_equal(colSums(table(fitted_ids, cat_fit$leaves[, i]) > 0), 1L)
+  }
+
+  p <- as.party(cat_fit$fit, tree = 1L, data = cat_fit$codes)
+  expect_s3_class(p$data$f, "factor")
+  expect_equal(levels(p$data$f), as.character(0:7))
+})
+
+test_that("as.party.xgb.Booster() validates categorical data", {
+  cat_fit <- get_xgb_cat_fit()
+
+  too_few <- cat_fit$data
+  too_few$f <- factor(as.character(too_few$f), levels = letters[1:3])
+  expect_snapshot(
+    as.party(cat_fit$fit, tree = 1L, data = too_few),
+    error = TRUE
+  )
+
+  not_factor <- cat_fit$data
+  not_factor$f <- as.character(not_factor$f)
+  expect_snapshot(
+    as.party(cat_fit$fit, tree = 1L, data = not_factor),
+    error = TRUE
+  )
+})
+
+test_that("other xgb.Booster methods work with categorical predictors", {
+  cat_fit <- get_xgb_cat_fit()
+
+  expect_equal(num_ensemble_members(cat_fit$fit), 3L)
+
+  active <- active_predictors(cat_fit$fit, tree = 1:3)
+  expect_equal(active$tree, 1:3)
+  expect_equal(active$active_predictors[[1]], c("f", "g", "z"))
+
+  imp <- var_imp(cat_fit$fit)
+  expect_named(imp, c("term", "estimate"))
+  expect_setequal(imp$term, c("f", "g", "z"))
+})

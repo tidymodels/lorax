@@ -10,6 +10,10 @@
 #' it via `data`. For workflows, this should be the preprocessed predictors that
 #' were given to the engine.
 #'
+#' For `extract_rules()` with xgboost models that use factor predictors as
+#' categorical features (the `"xgboost3"` engine), the factor levels saved by
+#' \pkg{parsnip} are used to label the categories unless `data` is given.
+#'
 #' @param x,obj,object A fitted `model_fit` or `workflow` object.
 #' @param ... Other arguments passed to the method for the engine model.
 #'
@@ -35,16 +39,34 @@ extract_engine <- function(x) {
   hardhat::extract_fit_engine(x)
 }
 
+# xgboost does not save the levels of categorical predictors but parsnip keeps
+# a zero-row slice of the predictors, so use it as `data` unless one was given.
+add_ptype_data <- function(args, engine, parsnip_fit) {
+  ptype <- parsnip_fit$preproc$ptype
+  if (
+    inherits(engine, "xgb.Booster") &&
+      !("data" %in% names(args)) &&
+      is.data.frame(ptype)
+  ) {
+    args$data <- ptype
+  }
+  args
+}
+
 #' @rdname tidymodels-methods
 #' @export
 extract_rules.model_fit <- function(x, ...) {
-  extract_rules(extract_engine(x), ...)
+  engine <- extract_engine(x)
+  args <- add_ptype_data(list(...), engine, x)
+  rlang::exec(extract_rules, engine, !!!args)
 }
 
 #' @rdname tidymodels-methods
 #' @export
 extract_rules.workflow <- function(x, ...) {
-  extract_rules(extract_engine(x), ...)
+  engine <- extract_engine(x)
+  args <- add_ptype_data(list(...), engine, hardhat::extract_fit_parsnip(x))
+  rlang::exec(extract_rules, engine, !!!args)
 }
 
 #' @rdname tidymodels-methods

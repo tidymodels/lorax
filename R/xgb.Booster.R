@@ -13,6 +13,10 @@
 #' @param nthread Integer number of threads to use when reading the tree
 #'   structure out of the model. The default (`NULL`) inherits the `nthread`
 #'   the booster was trained with.
+#' @param data Optional data frame containing the predictors used to train
+#'   the model. It is only used for models with categorical predictors, where
+#'   the levels of the factor columns are used to convert category codes to
+#'   factor levels.
 #' @param ... Not currently used.
 #'
 #' @return A tibble with class `c("rule_set_xgb.Booster", "rule_set")` and
@@ -29,8 +33,20 @@
 #' threshold, No branch when feature >= threshold. Rules are combinations of
 #' these conditions using AND logic.
 #'
-#' Note: This function does not work with \pkg{xgboost} models containing categorical
-#' features or non-tree boosters (`gblinear`).
+#' ## Categorical predictors
+#'
+#' \pkg{xgboost} (version 3.0.0 and later) can use factor predictors directly
+#' as categorical features. A categorical split sends a set of categories to
+#' the Yes branch and all other categories to the No branch. The model stores
+#' the categories as zero-based integer codes (`as.integer(factor) - 1L`) and
+#' does not save the factor levels. When `data` is supplied, the levels of its
+#' factor columns are used to write rules such as `x %in% c("a", "c")`.
+#' Otherwise, rules use the integer codes.
+#'
+#' Models fit with indicator (dummy) variables, as well as those from earlier
+#' versions of \pkg{xgboost}, only have numeric splits.
+#'
+#' Note: This function does not work with non-tree boosters (`gblinear`).
 #'
 #' @examples
 #' if (rlang::is_installed("xgboost")) {
@@ -78,12 +94,34 @@
 #'   rules_reg <- extract_rules(bst_reg, tree = 1L)
 #' }
 #'
+#' # Categorical predictors
+#' if (rlang::is_installed("xgboost", version = "3.0.0")) {
+#'   cat_data <- data.frame(
+#'     group = factor(rep(c("a", "b", "c", "d"), each = 25)),
+#'     dose = rep(seq(0, 1, length.out = 25), times = 4)
+#'   )
+#'   outcome <- 2 * (cat_data$group %in% c("a", "c")) + cat_data$dose
+#'
+#'   bst_cat <- xgboost::xgb.train(
+#'     data = xgboost::xgb.DMatrix(cat_data, label = outcome, nthread = 1),
+#'     nrounds = 2,
+#'     params = xgboost::xgb.params(max_depth = 2, nthread = 1)
+#'   )
+#'
+#'   # Rules with integer codes
+#'   extract_rules(bst_cat)$rules[[1]]
+#'
+#'   # Rules with factor levels
+#'   extract_rules(bst_cat, data = cat_data)$rules[[1]]
+#' }
+#'
 #' @export
 extract_rules.xgb.Booster <- function(
   x,
   tree = 1L,
   nthread = NULL,
   add_statistics = FALSE,
+  data = NULL,
   ...
 ) {
   rlang::check_dots_empty()
@@ -91,6 +129,12 @@ extract_rules.xgb.Booster <- function(
   rlang::check_installed("xgboost")
 
   tree <- check_tree_type(tree)
+
+  if (!is.null(data) && !is.data.frame(data)) {
+    cli::cli_abort(
+      "{.arg data} must be a data frame, not {.obj_type_friendly {data}}."
+    )
+  }
 
   x <- xgb_apply_nthread(x, nthread)
 
@@ -101,13 +145,7 @@ extract_rules.xgb.Booster <- function(
   if (any(tree < 1L)) {
     check_tree_range(tree, num_ensemble_members(x))
   }
-  tree_dt <- as.data.frame(
-    xgboost::xgb.model.dt.tree(
-      model = x,
-      trees = unique(tree),
-      use_int_id = TRUE
-    )
-  )
+  tree_dt <- xgb_tree_table(x, trees = unique(tree))
 
   # Validate tree numbers against available trees
   missing_trees <- setdiff(tree - 1L, tree_dt$Tree)
@@ -116,9 +154,14 @@ extract_rules.xgb.Booster <- function(
   }
 
   tree_dts <- split(tree_dt, tree_dt$Tree)
+  call <- rlang::current_env()
 
   results <- lapply(tree, function(tree_num) {
-    tree_rules <- xgb_tree_rules(tree_dts[[as.character(tree_num - 1L)]])
+    tree_rules <- xgb_tree_rules(
+      tree_dts[[as.character(tree_num - 1L)]],
+      data = data,
+      call = call
+    )
     tree_rules$tree <- tree_num
     tree_rules
   })
@@ -140,9 +183,124 @@ xgb_apply_nthread <- function(model, nthread) {
   model
 }
 
+# Internal helper: does the model use categorical features? Boosters from
+# xgboost < 3 have no `getinfo()` method and never do.
+xgb_has_categorical <- function(model) {
+  types <- tryCatch(
+    xgboost::getinfo(model, "feature_type"),
+    error = function(e) NULL
+  )
+  "c" %in% types
+}
+
+# Internal helper: one row per node for the requested trees (1-based; `NULL`
+# for all). The list column `Categories` has the zero-based category codes
+# that go to the `Yes` node of a categorical split and is `NULL` otherwise.
+# xgb.model.dt.tree() refuses models with categorical features, so those are
+# read from the text dump instead.
+xgb_tree_table <- function(model, trees = NULL) {
+  if (xgb_has_categorical(model)) {
+    tree_dt <- xgb_parse_dump(xgboost::xgb.dump(model, with_stats = TRUE))
+    if (!is.null(trees)) {
+      tree_dt <- tree_dt[tree_dt$Tree %in% (trees - 1L), ]
+    }
+    return(tree_dt)
+  }
+
+  tree_dt <- as.data.frame(
+    xgboost::xgb.model.dt.tree(
+      model = model,
+      trees = trees,
+      use_int_id = TRUE
+    )
+  )
+  tree_dt$Categories <- vector("list", nrow(tree_dt))
+  tree_dt
+}
+
+# Internal helper: convert the lines of xgb.dump(with_stats = TRUE) to the
+# columns of xgb.model.dt.tree(use_int_id = TRUE) plus `Categories`. Lines are
+# "booster[k]", "id:leaf=value,cover=..", "id:[name<value] yes=..,no=..", or,
+# for categorical splits, "id:[name:{codes}] yes=..,no=..".
+xgb_parse_dump <- function(lines) {
+  lines <- trimws(lines)
+  is_header <- grepl("^booster\\[[0-9]+\\]", lines)
+  tree_index <- (cumsum(is_header) - 1L)[!is_header]
+  lines <- lines[!is_header]
+
+  # The patterns are greedy so that feature names can contain `<` or `:`
+  cat_pattern <- "^[0-9]+:\\[(.*):\\{([0-9,]*)\\}\\] yes=.*$"
+  num_pattern <- "^[0-9]+:\\[(.*)<([^<]+)\\] yes=.*$"
+  is_leaf <- grepl("^[0-9]+:leaf=", lines)
+  is_cat <- !is_leaf & grepl(cat_pattern, lines)
+  is_num <- !is_leaf & !is_cat
+
+  n <- length(lines)
+  feature <- rep("Leaf", n)
+  feature[is_cat] <- sub(cat_pattern, "\\1", lines[is_cat])
+  feature[is_num] <- sub(num_pattern, "\\1", lines[is_num])
+
+  split <- rep(NA_real_, n)
+  split[is_num] <- as.numeric(sub(num_pattern, "\\2", lines[is_num]))
+
+  categories <- vector("list", n)
+  categories[is_cat] <- lapply(
+    strsplit(sub(cat_pattern, "\\2", lines[is_cat]), ",", fixed = TRUE),
+    as.integer
+  )
+
+  gain <- xgb_dump_field(lines, "gain", as.numeric)
+  gain[is_leaf] <- as.numeric(
+    sub("^[0-9]+:leaf=([^,]+).*$", "\\1", lines[is_leaf])
+  )
+
+  res <- data.frame(
+    Tree = tree_index,
+    Node = as.integer(sub(":.*$", "", lines)),
+    Feature = feature,
+    Split = split,
+    Yes = xgb_dump_field(lines, "yes", as.integer),
+    No = xgb_dump_field(lines, "no", as.integer),
+    Missing = xgb_dump_field(lines, "missing", as.integer),
+    Gain = gain,
+    Cover = xgb_dump_field(lines, "cover", as.numeric)
+  )
+  res$Categories <- categories
+  res
+}
+
+# Internal helper: the value of "name=value" after the split in each dump line
+# (`NA` when absent)
+xgb_dump_field <- function(lines, name, convert) {
+  pattern <- paste0("^.*[] ,]", name, "=([^,]+).*$")
+  res <- rep(NA_character_, length(lines))
+  has_field <- grepl(pattern, lines)
+  res[has_field] <- sub(pattern, "\\1", lines[has_field])
+  convert(res)
+}
+
+# Internal helper: expressions for the Yes and No children of a categorical
+# split. Codes become factor levels when `data` has the feature as a factor.
+xgb_cat_split_exprs <- function(feature, codes, data, call) {
+  lvls <- NULL
+  if (is.data.frame(data) && is.factor(data[[feature]])) {
+    lvls <- levels(data[[feature]])
+  }
+  yes_values <- cat_codes_to_values(codes, lvls, feature, call = call)
+  yes_expr <- cat_in_expr(feature, yes_values)
+
+  no_values <- setdiff(lvls, yes_values)
+  if (length(no_values) == 0) {
+    no_expr <- rlang::call2("!", yes_expr)
+  } else {
+    no_expr <- cat_in_expr(feature, no_values)
+  }
+  list(yes_expr, no_expr)
+}
+
 # Internal helper: rules for every leaf of one tree from a single top-down
-# walk of the xgb.model.dt.tree() rows. A single-node tree gives the rule TRUE.
-xgb_tree_rules <- function(tree_dt) {
+# walk of the xgb_tree_table() rows. A single-node tree gives the rule TRUE.
+xgb_tree_rules <- function(tree_dt, data = NULL, call = rlang::caller_env()) {
   row_of <- function(node_id) match(node_id, tree_dt$Node)
   ids <- integer()
   rules <- list()
@@ -154,16 +312,28 @@ xgb_tree_rules <- function(tree_dt) {
       rules[[length(rules) + 1L]] <<- combine_rule_elements(exprs)
       return(invisible(NULL))
     }
-    # XGBoost convention: Yes branch when feature < threshold
+    # XGBoost convention: Yes branch when feature < threshold or, for
+    # categorical splits, when the category is in the set
     children <- c(tree_dt$Yes[row], tree_dt$No[row])
-    operators <- c("<", ">=")
+    codes <- tree_dt$Categories[[row]]
+    if (is.null(codes)) {
+      split_exprs <- lapply(c("<", ">="), function(operator) {
+        rect_split_to_expr(list(
+          column = tree_dt$Feature[row],
+          value = tree_dt$Split[row],
+          operator = operator
+        ))
+      })
+    } else {
+      split_exprs <- xgb_cat_split_exprs(
+        tree_dt$Feature[row],
+        codes,
+        data,
+        call
+      )
+    }
     for (k in 1:2) {
-      expr <- rect_split_to_expr(list(
-        column = tree_dt$Feature[row],
-        value = tree_dt$Split[row],
-        operator = operators[k]
-      ))
-      walk(children[k], c(exprs, list(expr)))
+      walk(children[k], c(exprs, list(split_exprs[[k]])))
     }
     invisible(NULL)
   }
@@ -206,7 +376,8 @@ xgb_tree_rules <- function(tree_dt) {
 #' ## XGBoost tree storage format
 #'
 #' \pkg{xgboost} stores trees in a tabular format accessible via
-#' `xgboost::xgb.model.dt.tree()`. Each tree is represented as rows in a table:
+#' `xgboost::xgb.model.dt.tree()` (or, for models with categorical features,
+#' `xgboost::xgb.dump()`). Each tree is represented as rows in a table:
 #' - `Tree`: 0-based tree index (e.g., 0, 1, 2,  ...)
 #' - `Node`: 0-based node ID within tree (e.g., "0-0", "0-1" for tree 0)
 #' - `Feature`: Feature name (character) or "Leaf" for terminal nodes
@@ -227,6 +398,15 @@ xgb_tree_rules <- function(tree_dt) {
 #' - Yes branch: feature < threshold (left child)
 #' - No branch: feature >= threshold (right child)
 #' - \pkg{partykit} split created with `right = TRUE` (right interval closed)
+#'
+#' ## Categorical predictors
+#'
+#' For models that use factor predictors as categorical features
+#' (\pkg{xgboost} 3.0.0 and later), a split sends a set of categories to the
+#' Yes branch and all others to the No branch. The model stores zero-based
+#' category codes (`as.integer(factor) - 1L`), so these predictors should be
+#' factors in `data` with the same levels used for training. Numeric columns
+#' are treated as the category codes.
 #'
 #' ## Child node references
 #'
@@ -321,13 +501,7 @@ as.party.xgb.Booster <- function(obj, tree = 1L, data, nthread = NULL, ...) {
 
   # Extract all trees using xgboost API
   # This returns a data.table/data.frame with all trees
-  tree_dt <- xgboost::xgb.model.dt.tree(
-    model = obj,
-    use_int_id = TRUE
-  )
-
-  # Convert to data.frame to avoid data.table syntax
-  tree_dt <- as.data.frame(tree_dt)
+  tree_dt <- xgb_tree_table(obj)
 
   # Validate tree number against available trees
   # Tree column uses 0-based indexing
@@ -362,21 +536,6 @@ as.party.xgb.Booster <- function(obj, tree = 1L, data, nthread = NULL, ...) {
   } else {
     # No features found (e.g., single-node tree with no splits)
     var_names <- character(0)
-  }
-
-  # Handle single-node tree (root is leaf)
-  if (nrow(tree_df) == 1 && tree_df$Feature[1] == "Leaf") {
-    root_node <- partykit::partynode(id = 1L)
-  } else {
-    # Build partynode structure recursively from root node (Node == 0)
-    root_node <- xgb_build_partynode(
-      node_id = 0,
-      tree_df = tree_df,
-      var_names = var_names
-    )
-
-    # Assign sequential IDs
-    root_node <- assign_node_ids(root_node)$node
   }
 
   # Validate and extract data
@@ -415,6 +574,44 @@ as.party.xgb.Booster <- function(obj, tree = 1L, data, nthread = NULL, ...) {
     for (col in response_cols) {
       orig_data[[col]] <- data[[col]]
     }
+  }
+
+  # Categorical predictors must be factors for partykit. Record the xgboost
+  # code for each factor level so splits can be mapped to levels.
+  is_cat <- lengths(tree_df$Categories) > 0
+  cat_codes <- list()
+  for (f in unique(tree_df$Feature[is_cat])) {
+    col <- var_names[xgb_feature_varid(f, var_names)]
+    split_codes <- unlist(tree_df$Categories[is_cat & tree_df$Feature == f])
+    if (is.numeric(orig_data[[col]])) {
+      max_code <- max(c(split_codes, orig_data[[col]]), na.rm = TRUE)
+      orig_data[[col]] <- factor(orig_data[[col]], levels = seq(0, max_code))
+    } else if (!is.factor(orig_data[[col]])) {
+      cli::cli_abort(
+        "Column {.field {col}} of {.arg data} must be a factor since the model
+         used it as a categorical predictor, not
+         {.obj_type_friendly {orig_data[[col]]}}."
+      )
+    } else {
+      cat_codes_to_values(split_codes, levels(orig_data[[col]]), f)
+    }
+    cat_codes[[f]] <- seq_along(levels(orig_data[[col]])) - 1L
+  }
+
+  # Handle single-node tree (root is leaf)
+  if (nrow(tree_df) == 1 && tree_df$Feature[1] == "Leaf") {
+    root_node <- partykit::partynode(id = 1L)
+  } else {
+    # Build partynode structure recursively from root node (Node == 0)
+    root_node <- xgb_build_partynode(
+      node_id = 0,
+      tree_df = tree_df,
+      var_names = var_names,
+      cat_codes = cat_codes
+    )
+
+    # Assign sequential IDs
+    root_node <- assign_node_ids(root_node)$node
   }
 
   # Check that response is included
@@ -472,9 +669,11 @@ as.party.xgb.Booster <- function(obj, tree = 1L, data, nthread = NULL, ...) {
 # @param node_id Current node ID (0-based, XGBoost convention)
 # @param tree_df Data.frame with tree structure from xgb.model.dt.tree
 # @param var_names Character vector of variable names
+# @param cat_codes Named list with the xgboost category code of each factor
+#   level, for each categorical feature
 #
 # @return A partynode object
-xgb_build_partynode <- function(node_id, tree_df, var_names) {
+xgb_build_partynode <- function(node_id, tree_df, var_names, cat_codes) {
   # Find current node's row
   node_row <- tree_df[tree_df$Node == node_id, ]
 
@@ -493,9 +692,43 @@ xgb_build_partynode <- function(node_id, tree_df, var_names) {
 
   # Internal node - get split info
   feature_name <- node_row$Feature
-  split_val <- as.numeric(node_row$Split)
+  yes_codes <- node_row$Categories[[1]]
 
-  # Map feature name to variable index (1-based)
+  varid <- xgb_feature_varid(feature_name, var_names)
+
+  # Create split object
+  if (is.null(yes_codes)) {
+    # XGBoost: Yes branch when feature < threshold, No branch when feature >= threshold
+    split_val <- as.numeric(node_row$Split)
+    split <- build_partysplit(varid, split_val, right = TRUE)
+  } else {
+    # Codes in the set go to the Yes child, all others to the No child
+    child_index <- ifelse(cat_codes[[feature_name]] %in% yes_codes, 1L, 2L)
+    split <- partykit::partysplit(
+      varid = as.integer(varid),
+      index = child_index
+    )
+  }
+
+  # Get child node IDs (0-based)
+  yes_child_id <- node_row$Yes # Left child (< condition or in the set)
+  no_child_id <- node_row$No # Right child (>= condition or not in the set)
+
+  # Recursively build children
+  left_node <- xgb_build_partynode(yes_child_id, tree_df, var_names, cat_codes)
+  right_node <- xgb_build_partynode(no_child_id, tree_df, var_names, cat_codes)
+
+  # Return internal node
+  partykit::partynode(
+    id = 1L, # Will be updated by assign_node_ids
+    split = split,
+    kids = list(left_node, right_node),
+    info = list(node_id = node_id)
+  )
+}
+
+# Internal helper to map a feature name to a variable index (1-based)
+xgb_feature_varid <- function(feature_name, var_names) {
   varid <- which(var_names == feature_name)
   if (length(varid) == 0) {
     # Try matching XGBoost default names to generic names
@@ -515,25 +748,7 @@ xgb_build_partynode <- function(node_id, tree_df, var_names) {
     )
   }
 
-  # Create split object
-  # XGBoost: Yes branch when feature < threshold, No branch when feature >= threshold
-  split <- build_partysplit(varid, split_val, right = TRUE)
-
-  # Get child node IDs (0-based)
-  yes_child_id <- node_row$Yes # Left child (< condition)
-  no_child_id <- node_row$No # Right child (>= condition)
-
-  # Recursively build children
-  left_node <- xgb_build_partynode(yes_child_id, tree_df, var_names)
-  right_node <- xgb_build_partynode(no_child_id, tree_df, var_names)
-
-  # Return internal node
-  partykit::partynode(
-    id = 1L, # Will be updated by assign_node_ids
-    split = split,
-    kids = list(left_node, right_node),
-    info = list(node_id = node_id)
-  )
+  varid
 }
 
 # ------------------------------------------------------------------------------
@@ -595,8 +810,7 @@ var_imp.xgb.Booster <- function(
       # Extract feature names from all trees
       # Note: xgboost models don't store unused features, so this will only
       # include features that appear in at least one tree
-      tree_dt <- xgboost::xgb.model.dt.tree(model = object, use_int_id = TRUE)
-      tree_df <- as.data.frame(tree_dt)
+      tree_df <- xgb_tree_table(object)
 
       # Get unique feature names (exclude "Leaf")
       pred_names <- unique(tree_df$Feature[tree_df$Feature != "Leaf"])
@@ -631,8 +845,7 @@ active_predictors.xgb.Booster <- function(x, tree = 1L, nthread = NULL, ...) {
   x <- xgb_apply_nthread(x, nthread)
 
   # Get all trees to determine number
-  tree_dt <- xgboost::xgb.model.dt.tree(x, use_int_id = TRUE)
-  tree_dt <- as.data.frame(tree_dt)
+  tree_dt <- xgb_tree_table(x)
 
   num_trees <- xgb_num_trees(tree_dt)
 
@@ -676,10 +889,10 @@ xgb_active_vars_one_tree <- function(tree_num, x, tree_dt) {
 #' @rdname num_ensemble_members
 #' @export
 num_ensemble_members.xgb.Booster <- function(x, ...) {
-  xgb_num_trees(xgboost::xgb.model.dt.tree(x, use_int_id = TRUE))
+  xgb_num_trees(xgb_tree_table(x))
 }
 
-# Internal helper: number of trees from an xgb.model.dt.tree() table, where
+# Internal helper: number of trees from an xgb_tree_table() table, where
 # `Tree` is 0-based
 xgb_num_trees <- function(tree_dt) {
   as.integer(max(tree_dt$Tree) + 1L)

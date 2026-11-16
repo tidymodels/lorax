@@ -274,3 +274,52 @@ rule_node_ids <- function(rules, data) {
   hits <- vapply(rules$rules, \(e) eval(e, data), logical(nrow(data)))
   rules$id[max.col(hits)]
 }
+
+# Get data with factor predictors, and an xgboost model that uses them as
+# categorical predictors. `z` only takes values that are exact in single
+# precision so that rules evaluated in R agree with xgboost's node assignments.
+get_xgb_cat_data <- function() {
+  set.seed(61735)
+  n <- 1000
+  data <- data.frame(
+    f = factor(sample(letters[1:8], n, replace = TRUE)),
+    g = factor(sample(c("u", "v"), n, replace = TRUE)),
+    z = sample(seq(-2, 2, by = 0.25), n, replace = TRUE)
+  )
+  data$y <- c(0, 5, 0, 5, 5, 0, 5, 0)[as.integer(data$f)] +
+    2 * (data$g == "v") +
+    data$z +
+    rnorm(n)
+  data
+}
+
+get_xgb_cat_fit <- function(max_cat_to_onehot = 1) {
+  skip_if_not_installed("xgboost", "3.0.0")
+  data <- get_xgb_cat_data()
+
+  dmat <- xgboost::xgb.DMatrix(
+    data[, c("f", "g", "z")],
+    label = data$y,
+    nthread = 1
+  )
+  bst <- xgboost::xgb.train(
+    params = xgboost::xgb.params(
+      max_depth = 3,
+      nthread = 1,
+      max_cat_to_onehot = max_cat_to_onehot
+    ),
+    data = dmat,
+    nrounds = 3
+  )
+
+  codes <- data
+  codes$f <- as.integer(codes$f) - 1L
+  codes$g <- as.integer(codes$g) - 1L
+
+  list(
+    fit = bst,
+    data = data,
+    codes = codes,
+    leaves = predict(bst, dmat, predleaf = TRUE) + 1L
+  )
+}

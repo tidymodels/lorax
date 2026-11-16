@@ -1,5 +1,9 @@
 # lorax (development version)
 
+* `active_predictors()`, `as.party()`, `extract_rules()`, `num_ensemble_members()`, and `var_imp()` now work with xgboost models that use factor predictors as categorical features (xgboost 3.0.0 and later), such as those from parsnip's `"xgboost3"` engine. Previously these failed with an error from xgboost. Models fit with indicator variables are processed as before.
+
+* `extract_rules()` for xgboost models gains an optional `data` argument. For models with categorical predictors, the levels of its factor columns are used to convert category codes to factor levels, assuming the codes are `as.integer(factor) - 1L`; without it, rules use the integer codes. For parsnip `model_fit` and workflows `workflow` objects, the factor levels saved by parsnip are used automatically.
+
 # lorax 0.2.0
 
 * `active_predictors()`, `as.party()`, `extract_rules()`, `num_ensemble_members()`, and `var_imp()` now have methods for fitted parsnip `model_fit` and workflows `workflow` objects. These extract the engine model with `extract_fit_engine()` and pass other arguments to the engine's method.
