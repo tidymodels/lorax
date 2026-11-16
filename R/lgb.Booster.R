@@ -224,32 +224,18 @@ lgb_split_expr <- function(
 lgb_cat_split_expr <- function(feature, threshold, is_left_child, cat_levels) {
   lvls <- cat_levels[[feature]]
   left_codes <- lgb_parse_cat_threshold(threshold)
-  left_values <- lgb_codes_to_values(left_codes, lvls, feature)
+  left_values <- cat_codes_to_values(left_codes, lvls, feature)
 
   if (is_left_child) {
     values <- left_values
   } else {
     values <- setdiff(lvls, left_values)
     if (length(values) == 0) {
-      return(rlang::call2("!", lgb_in_expr(feature, left_values)))
+      return(rlang::call2("!", cat_in_expr(feature, left_values)))
     }
   }
 
-  lgb_in_expr(feature, values)
-}
-
-# Internal helper: `==` for a single value, `%in%` otherwise
-lgb_in_expr <- function(feature, values) {
-  if (length(values) == 1) {
-    operator <- "=="
-  } else {
-    operator <- "%in%"
-  }
-  rect_split_to_expr(list(
-    column = feature,
-    value = values,
-    operator = operator
-  ))
+  cat_in_expr(feature, values)
 }
 
 # Internal helper to parse a categorical threshold such as "0||2||5"
@@ -293,7 +279,7 @@ lgb_cat_levels <- function(
         tree_dt$threshold[is_cat & tree_dt$split_feature == v],
         lgb_parse_cat_threshold
       )
-      lgb_codes_to_values(unlist(split_codes), res[[v]], v, call = call)
+      cat_codes_to_values(unlist(split_codes), res[[v]], v, call = call)
     } else {
       if (is.null(codes)) {
         codes <- lgb_cat_codes(x)
@@ -302,33 +288,6 @@ lgb_cat_levels <- function(
     }
   }
   res
-}
-
-# Internal helper to convert category codes to factor levels (or keep the
-# codes when no levels are available)
-lgb_codes_to_values <- function(
-  codes,
-  lvls,
-  feature,
-  call = rlang::caller_env()
-) {
-  if (!is.character(lvls)) {
-    return(codes)
-  }
-  bad <- unique(codes[codes < 0 | codes >= length(lvls)])
-  if (length(bad) > 0) {
-    n_lvls <- length(lvls)
-    cli::cli_abort(
-      c(
-        "Invalid category codes for {.field {feature}}.",
-        "x" = "The model uses {cli::qty(length(bad))}code{?s} {bad}.",
-        "x" = "The factor in {.arg data} only has {n_lvls} level{?s}.",
-        "i" = "Codes are assumed to be {.code as.integer(factor) - 1L}."
-      ),
-      call = call
-    )
-  }
-  lvls[codes + 1L]
 }
 
 # ------------------------------------------------------------------------------
@@ -575,7 +534,7 @@ as.party.lgb.Booster <- function(obj, tree = 1L, data, ...) {
         tree_df$threshold[is_cat & tree_df$split_feature == f],
         lgb_parse_cat_threshold
       )
-      lgb_codes_to_values(unlist(split_codes), levels(orig_data[[col]]), f)
+      cat_codes_to_values(unlist(split_codes), levels(orig_data[[col]]), f)
       cat_codes[[f]] <- seq_along(levels(orig_data[[col]])) - 1L
     } else {
       if (is.null(model_codes)) {

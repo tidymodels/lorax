@@ -43,7 +43,8 @@ and other visualizations.
 \subsection{XGBoost tree storage format}{
 
 \pkg{xgboost} stores trees in a tabular format accessible via
-\code{xgboost::xgb.model.dt.tree()}. Each tree is represented as rows in a table:
+\code{xgboost::xgb.model.dt.tree()} (or, for models with categorical features,
+\code{xgboost::xgb.dump()}). Each tree is represented as rows in a table:
 \itemize{
 \item \code{Tree}: 0-based tree index (e.g., 0, 1, 2,  ...)
 \item \code{Node}: 0-based node ID within tree (e.g., "0-0", "0-1" for tree 0)
@@ -70,6 +71,16 @@ and other visualizations.
 \item No branch: feature >= threshold (right child)
 \item \pkg{partykit} split created with \code{right = TRUE} (right interval closed)
 }
+}
+
+\subsection{Categorical predictors}{
+
+For models that use factor predictors as categorical features
+(\pkg{xgboost} 3.0.0 and later), a split sends a set of categories to the
+Yes branch and all others to the No branch. The model stores zero-based
+category codes (\code{as.integer(factor) - 1L}), so these predictors should be
+factors in \code{data} with the same levels used for training. Numeric columns
+are treated as the category codes.
 }
 
 \subsection{Child node references}{

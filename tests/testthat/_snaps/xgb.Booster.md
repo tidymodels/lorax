@@ -70,3 +70,41 @@
       Error:
       ! `tree` values must be between 1 and 5, not 999.
 
+# extract_rules.xgb.Booster() validates categorical data
+
+    Code
+      extract_rules(cat_fit$fit, tree = 1L, data = too_few)
+    Condition
+      Error in `extract_rules()`:
+      ! Invalid category codes for f.
+      x The model uses codes 5 and 7.
+      x The factor in `data` only has 3 levels.
+      i Codes are assumed to be `as.integer(factor) - 1L`.
+
+---
+
+    Code
+      extract_rules(cat_fit$fit, tree = 1L, data = as.matrix(cat_fit$codes))
+    Condition
+      Error in `extract_rules()`:
+      ! `data` must be a data frame, not a double matrix.
+
+# as.party.xgb.Booster() validates categorical data
+
+    Code
+      as.party(cat_fit$fit, tree = 1L, data = too_few)
+    Condition
+      Error in `as.party()`:
+      ! Invalid category codes for f.
+      x The model uses codes 5 and 7.
+      x The factor in `data` only has 3 levels.
+      i Codes are assumed to be `as.integer(factor) - 1L`.
+
+---
+
+    Code
+      as.party(cat_fit$fit, tree = 1L, data = not_factor)
+    Condition
+      Error in `as.party()`:
+      ! Column f of `data` must be a factor since the model used it as a categorical predictor, not a character vector.
+

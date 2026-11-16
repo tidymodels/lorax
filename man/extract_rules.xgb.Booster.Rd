@@ -4,7 +4,14 @@
 \alias{extract_rules.xgb.Booster}
 \title{Extract rules from an xgb.Booster model}
 \usage{
-\method{extract_rules}{xgb.Booster}(x, tree = 1L, nthread = NULL, add_statistics = FALSE, ...)
+\method{extract_rules}{xgb.Booster}(
+  x,
+  tree = 1L,
+  nthread = NULL,
+  add_statistics = FALSE,
+  data = NULL,
+  ...
+)
 }
 \arguments{
 \item{x}{An \code{xgb.Booster} object from the \pkg{xgboost} package.}
@@ -26,6 +33,11 @@ are added to the results:
 }
 
 A rule of \code{TRUE} (a tree with no splits) has zero terms and predictors.}
+
+\item{data}{Optional data frame containing the predictors used to train
+the model. It is only used for models with categorical predictors, where
+the levels of the factor columns are used to convert category codes to
+factor levels.}
 
 \item{...}{Not currently used.}
 }
@@ -50,9 +62,21 @@ indexing for the \code{tree} parameter and output \code{id} column (R convention
 Split conditions in \pkg{xgboost} follow the pattern: Yes branch when feature <
 threshold, No branch when feature >= threshold. Rules are combinations of
 these conditions using AND logic.
+\subsection{Categorical predictors}{
 
-Note: This function does not work with \pkg{xgboost} models containing categorical
-features or non-tree boosters (\code{gblinear}).
+\pkg{xgboost} (version 3.0.0 and later) can use factor predictors directly
+as categorical features. A categorical split sends a set of categories to
+the Yes branch and all other categories to the No branch. The model stores
+the categories as zero-based integer codes (\code{as.integer(factor) - 1L}) and
+does not save the factor levels. When \code{data} is supplied, the levels of its
+factor columns are used to write rules such as \code{x \%in\% c("a", "c")}.
+Otherwise, rules use the integer codes.
+
+Models fit with indicator (dummy) variables, as well as those from earlier
+versions of \pkg{xgboost}, only have numeric splits.
+
+Note: This function does not work with non-tree boosters (\code{gblinear}).
+}
 }
 \examples{
 if (rlang::is_installed("xgboost")) {
@@ -98,6 +122,27 @@ if (rlang::is_installed("xgboost")) {
     )
   )
   rules_reg <- extract_rules(bst_reg, tree = 1L)
+}
+
+# Categorical predictors
+if (rlang::is_installed("xgboost", version = "3.0.0")) {
+  cat_data <- data.frame(
+    group = factor(rep(c("a", "b", "c", "d"), each = 25)),
+    dose = rep(seq(0, 1, length.out = 25), times = 4)
+  )
+  outcome <- 2 * (cat_data$group \%in\% c("a", "c")) + cat_data$dose
+
+  bst_cat <- xgboost::xgb.train(
+    data = xgboost::xgb.DMatrix(cat_data, label = outcome, nthread = 1),
+    nrounds = 2,
+    params = xgboost::xgb.params(max_depth = 2, nthread = 1)
+  )
+
+  # Rules with integer codes
+  extract_rules(bst_cat)$rules[[1]]
+
+  # Rules with factor levels
+  extract_rules(bst_cat, data = cat_data)$rules[[1]]
 }
 
 }

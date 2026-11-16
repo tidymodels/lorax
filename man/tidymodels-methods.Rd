@@ -53,6 +53,10 @@ method for the engine model; see the documentation for that model's method.
 For \code{as.party()}, engines that need the training data (e.g., xgboost) require
 it via \code{data}. For workflows, this should be the preprocessed predictors that
 were given to the engine.
+
+For \code{extract_rules()} with xgboost models that use factor predictors as
+categorical features (the \code{"xgboost3"} engine), the factor levels saved by
+\pkg{parsnip} are used to label the categories unless \code{data} is given.
 }
 \examples{
 if (rlang::is_installed(c("parsnip", "ranger"))) {
