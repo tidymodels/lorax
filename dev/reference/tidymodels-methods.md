@@ -64,6 +64,12 @@ engines that need the training data (e.g., xgboost) require it via
 `data`. For workflows, this should be the preprocessed predictors that
 were given to the engine.
 
+For
+[`extract_rules()`](https://lorax.tidymodels.org/dev/reference/extract_rules.md)
+with xgboost models that use factor predictors as categorical features
+(the `"xgboost3"` engine), the factor levels saved by parsnip are used
+to label the categories unless `data` is given.
+
 ## Examples
 
 ``` r
