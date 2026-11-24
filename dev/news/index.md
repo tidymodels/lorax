@@ -2,6 +2,8 @@
 
 ## lorax (development version)
 
+## lorax 0.3.0
+
 - [`active_predictors()`](https://lorax.tidymodels.org/dev/reference/active_predictors.md),
   [`as.party()`](https://rdrr.io/pkg/partykit/man/party-coercion.html),
   [`extract_rules()`](https://lorax.tidymodels.org/dev/reference/extract_rules.md),
