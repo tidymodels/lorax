@@ -56,7 +56,9 @@ statistics, bar charts, and other visualizations.
 ### XGBoost tree storage format
 
 xgboost stores trees in a tabular format accessible via
-[`xgboost::xgb.model.dt.tree()`](https://rdrr.io/pkg/xgboost/man/xgb.model.dt.tree.html).
+[`xgboost::xgb.model.dt.tree()`](https://rdrr.io/pkg/xgboost/man/xgb.model.dt.tree.html)
+(or, for models with categorical features,
+[`xgboost::xgb.dump()`](https://rdrr.io/pkg/xgboost/man/xgb.dump.html)).
 Each tree is represented as rows in a table:
 
 - `Tree`: 0-based tree index (e.g., 0, 1, 2, ...)
@@ -90,6 +92,15 @@ Each tree is represented as rows in a table:
 - No branch: feature \>= threshold (right child)
 
 - partykit split created with `right = TRUE` (right interval closed)
+
+### Categorical predictors
+
+For models that use factor predictors as categorical features (xgboost
+3.0.0 and later), a split sends a set of categories to the Yes branch
+and all others to the No branch. The model stores zero-based category
+codes (`as.integer(factor) - 1L`), so these predictors should be factors
+in `data` with the same levels used for training. Numeric columns are
+treated as the category codes.
 
 ### Child node references
 

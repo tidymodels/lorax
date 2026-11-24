@@ -1,5 +1,25 @@
 # Changelog
 
+## lorax 0.3.0
+
+- [`active_predictors()`](https://lorax.tidymodels.org/reference/active_predictors.md),
+  [`as.party()`](https://rdrr.io/pkg/partykit/man/party-coercion.html),
+  [`extract_rules()`](https://lorax.tidymodels.org/reference/extract_rules.md),
+  [`num_ensemble_members()`](https://lorax.tidymodels.org/reference/num_ensemble_members.md),
+  and [`var_imp()`](https://generics.r-lib.org/reference/var_imp.html)
+  now work with xgboost models that use factor predictors as categorical
+  features (xgboost 3.0.0 and later), such as those from parsnip’s
+  `"xgboost3"` engine. Previously these failed with an error from
+  xgboost. Models fit with indicator variables are processed as before.
+
+- [`extract_rules()`](https://lorax.tidymodels.org/reference/extract_rules.md)
+  for xgboost models gains an optional `data` argument. For models with
+  categorical predictors, the levels of its factor columns are used to
+  convert category codes to factor levels, assuming the codes are
+  `as.integer(factor) - 1L`; without it, rules use the integer codes.
+  For parsnip `model_fit` and workflows `workflow` objects, the factor
+  levels saved by parsnip are used automatically.
+
 ## lorax 0.2.0
 
 CRAN release: 2026-11-05

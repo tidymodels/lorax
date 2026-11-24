@@ -115,7 +115,7 @@ var_imp(fit)
 #> # A tibble: 4 × 2
 #>   term         estimate
 #>   <chr>           <dbl>
-#> 1 Petal.Length    7.22 
+#> 1 Petal.Length    7.49 
 #> 2 Petal.Width     0.639
 #> 3 Sepal.Length    0    
 #> 4 Sepal.Width     0    
