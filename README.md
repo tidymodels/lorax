@@ -6,6 +6,9 @@
 <!-- badges: start -->
 
 [![R-CMD-check](https://github.com/tidymodels/lorax/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/tidymodels/lorax/actions/workflows/R-CMD-check.yaml)
+[![CRAN
+status](https://www.r-pkg.org/badges/version/lorax)](https://CRAN.R-project.org/package=lorax)
+[![Downloads](https://cranlogs.r-pkg.org/badges/lorax)](https://CRAN.R-project.org/package=lorax)
 [![Codecov test
 coverage](https://codecov.io/gh/tidymodels/lorax/graph/badge.svg)](https://app.codecov.io/gh/tidymodels/lorax)
 <!-- badges: end -->

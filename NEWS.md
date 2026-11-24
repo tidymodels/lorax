@@ -1,4 +1,4 @@
-# lorax (development version)
+# lorax 0.3.0
 
 * `active_predictors()`, `as.party()`, `extract_rules()`, `num_ensemble_members()`, and `var_imp()` now work with xgboost models that use factor predictors as categorical features (xgboost 3.0.0 and later), such as those from parsnip's `"xgboost3"` engine. Previously these failed with an error from xgboost. Models fit with indicator variables are processed as before.
 
