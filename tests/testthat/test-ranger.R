@@ -1124,3 +1124,34 @@ test_that("extract_rules.ranger() adds statistics", {
   expect_all_true(rules$num_rule_terms <= 3L)
   expect_all_true(rules$num_rule_predictors <= 3L)
 })
+
+test_that("as.party matches ranger at split boundary", {
+  skip_if_not_installed("ranger")
+
+  dat <- data.frame(
+    x = c(1, 2, 3.5, 4, 5, 6),
+    y = c(0, 0, 0, 10, 10, 10)
+  )
+  set.seed(1)
+  rf <- ranger::ranger(
+    y ~ x,
+    data = dat,
+    num.trees = 1,
+    replace = FALSE,
+    sample.fraction = 1,
+    min.node.size = 1,
+    num.threads = 1
+  )
+  sv <- ranger::treeInfo(rf, 1)$splitval[1]
+  probe <- data.frame(x = c(sv - 1, sv, sv + 1), y = c(0, 0, 10))
+
+  p <- as.party(rf, tree = 1L, data = probe)
+  expect_identical(
+    unname(p$fitted[["(fitted)"]]),
+    unname(as.integer(predict(p, newdata = probe, type = "node")))
+  )
+  expect_equal(
+    unname(predict(p, newdata = probe)),
+    unname(predict(rf, data = probe)$predictions)
+  )
+})

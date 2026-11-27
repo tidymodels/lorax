@@ -69,7 +69,7 @@ and other visualizations.
 \itemize{
 \item Yes branch: feature < threshold (left child)
 \item No branch: feature >= threshold (right child)
-\item \pkg{partykit} split created with \code{right = TRUE} (right interval closed)
+\item \pkg{partykit} split created with \code{right = FALSE} (left-closed intervals)
 }
 }
 

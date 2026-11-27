@@ -52,8 +52,7 @@ The \pkg{randomForest} package stores trees in \code{obj$forest} as parallel mat
 \itemize{
 \item For numeric variables: left child when feature <= threshold, right child
 when feature > threshold
-\item Note: \pkg{randomForest} uses <= for left (different from ranger's <)
-\item partykit split created with \code{right = FALSE} to match this
+\item partykit split created with \code{right = TRUE} (right-closed intervals) to match this
 }
 }
 

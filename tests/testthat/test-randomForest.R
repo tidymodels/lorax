@@ -1138,3 +1138,36 @@ test_that("num_ensemble_members() counts randomForest trees", {
 
   expect_identical(num_ensemble_members(rf), 5L)
 })
+
+test_that("as.party and extract_rules match randomForest at split boundary", {
+  skip_if_not_installed("randomForest")
+
+  dat <- data.frame(
+    x = c(1, 2, 3, 4, 5, 6),
+    y = c(0, 0, 0, 10, 10, 10)
+  )
+  set.seed(1)
+  rf <- suppressWarnings(randomForest::randomForest(
+    y ~ x,
+    data = dat,
+    ntree = 1,
+    sampsize = 6,
+    replace = FALSE,
+    maxnodes = 2
+  ))
+  sv <- randomForest::getTree(rf, 1)[1, "split point"]
+  probe <- data.frame(x = c(sv - 1, sv, sv + 1))
+
+  p <- as.party(rf, tree = 1L, data = dat)
+  expect_equal(
+    unname(predict(p, newdata = probe)),
+    unname(predict(rf, newdata = probe))
+  )
+
+  rules <- extract_rules(rf, tree = 1L, data = dat)
+  rule_texts <- vapply(rules$rules, deparse1, character(1))
+  expect_identical(
+    rule_texts,
+    c(paste("x <=", sv), paste("x >", sv))
+  )
+})

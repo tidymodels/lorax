@@ -35,8 +35,7 @@
 #'
 #' - For numeric variables: left child when feature <= threshold, right child
 #'   when feature > threshold
-#' - Note: \pkg{randomForest} uses <= for left (different from ranger's <)
-#' - partykit split created with `right = FALSE` to match this
+#' - partykit split created with `right = TRUE` (right-closed intervals) to match this
 #'
 #' ## Terminal node identification
 #'
@@ -288,8 +287,8 @@ rf_build_partynode <- function(
 
   # Create split object
   # randomForest uses: left child when feature <= threshold
-  # This requires right = FALSE in partykit (left interval is closed)
-  split <- build_partysplit(var_idx, split_val, right = FALSE)
+  # This requires right = TRUE in partykit (right-closed intervals)
+  split <- build_partysplit(var_idx, split_val, right = TRUE)
 
   # Get child row indices (1-based, 0 means no child)
   left_child_row <- left_daughter[row_idx]

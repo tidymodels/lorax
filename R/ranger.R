@@ -31,9 +31,9 @@
 #'
 #' ## Split encoding
 #'
-#' - For numeric variables: left child when feature < threshold, right child
-#'   when feature >= threshold
-#' - \pkg{partykit} split created with `right = TRUE` (right interval closed)
+#' - For numeric variables: left child when feature <= threshold, right child
+#'   when feature > threshold
+#' - \pkg{partykit} split created with `right = TRUE` (right-closed intervals)
 #'
 #' ## Child node references
 #'
@@ -219,7 +219,7 @@ ranger_build_partynode_from_info <- function(node_id, tree_info, var_names) {
   }
 
   # Create split object
-  # ranger uses: left child when feature < threshold
+  # ranger uses: left child when feature <= threshold
   split <- build_partysplit(varid, split_val, right = TRUE)
 
   # Get child node IDs (0-based)

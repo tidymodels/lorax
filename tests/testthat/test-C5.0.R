@@ -1085,3 +1085,26 @@ test_that("num_ensemble_members() uses the actual number of C5.0 trials", {
   expect_identical(unname(c5_early$trials["Requested"]), 10)
   expect_identical(num_ensemble_members(c5_early), 1L)
 })
+
+test_that("as.party matches C5.0 at split boundary", {
+  skip_if_not_installed("C50")
+
+  dat <- data.frame(
+    x = c(1, 2, 3, 4, 5, 6),
+    y = factor(c("a", "a", "a", "b", "b", "b"))
+  )
+  fit <- C50::C5.0(y ~ x, data = dat, control = C50::C5.0Control(minCases = 1))
+  p <- as.party(fit, data = dat)
+
+  expect_identical(
+    unname(p$fitted[["(fitted)"]]),
+    unname(as.integer(predict(p, newdata = dat, type = "node")))
+  )
+  expect_identical(
+    unname(as.character(predict(p, newdata = dat))),
+    unname(as.character(predict(fit, newdata = dat)))
+  )
+
+  party_rules <- vapply(extract_rules(p)$rules, deparse1, character(1))
+  expect_identical(party_rules, c("x <= 3", "x > 3"))
+})

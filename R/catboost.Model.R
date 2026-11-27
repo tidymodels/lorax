@@ -224,7 +224,7 @@ cb_build_partynode <- function(node, var_names, lvls) {
   varid <- match(split$column, var_names)
 
   if (split$type == "float") {
-    psplit <- build_partysplit(varid, split$border, right = FALSE)
+    psplit <- build_partysplit(varid, split$border, right = TRUE)
   } else if (split$type == "ctr") {
     varid <- match(split$party_column, var_names)
     index <- ifelse(split$right, 2L, 1L)

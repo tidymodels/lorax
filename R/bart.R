@@ -251,7 +251,7 @@ bart_tree_rules <- function(tree_df, var_names) {
 #'
 #' - Left child: feature < threshold
 #' - Right child: feature >= threshold
-#' - partykit split created with `right = TRUE` (right interval closed)
+#' - partykit split created with `right = FALSE` (left-closed intervals)
 #'
 #' ## Variable names
 #'
@@ -597,7 +597,7 @@ bart_build_partynode_df <- function(tree_df, start_row, var_names) {
 
   # Create split object
   # BART: left child when feature < threshold
-  split <- build_partysplit(var_idx, value, right = TRUE)
+  split <- build_partysplit(var_idx, value, right = FALSE)
 
   # Recursively build left subtree (immediately after current node)
   left_result <- bart_build_partynode_df(

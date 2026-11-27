@@ -51,9 +51,9 @@ via \code{grf::get_tree(obj, tree)}. Each tree is represented as nested lists:
 
 \subsection{Split encoding}{
 \itemize{
-\item For numeric variables: left child when feature < threshold, right child
-when feature >= threshold
-\item \pkg{partykit} split created with \code{right = TRUE} (right interval closed)
+\item For numeric variables: left child when feature <= threshold, right child
+when feature > threshold
+\item \pkg{partykit} split created with \code{right = TRUE} (right-closed intervals)
 }
 }
 

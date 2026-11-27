@@ -365,7 +365,7 @@ c5_parse_node_recursive <- function(
         if (is.null(split_cut) || length(split_cut) == 0 || is.na(split_cut)) {
           split_cut <- 0
         }
-        split <- build_partysplit(varid, split_cut, right = FALSE)
+        split <- build_partysplit(varid, split_cut, right = TRUE)
       } else {
         # Parse elts groups and create index vector
         # Initialize with 1s (not 0s) so unassigned levels default to child 1
@@ -396,7 +396,7 @@ c5_parse_node_recursive <- function(
       if (is.null(split_cut) || length(split_cut) == 0 || is.na(split_cut)) {
         split_cut <- 0
       }
-      split <- build_partysplit(varid, split_cut, right = FALSE)
+      split <- build_partysplit(varid, split_cut, right = TRUE)
     }
 
     # Parse children
