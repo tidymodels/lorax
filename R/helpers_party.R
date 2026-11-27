@@ -15,12 +15,13 @@
 #
 # @param varid Integer, 1-based column index in model.frame
 # @param threshold Numeric split point
-# @param right Logical, whether right interval is closed. If TRUE, split is:
-#   - Kid 1: var < threshold
-#   - Kid 2: var >= threshold (right interval closed)
+# @param right Logical, whether intervals are right-closed (matching
+#   `partykit::partysplit()`). If TRUE, split is:
+#   - Kid 1: var <= threshold (interval (-Inf, threshold])
+#   - Kid 2: var > threshold (interval (threshold, Inf))
 #   If FALSE, split is:
-#   - Kid 1: var <= threshold (left interval closed)
-#   - Kid 2: var > threshold
+#   - Kid 1: var < threshold (interval (-Inf, threshold))
+#   - Kid 2: var >= threshold (interval [threshold, Inf))
 #
 # @return A partysplit object
 build_partysplit <- function(varid, threshold, right = TRUE) {
@@ -217,7 +218,7 @@ build_partynode_from_tabular <- function(
       }
     }
 
-    # Create split (assuming standard < vs >= pattern with right = TRUE)
+    # Create split (assuming standard <= vs > pattern with right = TRUE)
     split <- build_partysplit(varid, split_val, right = TRUE)
 
     # Recursively build child nodes
@@ -412,11 +413,19 @@ traverse_to_terminal <- function(node, obs) {
 
       if (!is.null(var_numeric)) {
         if (right) {
-          # Right interval closed: left when < breaks, right when >= breaks
-          child_idx <- if (var_numeric < breaks) 1L else 2L
+          # Right-closed intervals: left when <= breaks, right when > breaks
+          if (var_numeric <= breaks) {
+            child_idx <- 1L
+          } else {
+            child_idx <- 2L
+          }
         } else {
-          # Left interval closed: left when <= breaks, right when > breaks
-          child_idx <- if (var_numeric <= breaks) 1L else 2L
+          # Left-closed intervals: left when < breaks, right when >= breaks
+          if (var_numeric < breaks) {
+            child_idx <- 1L
+          } else {
+            child_idx <- 2L
+          }
         }
       }
     } else {

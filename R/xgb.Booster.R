@@ -397,7 +397,7 @@ xgb_tree_rules <- function(tree_dt, data = NULL, call = rlang::caller_env()) {
 #'
 #' - Yes branch: feature < threshold (left child)
 #' - No branch: feature >= threshold (right child)
-#' - \pkg{partykit} split created with `right = TRUE` (right interval closed)
+#' - \pkg{partykit} split created with `right = FALSE` (left-closed intervals)
 #'
 #' ## Categorical predictors
 #'
@@ -700,7 +700,7 @@ xgb_build_partynode <- function(node_id, tree_df, var_names, cat_codes) {
   if (is.null(yes_codes)) {
     # XGBoost: Yes branch when feature < threshold, No branch when feature >= threshold
     split_val <- as.numeric(node_row$Split)
-    split <- build_partysplit(varid, split_val, right = TRUE)
+    split <- build_partysplit(varid, split_val, right = FALSE)
   } else {
     # Codes in the set go to the Yes child, all others to the No child
     child_index <- ifelse(cat_codes[[feature_name]] %in% yes_codes, 1L, 2L)

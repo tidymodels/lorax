@@ -344,7 +344,7 @@ lgb_cat_levels <- function(
 #'
 #' - `decision_type "<="`: left child when feature <= threshold
 #' - right child when feature > threshold
-#' - \pkg{partykit} split created with `right = FALSE` (left interval closed)
+#' - \pkg{partykit} split created with `right = TRUE` (right-closed intervals)
 #' - `decision_type "=="`: categorical split. `threshold` lists the category
 #'   codes that go to the left child (e.g., `"0||2"`); all other codes go to
 #'   the right child.
@@ -704,8 +704,8 @@ lgb_build_partynode <- function(
       )
     }
     # LightGBM default: decision_type "<=", left child when feature <= threshold
-    # This requires right = FALSE in partykit (left interval closed)
-    split <- build_partysplit(varid, split_val, right = FALSE)
+    # This requires right = TRUE in partykit (right-closed intervals)
+    split <- build_partysplit(varid, split_val, right = TRUE)
   }
 
   # Find children of this node

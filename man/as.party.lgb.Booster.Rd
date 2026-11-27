@@ -68,7 +68,7 @@ and other visualizations.
 \itemize{
 \item \verb{decision_type "<="}: left child when feature <= threshold
 \item right child when feature > threshold
-\item \pkg{partykit} split created with \code{right = FALSE} (left interval closed)
+\item \pkg{partykit} split created with \code{right = TRUE} (right-closed intervals)
 \item \verb{decision_type "=="}: categorical split. \code{threshold} lists the category
 codes that go to the left child (e.g., \code{"0||2"}); all other codes go to
 the right child.

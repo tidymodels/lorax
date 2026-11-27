@@ -34,9 +34,9 @@
 #'
 #' ## Split encoding
 #'
-#' - For numeric variables: left child when feature < threshold, right child
-#'   when feature >= threshold
-#' - \pkg{partykit} split created with `right = TRUE` (right interval closed)
+#' - For numeric variables: left child when feature <= threshold, right child
+#'   when feature > threshold
+#' - \pkg{partykit} split created with `right = TRUE` (right-closed intervals)
 #'
 #' ## Tree structure
 #'
@@ -251,7 +251,7 @@ grf_build_partynode <- function(tree_node, all_nodes, var_names) {
   }
 
   # Create split object
-  # grf uses: left child when feature < threshold
+  # grf uses: left child when feature <= threshold
   split <- build_partysplit(varid, split_val, right = TRUE)
 
   # Get child nodes using 1-based indices

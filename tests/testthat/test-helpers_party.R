@@ -170,10 +170,10 @@ test_that("traverse_to_terminal handles node without split", {
   expect_equal(traverse_to_terminal(node, obs), 1L)
 })
 
-test_that("traverse_to_terminal handles right interval closed splits", {
+test_that("traverse_to_terminal handles left-closed splits", {
   skip_if_not_installed("xgboost")
 
-  # Create xgboost model (uses right = TRUE)
+  # Create xgboost model (uses right = FALSE)
   data <- data.frame(
     y = c(1, 2, 3, 4, 5, 6),
     x1 = c(1, 2, 3, 4, 5, 6)
@@ -198,10 +198,10 @@ test_that("traverse_to_terminal handles right interval closed splits", {
   expect_true(node_id >= 1)
 })
 
-test_that("traverse_to_terminal handles left interval closed splits", {
+test_that("traverse_to_terminal handles right-closed splits", {
   skip_if_not_installed("lightgbm")
 
-  # Create lightgbm model (uses right = FALSE)
+  # Create lightgbm model (uses right = TRUE)
   set.seed(888)
   data <- data.frame(
     y = rnorm(30),
@@ -347,4 +347,34 @@ test_that("assign_node_ids can start from custom ID", {
   expect_equal(result$node$kids[[1]]$id, 11L)
   expect_equal(result$node$kids[[2]]$id, 12L)
   expect_equal(result$next_id, 13L)
+})
+
+test_that("traverse_to_terminal matches partykit split boundary semantics", {
+  left <- partykit::partynode(id = 2L)
+  right <- partykit::partynode(id = 3L)
+  obs_eq <- data.frame(x = 5.0)
+
+  sp_right_closed <- build_partysplit(1L, 5.0, right = TRUE)
+  node_rc <- partykit::partynode(
+    id = 1L,
+    split = sp_right_closed,
+    kids = list(left, right)
+  )
+  expect_identical(
+    partykit::kidids_split(sp_right_closed, obs_eq),
+    1L
+  )
+  expect_identical(traverse_to_terminal(node_rc, obs_eq), 2L)
+
+  sp_left_closed <- build_partysplit(1L, 5.0, right = FALSE)
+  node_lc <- partykit::partynode(
+    id = 1L,
+    split = sp_left_closed,
+    kids = list(left, right)
+  )
+  expect_identical(
+    partykit::kidids_split(sp_left_closed, obs_eq),
+    2L
+  )
+  expect_identical(traverse_to_terminal(node_lc, obs_eq), 3L)
 })

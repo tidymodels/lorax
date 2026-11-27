@@ -78,7 +78,7 @@ data.frame accessible via \code{obj$fit$getTrees()}. Each row represents one nod
 \itemize{
 \item Left child: feature < threshold
 \item Right child: feature >= threshold
-\item partykit split created with \code{right = TRUE} (right interval closed)
+\item partykit split created with \code{right = FALSE} (left-closed intervals)
 }
 }
 
